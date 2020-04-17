@@ -14,32 +14,32 @@ fn main() {
 
     let start = Instant::now();
 
-    let params = SimulationParams::new(4.0, 3.0, 1000000);
+    let params = SimulationParams::new(4.0, 3.0, 10000000);
 
     //println!("{:?} to start.", start.elapsed());
 
     // Load model data
     let mut tol_collection:Vec<Box<dyn MonteCarlo>> = Vec::new();
     tol_collection.push(Box::from(LinearTL::new(
-        "A: Actuator tip to hard stop".to_string(),
+        //"A: Actuator tip to hard stop".to_string(),
         DimTol::new(5.58, 0.03, 0.03, params.part_sigma),
     )));
     tol_collection.push(Box::from(LinearTL::new(
-        "B: Hard stop to MF pin".to_string(), 
+        //"B: Hard stop to MF pin".to_string(), 
         DimTol::new(-25.78, 0.07, 0.07, params.part_sigma),
     )));
     tol_collection.push(Box::from(FloatTL::new(
-        "C: MF pin float".to_string(),
+        //"C: MF pin float".to_string(),
         DimTol::new(2.18, 0.03, 0.03, params.part_sigma),
         DimTol::new(2.13, 0.05, 0.05, params.part_sigma),
         params.part_sigma,
     )));
     tol_collection.push(Box::from(LinearTL::new(
-        "D: PCB MF hole to component hole".to_string(),
+        //"D: PCB MF hole to component hole".to_string(),
         DimTol::new(14.58, 0.05, 0.05, params.part_sigma),
     )));
     tol_collection.push(Box::from(CompoundFloatTL::new(
-        "E: Switch component pins float".to_string(), 
+        //"E: Switch component pins float".to_string(), 
         DimTol::new(1.2, 0.03, 0.03, params.part_sigma),
         DimTol::new(1.0, 0.03, 0.03, params.part_sigma),
         vec!(OffsetFloat::new(
@@ -51,15 +51,15 @@ fn main() {
         params.part_sigma,
     )));
     tol_collection.push(Box::from(LinearTL::new(
-        "E': pin to pin".to_string(), 
+        //"E': pin to pin".to_string(), 
         DimTol::new(2.5, 0.3, 0.3, params.part_sigma),
     )));
     tol_collection.push(Box::from(LinearTL::new(
-        "F: Switch pin to button surface".to_string(), 
+        //"F: Switch pin to button surface".to_string(), 
         DimTol::new(3.85, 0.25, 0.25, params.part_sigma),
     )));
     tol_collection.push(Box::from(LinearTL::new(
-        "G: Button actuation".to_string(), 
+        //"G: Button actuation".to_string(), 
         DimTol::new(-0.3, 0.15, 0.15, params.part_sigma),
     )));
 
@@ -105,7 +105,7 @@ fn compute_stackup(tol_collection: &Vec<Box<dyn MonteCarlo>>, n_iterations: usiz
     let vec_height = tol_collection.len();
     let mut samples:Vec<f64> =  Vec::with_capacity(vec_height * vec_length);
     for tol_struct in tol_collection {
-        let start = Instant::now();
+        //let start = Instant::now();
         for _i in 0..n_iterations {
             samples.push(tol_struct.mc_tolerance())
         }
@@ -131,7 +131,7 @@ struct SimulationParams{
 }
 impl SimulationParams {
     fn new(part_sigma: f64, assy_sigma: f64, n_iterations: usize) -> Self {
-        let mut rng = rand::thread_rng();
+        //let mut rng = rand::thread_rng();
         //let rand_source: Vec<f64> = (0..n_iterations+rand_buffer).map(|_| {
         //    rng.sample(StandardNormal)
         //}).collect();
@@ -148,7 +148,6 @@ struct DimTol{
     tol_pos: f64,
     tol_neg: f64,
     tol_multiplier: f64,
-    sigma: f64,
 }
 impl DimTol{
     fn new(dim: f64, tol_pos: f64, tol_neg: f64, sigma: f64) -> Self {
@@ -165,12 +164,10 @@ impl DimTol{
             tol_pos,
             tol_neg,
             tol_multiplier,
-            sigma,
         }
     }
     fn rand_bound_norm(&self) -> f64 {
-        let mut sample:f64 = std::f64::MAX;
-        sample = thread_rng().sample(StandardNormal);
+        let mut sample = thread_rng().sample(StandardNormal);
         sample *= self.tol_multiplier;
         //let mut rng = rand::thread_rng();
         while sample < -self.tol_neg || sample > self.tol_pos {
@@ -192,7 +189,6 @@ struct OffsetFloat {
     pin: DimTol,
     hole_spacing: DimTol,
     pin_spacing: DimTol,
-    sampled_results: Vec<f64>,
 }
 impl  OffsetFloat {
     fn new(hole: DimTol, pin: DimTol, hole_spacing: DimTol, pin_spacing: DimTol) -> Self {
@@ -201,7 +197,6 @@ impl  OffsetFloat {
             pin,
             hole_spacing,
             pin_spacing,
-            sampled_results: Vec::new(),
         }
     }
 }
@@ -212,16 +207,14 @@ trait MonteCarlo {
 }
 
 struct LinearTL {
-    name: String,
+    //name: String,
     distance: DimTol,
-    sampled_results: Vec<f64>,
 }
 impl  LinearTL {
-    fn new(name: String, distance: DimTol) -> Self {
+    fn new(distance: DimTol) -> Self {
         LinearTL {
-            name,
+            //name,
             distance,
-            sampled_results: Vec::new(),
         }
     }
 }
@@ -232,15 +225,15 @@ impl  MonteCarlo for LinearTL {
 }
 
 struct FloatTL {
-    name: String,
+    //name: String,
     hole: DimTol,
     pin: DimTol,
     sigma: f64,
 }
 impl  FloatTL {
-    fn new(name: String, hole: DimTol, pin: DimTol, sigma: f64) -> Self {
+    fn new(hole: DimTol, pin: DimTol, sigma: f64) -> Self {
         FloatTL {
-            name,
+            //name,
             hole,
             pin,
             sigma,
@@ -262,16 +255,16 @@ impl  MonteCarlo for FloatTL {
 }
 
 struct CompoundFloatTL {
-    name: String,
+    //name: String,
     datum_start: DimTol,
     datum_end: DimTol,
     float_list: Vec<OffsetFloat>,
     sigma: f64,
 }
 impl  CompoundFloatTL {
-    fn new(name: String, datumstart: DimTol, datumend: DimTol, floatlist: Vec<OffsetFloat>, sigma: f64) -> Self {
+    fn new(datumstart: DimTol, datumend: DimTol, floatlist: Vec<OffsetFloat>, sigma: f64) -> Self {
         CompoundFloatTL{
-            name,
+            //name,
             datum_start: datumstart,
             datum_end: datumend,
             float_list: floatlist,
