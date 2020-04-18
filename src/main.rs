@@ -9,37 +9,39 @@ use statistical::*;
 use std::time::Instant;
 use num_format::{Locale, ToFormattedString};
 use num::clamp;
+use std::thread;
+use std::sync::mpsc;
 
 fn main() {
 
     let start = Instant::now();
 
-    let params = SimulationParams::new(4.0, 3.0, 10000000);
+    let params = SimulationParams::new(4.0, 3.0, 1000000);
 
     //println!("{:?} to start.", start.elapsed());
 
     // Load model data
     let mut tol_collection:Vec<Box<dyn MonteCarlo>> = Vec::new();
     tol_collection.push(Box::from(LinearTL::new(
-        //"A: Actuator tip to hard stop".to_string(),
+        "A: Actuator tip to hard stop".to_string(),
         DimTol::new(5.58, 0.03, 0.03, params.part_sigma),
     )));
     tol_collection.push(Box::from(LinearTL::new(
-        //"B: Hard stop to MF pin".to_string(), 
+        "B: Hard stop to MF pin".to_string(), 
         DimTol::new(-25.78, 0.07, 0.07, params.part_sigma),
     )));
     tol_collection.push(Box::from(FloatTL::new(
-        //"C: MF pin float".to_string(),
+        "C: MF pin float".to_string(),
         DimTol::new(2.18, 0.03, 0.03, params.part_sigma),
         DimTol::new(2.13, 0.05, 0.05, params.part_sigma),
         params.part_sigma,
     )));
     tol_collection.push(Box::from(LinearTL::new(
-        //"D: PCB MF hole to component hole".to_string(),
+        "D: PCB MF hole to component hole".to_string(),
         DimTol::new(14.58, 0.05, 0.05, params.part_sigma),
     )));
     tol_collection.push(Box::from(CompoundFloatTL::new(
-        //"E: Switch component pins float".to_string(), 
+        "E: Switch component pins float".to_string(), 
         DimTol::new(1.2, 0.03, 0.03, params.part_sigma),
         DimTol::new(1.0, 0.03, 0.03, params.part_sigma),
         vec!(OffsetFloat::new(
@@ -51,15 +53,15 @@ fn main() {
         params.part_sigma,
     )));
     tol_collection.push(Box::from(LinearTL::new(
-        //"E': pin to pin".to_string(), 
+        "E': pin to pin".to_string(), 
         DimTol::new(2.5, 0.3, 0.3, params.part_sigma),
     )));
     tol_collection.push(Box::from(LinearTL::new(
-        //"F: Switch pin to button surface".to_string(), 
+        "F: Switch pin to button surface".to_string(), 
         DimTol::new(3.85, 0.25, 0.25, params.part_sigma),
     )));
     tol_collection.push(Box::from(LinearTL::new(
-        //"G: Button actuation".to_string(), 
+        "G: Button actuation".to_string(), 
         DimTol::new(-0.3, 0.15, 0.15, params.part_sigma),
     )));
 
@@ -67,57 +69,58 @@ fn main() {
 
     //260ms
     
-    let chunk_size = 1000;
-    let n_cycles = params.n_iterations/chunk_size;
-    let mut stack: Vec<f64> = Vec::new();
-    for _i in 0..n_cycles {
-        let mut result = compute_stackup(&tol_collection, chunk_size);
-        stack.append(&mut result);
-    }
+    //let chunk_size: usize = 8;
+    //let chunks = params.n_iterations/chunk_size;
+    //let mut stack: Vec<f64> = Vec::new();
+    //for _i in 0..chunks {
+        //let handle = thread::spawn(move || {
+    //stack.extend_from_slice(&compute_stackup(tol_collection, params.n_iterations));
+        //});
+
+        
+    //}
+    let stack = compute_stackup(tol_collection, params.n_iterations);
     let duration = start.elapsed();
     let stack_mean = mean(&stack);
     let stack_stddev = standard_deviation(&stack, Some(stack_mean));
     let stack_tol = stack_stddev * params.assy_sigma;
     println!("Result: {:.4} +/- {:.4}; Stddev: {:.4}; Samples: {}; Duration: {:?}", 
         stack_mean, stack_tol, stack_stddev, stack.len().to_formatted_string(&Locale::en), duration);
-    println!("Iterations: {}; Rate: {:.2} iterations/us", 
-        params.n_iterations, stack.len() as f64/duration.subsec_micros() as f64);
-        /*let start = Instant::now();
-        let mut rng = rand::thread_rng();
-        let mut numbers: Vec<f64> = Vec::new();
-        for _i in 0..1000000 {
-            numbers.push(rng.sample(StandardNormal));
-        }
-        println!("For loop: {:?}", start.elapsed());
-
-        let start = Instant::now();
-        let mut rng = rand::thread_rng();
-        let numbers: Vec<f64> = (0..1000000).map(|_| {
-            // 1 (inclusive) to 21 (exclusive)
-            rng.sample(StandardNormal)
-        }).collect();
-        println!("Map: {:?}", start.elapsed());*/
-    
+    println!("Iterations: {}; Rate: {:.2} iterations/μs", 
+        params.n_iterations, (stack.len() as f64)/(duration.as_micros() as f64));
 }
 
-fn compute_stackup(tol_collection: &Vec<Box<dyn MonteCarlo>>, n_iterations: usize) -> Vec<f64> {
+fn compute_stackup(tol_collection: Vec<Box<dyn MonteCarlo + 'static>>, n_iterations: usize) -> Vec<f64> {
     let vec_length = n_iterations;
     let vec_height = tol_collection.len();
     let mut samples:Vec<f64> =  Vec::with_capacity(vec_height * vec_length);
+    let (tx, rx) = mpsc::channel();
     for tol_struct in tol_collection {
         //let start = Instant::now();
-        for _i in 0..n_iterations {
-            samples.push(tol_struct.mc_tolerance())
-        }
+        let tx1 = mpsc::Sender::clone(&tx);
+        thread::spawn(move || {
+            println!("{:}",tol_struct.get_name());
+            let mut result: Vec<f64> = Vec::new();
+            for _i in 0..n_iterations {
+                result.push(tol_struct.mc_tolerance());
+            }
+            tx1.send(result).unwrap();
+        });
         //println!("{:?}",start.elapsed());
     }
+
+    for _ in  0..vec_height {
+        //println!("Received {:?}", rx.recv().unwrap());
+        samples.extend_from_slice(&rx.recv().unwrap());
+    }
+
     let mut result:Vec<f64> =  Vec::with_capacity(n_iterations);
-    //println!("{:?}", samples);
+
     for i in 0..vec_length {
         let mut stackup:f64 = 0.0;
         for j in 0..vec_height {
+            //println!("i:{}, j:{}, val:{}", i,j,i+j*(vec_length-1));
             stackup += samples[i+j*vec_length];
-            //println!("i:{}, j:{}, val:{}", i,j,samples[i+j*vec_length]);
         }
         result.push(stackup);
     }
@@ -166,6 +169,7 @@ impl DimTol{
             tol_multiplier,
         }
     }
+
     fn rand_bound_norm(&self) -> f64 {
         let mut sample = thread_rng().sample(StandardNormal);
         sample *= self.tol_multiplier;
@@ -201,19 +205,20 @@ impl  OffsetFloat {
     }
 }
 
-trait MonteCarlo {
+trait MonteCarlo: Send + Sync {
     /// Compute a monte carlo sample for a given tolerance
     fn mc_tolerance(&self) -> f64;
+    fn get_name(&self) -> &str;
 }
 
 struct LinearTL {
-    //name: String,
+    name: String,
     distance: DimTol,
 }
 impl  LinearTL {
-    fn new(distance: DimTol) -> Self {
+    fn new(name: String, distance: DimTol) -> Self {
         LinearTL {
-            //name,
+            name,
             distance,
         }
     }
@@ -222,18 +227,21 @@ impl  MonteCarlo for LinearTL {
     fn mc_tolerance(&self) -> f64 {
         self.distance.sample()
     }
+    fn get_name(&self) -> &str {
+        &self.name
+    }
 }
 
 struct FloatTL {
-    //name: String,
+    name: String,
     hole: DimTol,
     pin: DimTol,
     sigma: f64,
 }
 impl  FloatTL {
-    fn new(hole: DimTol, pin: DimTol, sigma: f64) -> Self {
+    fn new(name: String, hole: DimTol, pin: DimTol, sigma: f64) -> Self {
         FloatTL {
-            //name,
+            name,
             hole,
             pin,
             sigma,
@@ -252,19 +260,22 @@ impl  MonteCarlo for FloatTL {
             DimTol::new(0.0, hole_pin_slop, hole_pin_slop, self.sigma).rand_bound_norm()
         }
     }
+    fn get_name(&self) -> &str {
+        &self.name
+    }
 }
 
 struct CompoundFloatTL {
-    //name: String,
+    name: String,
     datum_start: DimTol,
     datum_end: DimTol,
     float_list: Vec<OffsetFloat>,
     sigma: f64,
 }
 impl  CompoundFloatTL {
-    fn new(datumstart: DimTol, datumend: DimTol, floatlist: Vec<OffsetFloat>, sigma: f64) -> Self {
+    fn new(name: String, datumstart: DimTol, datumend: DimTol, floatlist: Vec<OffsetFloat>, sigma: f64) -> Self {
         CompoundFloatTL{
-            //name,
+            name,
             datum_start: datumstart,
             datum_end: datumend,
             float_list: floatlist,
@@ -304,5 +315,8 @@ impl  MonteCarlo for CompoundFloatTL {
         bias *= bias_dir;
 
         DimTol::new(bias, min_clearance_r, min_clearance_l, self.sigma).sample()
+    }
+    fn get_name(&self) -> &str {
+        &self.name
     }
 }
