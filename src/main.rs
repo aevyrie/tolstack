@@ -1,11 +1,10 @@
 use statistical::*;
 use std::time::Instant;
 use num_format::{Locale, ToFormattedString};
-use std::thread;
-use std::sync::mpsc;
 use tolerance_structures::*;
+use std::error::Error;
 
-fn main() {
+fn main() -> Result<(),Box<dyn Error>> {
 
     let time_start = Instant::now();
 
@@ -17,43 +16,13 @@ fn main() {
     };
 
     // Load model data
-    let mut tolerance_loop = ToleranceLoop::new();
+    let mut tolerance_loop = deserialize_json("save")?;
+    //let mut tolerance_loop = dummy_data();
+    
+    println!("{:.3?} to load data.", time_start.elapsed());
 
-    tolerance_loop.add(ToleranceType::Linear(LinearTL::new(
-        DimTol::new(5.58, 0.03, 0.03, params.part_sigma),
-    )));
-    tolerance_loop.add(ToleranceType::Linear(LinearTL::new(
-        DimTol::new(-25.78, 0.07, 0.07, params.part_sigma),
-    )));
-    tolerance_loop.add(ToleranceType::Float(FloatTL::new(
-        DimTol::new(2.18, 0.03, 0.03, params.part_sigma),
-        DimTol::new(2.13, 0.05, 0.05, params.part_sigma),
-        params.part_sigma,
-    )));
-    tolerance_loop.add(ToleranceType::Linear(LinearTL::new(
-        DimTol::new(14.58, 0.05, 0.05, params.part_sigma),
-    )));
-    tolerance_loop.add(ToleranceType::Compound(CompoundFloatTL::new(
-        DimTol::new(1.2, 0.03, 0.03, params.part_sigma),
-        DimTol::new(1.0, 0.03, 0.03, params.part_sigma),
-        OffsetFloat::new(
-            DimTol::new(0.972, 0.03, 0.03, params.part_sigma),
-            DimTol::new(0.736, 0.03, 0.03, params.part_sigma),
-            DimTol::new(2.5, 0.05, 0.05, params.part_sigma),
-            DimTol::new(2.5, 0.3, 0.3, params.part_sigma),
-        ),
-        params.part_sigma,
-    )));
-    tolerance_loop.add(ToleranceType::Linear(LinearTL::new(
-        DimTol::new(2.5, 0.3, 0.3, params.part_sigma),
-    )));
-    tolerance_loop.add(ToleranceType::Linear(LinearTL::new(
-        DimTol::new(3.85, 0.25, 0.25, params.part_sigma),
-    )));
-    tolerance_loop.add(ToleranceType::Linear(LinearTL::new(
-        DimTol::new(-0.3, 0.15, 0.15, params.part_sigma),
-    )));
-    println!("{:?} to load data.", time_start.elapsed());
+    //tolerance_loop.serialize_yaml("save")?;
+    //tolerance_loop.serialize_json("save")?;
 
     // Divide the desired number of iterations into chunks. This is done [1] to avoid floating point
     //  errors (as the divisor gets large when averaging you lose precision) and [2] to prevent huge 
@@ -86,7 +55,7 @@ fn main() {
     let result_tol = result_stddev * params.assy_sigma;
     let duration = time_start.elapsed();
 
-    println!("Result: {:.3} +/- {:.3}; Stddev: {:.3};\nSamples: {}; Duration: {:?}", 
+    println!("Result: {:.3} +/- {:.3}; Stddev: {:.3};\nSamples: {}; Duration: {:.3?}", 
         result_mean, 
         result_tol, 
         result_stddev, 
@@ -98,56 +67,10 @@ fn main() {
         (real_iters as f32)/(duration.as_micros() as f32),
         (duration.as_nanos() as f32)/(real_iters as f32),
     );
+
+    Ok(())
 }
 
-/// Generate a sample for each object in the tolerance collection, n_iterations times. Then, sum
-///     the results for each iteration, resulting in stackup for that iteration of the simulation.
-fn compute_stackup(tol_collection: Vec<ToleranceType>, n_iterations: usize) -> Vec<f32> {
-    // Make a local clone of the tolerance collection so the borrow is not returned while the
-    //  threads are using the collection.
-    let tc_local = tol_collection.clone();
-    // Store output in `samples` vector, appending each tol_collection's output
-    let n_tols = tc_local.len();
-    let mut samples:Vec<f32> =  Vec::with_capacity(n_tols * n_iterations);
-    let (tx, rx) = mpsc::channel();
-    // For each tolerance object generate n samples, dividing the work between multiple threads.
-    for tol_struct in tc_local {
-        let n_threads = 5;
-        for _i in 0..n_threads {
-            // Create a thread local copy of the thread communication sender for ownership reasons.
-            let tx_local = mpsc::Sender::clone(&tx);
-            thread::spawn(move || {
-                // Make `result` thread local for better performance.
-                let mut result: Vec<f32> = Vec::new();
-                for _i in 0..n_iterations/n_threads {
-                    result.push(
-                        match tol_struct {
-                            // I thought this would result in branching, but it didn't impact perf.
-                            ToleranceType::Linear(val) => val.mc_tolerance(),
-                            ToleranceType::Float(val) => val.mc_tolerance(),
-                            ToleranceType::Compound(val) => val.mc_tolerance(),
-                        }
-                    );
-                }
-                tx_local.send(result).unwrap();
-            });
-        }
-        for _i in  0..n_threads {
-            samples.extend_from_slice(&rx.recv().unwrap());
-        }
-    }
-
-    let mut result:Vec<f32> =  Vec::with_capacity(n_iterations);
-
-    for i in 0..n_iterations {
-        let mut stackup:f32 = 0.0;
-        for j in 0..n_tols {
-            stackup += samples[i+j*n_iterations];
-        }
-        result.push(stackup);
-    }
-    result
-}
 
 pub struct SimulationParams{
     pub part_sigma: f32,
@@ -155,22 +78,80 @@ pub struct SimulationParams{
     pub n_iterations: usize,
 }
 
-
-
 /// Contains structures used to define tolerances in a tolerance loop.
 pub mod tolerance_structures {
 
     use num::clamp;
     use rand::prelude::*;
     use rand_distr::StandardNormal;
+    use std::thread;
+    use std::sync::mpsc;
+    use serde_derive::*;
+    use serde_yaml;
+    use serde_json;
+    use std::fs::File;
+    use std::io::prelude::*;
+    use std::path::Path;
+    use std::error::Error;
 
-    #[derive(Copy, Clone)]
+
+    /// Generate a sample for each object in the tolerance collection, n_iterations times. Then sum
+    /// the results for each iteration, resulting in stackup for that iteration of the simulation.
+    pub fn compute_stackup(tol_collection: Vec<ToleranceType>, n_iterations: usize) -> Vec<f32> {
+        // Make a local clone of the tolerance collection so the borrow is not returned while the
+        //  threads are using the collection.
+        let tc_local = tol_collection.clone();
+        // Store output in `samples` vector, appending each tol_collection's output
+        let n_tols = tc_local.len();
+        let mut samples:Vec<f32> =  Vec::with_capacity(n_tols * n_iterations);
+        let (tx, rx) = mpsc::channel();
+        // For each tolerance object generate n samples, dividing the work between multiple threads.
+        for tol_struct in tc_local {
+            let n_threads = 5;
+            for _i in 0..n_threads {
+                // Create a thread local copy of the thread communication sender for ownership reasons.
+                let tx_local = mpsc::Sender::clone(&tx);
+                thread::spawn(move || {
+                    // Make `result` thread local for better performance.
+                    let mut result: Vec<f32> = Vec::new();
+                    for _i in 0..n_iterations/n_threads {
+                        result.push(
+                            match tol_struct {
+                                // I thought this would result in branching, but it didn't impact perf.
+                                ToleranceType::Linear(val) => val.mc_tolerance(),
+                                ToleranceType::Float(val) => val.mc_tolerance(),
+                                ToleranceType::Compound(val) => val.mc_tolerance(),
+                            }
+                        );
+                    }
+                    tx_local.send(result).unwrap();
+                });
+            }
+            for _i in  0..n_threads {
+                samples.extend_from_slice(&rx.recv().unwrap());
+            }
+        }
+
+        let mut result:Vec<f32> =  Vec::with_capacity(n_iterations);
+
+        for i in 0..n_iterations {
+            let mut stackup:f32 = 0.0;
+            for j in 0..n_tols {
+                stackup += samples[i+j*n_iterations];
+            }
+            result.push(stackup);
+        }
+        result
+    }
+
+    #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
     pub enum ToleranceType{
         Linear(LinearTL),
         Float(FloatTL),
         Compound(CompoundFloatTL),
     }
 
+    #[derive(Debug, Deserialize, Serialize)]
     pub struct ToleranceLoop{
         linear: Vec<ToleranceType>,
         float: Vec<ToleranceType>,
@@ -198,6 +179,43 @@ pub mod tolerance_structures {
             result.push((2, self.compound.clone()));
             result
         }
+        pub fn serialize_yaml(&self, filename: &str)-> Result<(), Box<dyn Error>> {
+            let data = serde_yaml::to_string(self)?;
+            let filename_full = &[filename, ".yaml"].concat();
+            let path = Path::new(filename_full);
+            file_write(path, data)?;
+            Ok(())
+        }
+        pub fn serialize_json(&self, filename: &str)-> Result<(), Box<dyn Error>> {
+            let data = serde_json::to_string_pretty(self)?;
+            let filename_full = &[filename, ".json"].concat();
+            let path = Path::new(filename_full);
+            file_write(path, data)?;
+            Ok(())
+        }
+    }
+
+    pub fn file_write(path: &Path, data: String)-> Result<(), Box<dyn Error>> {
+        let display = path.display();
+
+        let mut file = match File::create(&path) {
+            Err(why) => panic!("couldn't create {}: {}", display, why.description()),
+            Ok(file) => file,
+        };
+
+        match file.write_all(data.as_bytes()) {
+            Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
+            Ok(_) => println!("successfully wrote to {}", display),
+        }
+        Ok(())
+    }
+
+    pub fn deserialize_json(filename: &str) -> Result<ToleranceLoop, Box<dyn Error>> {
+        let filename_full = &[filename, ".json"].concat();
+        let path = Path::new(filename_full);
+        let file = File::open(path)?;
+        let result: ToleranceLoop = serde_json::from_reader(file)?;
+        Ok(result)
     }
 
     pub trait MonteCarlo: Send + Sync + 'static {
@@ -205,7 +223,7 @@ pub mod tolerance_structures {
         //fn get_name(&self) -> &str;
     }
 
-    #[derive(Copy, Clone)]
+    #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
     pub struct DimTol{
         dim: f32,
         tol_pos: f32,
@@ -238,7 +256,7 @@ pub mod tolerance_structures {
         }
     }
 
-    #[derive(Copy, Clone)]
+    #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
     pub struct LinearTL {
         //name: String,
         distance: DimTol,
@@ -261,7 +279,7 @@ pub mod tolerance_structures {
     }
 
 
-    #[derive(Copy, Clone)]
+    #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
     pub struct FloatTL {
         //name: String,
         hole: DimTol,
@@ -298,10 +316,10 @@ pub mod tolerance_structures {
     }
 
 
-    #[derive(Copy, Clone)]
+    #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
     pub struct CompoundFloatTL {
         //name: String,
-        datum_time_start: DimTol,
+        datum_start: DimTol,
         datum_end: DimTol,
         float_list: OffsetFloat,
         sigma: f32,
@@ -310,7 +328,7 @@ pub mod tolerance_structures {
         pub fn new(datumtime_start: DimTol, datumend: DimTol, floatlist: OffsetFloat, sigma: f32) -> Self {
             CompoundFloatTL{
                 //name,
-                datum_time_start: datumtime_start,
+                datum_start: datumtime_start,
                 datum_end: datumend,
                 float_list: floatlist,
                 sigma,
@@ -319,10 +337,10 @@ pub mod tolerance_structures {
     }
     impl  MonteCarlo for CompoundFloatTL {
         fn mc_tolerance(&self) -> f32 {
-            let ds = self.datum_time_start.sample();
+            let ds = self.datum_start.sample();
             let de = self.datum_end.sample();
-            let datum_hole = if self.datum_time_start.dim > self.datum_end.dim {ds} else {de};
-            let datum_pin = if self.datum_time_start.dim < self.datum_end.dim {ds} else {de};
+            let datum_hole = if self.datum_start.dim > self.datum_end.dim {ds} else {de};
+            let datum_pin = if self.datum_start.dim < self.datum_end.dim {ds} else {de};
             let clearance_dia = datum_hole - datum_pin;
 
             let mut min_clearance_l = clearance_dia;
@@ -342,7 +360,7 @@ pub mod tolerance_structures {
             //}
 
             let mut bias = (min_clearance_r - min_clearance_l)/2.0;
-            let bias_dir = if self.datum_time_start.dim > self.datum_end.dim {1.0} else {-1.0};
+            let bias_dir = if self.datum_start.dim > self.datum_end.dim {1.0} else {-1.0};
             bias *= bias_dir;
 
             DimTol::new(bias, min_clearance_r, min_clearance_l, self.sigma).sample()
@@ -352,7 +370,7 @@ pub mod tolerance_structures {
         //}
     }
 
-    #[derive(Copy, Clone)]
+    #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
     pub struct OffsetFloat {
         hole: DimTol,
         pin: DimTol,
@@ -368,5 +386,45 @@ pub mod tolerance_structures {
                 pin_spacing,
             }
         }
+    }
+
+    pub fn dummy_data() -> ToleranceLoop {
+        let mut tolerance_loop = ToleranceLoop::new();
+
+        tolerance_loop.add(ToleranceType::Linear(LinearTL::new(
+            DimTol::new(5.58, 0.03, 0.03, 3.0),
+        )));
+        tolerance_loop.add(ToleranceType::Linear(LinearTL::new(
+            DimTol::new(-25.78, 0.07, 0.07, 3.0),
+        )));
+        tolerance_loop.add(ToleranceType::Float(FloatTL::new(
+            DimTol::new(2.18, 0.03, 0.03, 3.0),
+            DimTol::new(2.13, 0.05, 0.05, 3.0),
+            3.0,
+        )));
+        tolerance_loop.add(ToleranceType::Linear(LinearTL::new(
+            DimTol::new(14.58, 0.05, 0.05, 3.0),
+        )));
+        tolerance_loop.add(ToleranceType::Compound(CompoundFloatTL::new(
+            DimTol::new(1.2, 0.03, 0.03, 3.0),
+            DimTol::new(1.0, 0.03, 0.03, 3.0),
+            OffsetFloat::new(
+                DimTol::new(0.972, 0.03, 0.03, 3.0),
+                DimTol::new(0.736, 0.03, 0.03, 3.0),
+                DimTol::new(2.5, 0.05, 0.05, 3.0),
+                DimTol::new(2.5, 0.3, 0.3, 3.0),
+            ),
+            3.0,
+        )));
+        tolerance_loop.add(ToleranceType::Linear(LinearTL::new(
+            DimTol::new(2.5, 0.3, 0.3, 3.0),
+        )));
+        tolerance_loop.add(ToleranceType::Linear(LinearTL::new(
+            DimTol::new(3.85, 0.25, 0.25, 3.0),
+        )));
+        tolerance_loop.add(ToleranceType::Linear(LinearTL::new(
+            DimTol::new(-0.3, 0.15, 0.15, 3.0),
+        )));
+        tolerance_loop
     }
 }
