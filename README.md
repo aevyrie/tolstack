@@ -1,12 +1,14 @@
 # mctol: Monte-Carlo Tolerance Simulation
 
-Basic 1D Monte-Carlo simulation of tolerance chains. Currently supports:
+Basic 1D Monte-Carlo simulation of tolerance chains.
 
-Interfaces
+## Features
 
-* Linear dimensions (point A to B)
-* Hole/pin pairs
-* 2 hole/pin pairs in parallel (a part with 2 pins located in another part with 2 holes)
+Mechanical Interfaces
+
+* `Linear`: Linear dimensions (point A to B)
+* `Float`: Single hole/pin pair (a part with one pin located in another part with one pin)
+* `Compound`: Double hole/pin pairs in parallel (a part with two pins located in another part with two holes)
 
 Tolerances
 
@@ -19,4 +21,27 @@ Input/Output
 * Saving/loading JSON files
 * Exports simulation output data to CSV for plotting
 
-Model data is currently input by defining in a JSON file.
+## Input Example
+The tolerance model is defined in a JSON file.
+
+```JSON
+{
+  "params": {
+    "part_sigma": 3.0,
+    "assy_sigma": 4.0,
+    "n_iterations": 10000000
+  },
+  "tolerance_loop": [
+    {
+      "Linear": {
+        "distance": {
+          "dim": 65.88,
+          "tol_pos": 0.17,
+          "tol_neg": 0.17,
+          "sigma": 3.0
+        }
+      }
+    }
+  ]
+}
+```
