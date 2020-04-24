@@ -1,127 +1,52 @@
 {
-  "linear": [
+  "params": {
+    "part_sigma": 3.0,
+    "assy_sigma": 4.0,
+    "n_iterations": 10000000
+  },
+  "tolerance_loop": [
     {
       "Linear": {
         "distance": {
-          "dim": 5.58,
-          "tol_pos": 0.03,
-          "tol_neg": 0.03,
-          "tol_multiplier": 0.0075
+          "dim": 65.88,
+          "tol_pos": 0.17,
+          "tol_neg": 0.17,
+          "sigma": 3.0
         }
       }
     },
-    {
-      "Linear": {
-        "distance": {
-          "dim": -25.78,
-          "tol_pos": 0.07,
-          "tol_neg": 0.07,
-          "tol_multiplier": 0.0175
-        }
-      }
-    },
-    {
-      "Linear": {
-        "distance": {
-          "dim": 14.58,
-          "tol_pos": 0.05,
-          "tol_neg": 0.05,
-          "tol_multiplier": 0.0125
-        }
-      }
-    },
-    {
-      "Linear": {
-        "distance": {
-          "dim": 2.5,
-          "tol_pos": 0.3,
-          "tol_neg": 0.3,
-          "tol_multiplier": 0.075
-        }
-      }
-    },
-    {
-      "Linear": {
-        "distance": {
-          "dim": 3.85,
-          "tol_pos": 0.25,
-          "tol_neg": 0.25,
-          "tol_multiplier": 0.0625
-        }
-      }
-    },
-    {
-      "Linear": {
-        "distance": {
-          "dim": -0.3,
-          "tol_pos": 0.15,
-          "tol_neg": 0.15,
-          "tol_multiplier": 0.0375
-        }
-      }
-    }
-  ],
-  "float": [
     {
       "Float": {
         "hole": {
-          "dim": 2.18,
-          "tol_pos": 0.03,
-          "tol_neg": 0.03,
-          "tol_multiplier": 0.0075
+          "dim": 2.5,
+          "tol_pos": 0.1,
+          "tol_neg": 0.0,
+          "sigma": 3.0
         },
         "pin": {
-          "dim": 2.13,
-          "tol_pos": 0.05,
-          "tol_neg": 0.05,
-          "tol_multiplier": 0.0125
+          "dim": 3.0,
+          "tol_pos": 0.08,
+          "tol_neg": 0.22,
+          "sigma": 3.0
         },
-        "sigma": 4.0
+        "sigma": 3.0
       }
-    }
-  ],
-  "compound": [
+    },
     {
-      "Compound": {
-        "datum_start": {
-          "dim": 1.2,
-          "tol_pos": 0.03,
-          "tol_neg": 0.03,
-          "tol_multiplier": 0.0075
+      "Float": {
+        "hole": {
+          "dim": 2.5,
+          "tol_pos": 0.1,
+          "tol_neg": 0.0,
+          "sigma": 3.0
         },
-        "datum_end": {
-          "dim": 1.0,
-          "tol_pos": 0.03,
-          "tol_neg": 0.03,
-          "tol_multiplier": 0.0075
+        "pin": {
+          "dim": 3.0,
+          "tol_pos": 0.08,
+          "tol_neg": 0.22,
+          "sigma": 3.0
         },
-        "float_list": {
-          "hole": {
-            "dim": 0.972,
-            "tol_pos": 0.03,
-            "tol_neg": 0.03,
-            "tol_multiplier": 0.0075
-          },
-          "pin": {
-            "dim": 0.736,
-            "tol_pos": 0.03,
-            "tol_neg": 0.03,
-            "tol_multiplier": 0.0075
-          },
-          "hole_spacing": {
-            "dim": 2.5,
-            "tol_pos": 0.05,
-            "tol_neg": 0.05,
-            "tol_multiplier": 0.0125
-          },
-          "pin_spacing": {
-            "dim": 2.5,
-            "tol_pos": 0.3,
-            "tol_neg": 0.3,
-            "tol_multiplier": 0.075
-          }
-        },
-        "sigma": 4.0
+        "sigma": 3.0
       }
     }
   ]
