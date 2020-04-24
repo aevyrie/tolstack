@@ -1,21 +1,26 @@
-use statistical::*;
-use std::time::Instant;
+mod simulation_model;
+mod tolerances;
+mod ui;
+
 use num_format::{Locale, ToFormattedString};
-use tolerance_structures::*;
+use statistical::*;
+use simulation_model::*;
+use std::time::Instant;
 use std::error::Error;
 
 fn main() -> Result<(),Box<dyn Error>> {
+    //ui::run();
 
     let time_start = Instant::now();
 
     // Load model data
     let mut model = match deserialize_json("save") {
-        Ok(r) => {
+        Ok(result) => {
             println!("Loaded data from file");
-            r
+            result
         },
-        Err(e) => {
-            println!("Error loading file:\n{}", e);
+        Err(error) => {
+            println!("Error loading file:\n{}", error);
             println!("Loading placeholder data.");
             data()
         },
@@ -23,15 +28,40 @@ fn main() -> Result<(),Box<dyn Error>> {
 
     model.serialize_yaml("save")?;
     model.serialize_json("save")?;
-    
     println!("{:.3?} to load data.", time_start.elapsed());
 
-    
+    let results = run_model(&model)?;
 
+    let duration = time_start.elapsed();
+
+    println!("Result: {:.3} +/- {:.3}; Stddev: {:.3};\nSamples: {}; Duration: {:.3?}", 
+        results.mean, 
+        results.tolerance, 
+        results.stddev, 
+        results.iterations.to_formatted_string(&Locale::en), 
+        duration,
+    );
+
+    println!("Rate: {:.2} iter/μs; Timing: {:.2} ns/iter", 
+        (results.iterations as f64)/(duration.as_micros() as f64),
+        (duration.as_nanos() as f64)/(results.iterations as f64),
+    );
+
+    Ok(())
+}
+
+pub struct ModelResults {
+    pub mean: f64,
+    pub tolerance: f64,
+    pub stddev: f64,
+    pub iterations: usize,
+}
+
+fn run_model(model: &SimulationModel) -> Result<ModelResults,Box<dyn Error>> {
     // Divide the desired number of iterations into chunks. This is done [1] to avoid floating point
     //  errors (as the divisor gets large when averaging you lose precision) and [2] to prevent huge 
     //  memory use for large numbers of iterations. This can also be used to tune performance.
-    let chunk_size = 1000000;
+    let chunk_size = 100000;
     let chunks = model.params.n_iterations/chunk_size;
     let real_iters = chunks * chunk_size;
     let mut result_mean = 0f64;
@@ -49,450 +79,11 @@ fn main() -> Result<(),Box<dyn Error>> {
         serialize_csv(stack, "data.csv")?;
     }
     let result_tol = result_stddev * model.params.assy_sigma;
-    let duration = time_start.elapsed();
 
-    println!("Result: {:.3} +/- {:.3}; Stddev: {:.3};\nSamples: {}; Duration: {:.3?}", 
-        result_mean, 
-        result_tol, 
-        result_stddev, 
-        model.params.n_iterations.to_formatted_string(&Locale::en), 
-        duration,
-    );
-
-    println!("Rate: {:.2} iter/μs; Timing: {:.2} ns/iter", 
-        (real_iters as f64)/(duration.as_micros() as f64),
-        (duration.as_nanos() as f64)/(real_iters as f64),
-    );
-
-    Ok(())
-}
-
-/// Contains structures used to define tolerances in a tolerance loop.
-pub mod tolerance_structures {
-
-    use num::clamp;
-    use rand::prelude::*;
-    use rand_distr::StandardNormal;
-    use std::thread;
-    use std::sync::mpsc;
-    use serde_derive::*;
-    use serde_yaml;
-    use serde_json;
-    use std::fs::File;
-    use std::io::prelude::*;
-    use std::path::Path;
-    use std::error::Error;
-    use csv::Writer;
-
-
-    /// Generate a sample for each object in the tolerance collection, n_iterations times. Then sum
-    /// the results for each iteration, resulting in stackup for that iteration of the simulation.
-    pub fn compute_stackup(tol_collection: Vec<ToleranceType>, n_iterations: usize) -> Vec<f64> {
-        // Make a local clone of the tolerance collection so the borrow is not returned while the
-        //  threads are using the collection.
-        let tc_local = tol_collection.clone();
-        // Store output in `samples` vector, appending each tol_collection's output
-        let n_tols = tc_local.len();
-        let mut samples:Vec<f64> =  Vec::with_capacity(n_tols * n_iterations);
-        let (tx, rx) = mpsc::channel();
-        // For each tolerance object generate n samples, dividing the work between multiple threads.
-        for tol_struct in tc_local {
-            let n_threads = 5;
-            for _i in 0..n_threads {
-                // Create a thread local copy of the thread communication sender for ownership reasons.
-                let tx_local = mpsc::Sender::clone(&tx);
-                thread::spawn(move || {
-                    // Make `result` thread local for better performance.
-                    let mut result: Vec<f64> = Vec::new();
-                    for _i in 0..n_iterations/n_threads {
-                        result.push(
-                            match tol_struct {
-                                // I thought this would result in branching, but it didn't impact perf.
-                                ToleranceType::Linear(val) => val.mc_tolerance(),
-                                ToleranceType::Float(val) => val.mc_tolerance(),
-                                ToleranceType::Compound(val) => val.mc_tolerance(),
-                            }
-                        );
-                    }
-                    tx_local.send(result).unwrap();
-                });
-            }
-            for _i in  0..n_threads {
-                samples.extend_from_slice(&rx.recv().unwrap());
-            }
-        }
-
-        let mut result:Vec<f64> =  Vec::with_capacity(n_iterations);
-
-        for i in 0..n_iterations {
-            let mut stackup:f64 = 0.0;
-            for j in 0..n_tols {
-                stackup += samples[i+j*n_iterations];
-            }
-            result.push(stackup);
-        }
-        result
-    }
-
-    #[derive(Debug, Deserialize, Serialize)]
-    pub struct SimulationModel {
-        pub params: SimulationParams,
-        pub tolerance_loop: Vec<ToleranceType>,
-    }
-    impl SimulationModel {
-        pub fn serialize_yaml(&self, filename: &str)-> Result<(), Box<dyn Error>> {
-            let data = serde_yaml::to_string(self)?;
-            let filename_full = &[filename, ".yaml"].concat();
-            let path = Path::new(filename_full);
-            file_write(path, data)?;
-            Ok(())
-        }
-        pub fn serialize_json(&self, filename: &str)-> Result<(), Box<dyn Error>> {
-            let data = serde_json::to_string_pretty(self)?;
-            let filename_full = &[filename, ".json"].concat();
-            let path = Path::new(filename_full);
-            file_write(path, data)?;
-            Ok(())
-        }
-        pub fn add(&mut self, tolerance: ToleranceType) {
-            match tolerance {
-                ToleranceType::Linear(_) => self.tolerance_loop.push(tolerance),
-                ToleranceType::Float(_) => self.tolerance_loop.push(tolerance),
-                ToleranceType::Compound(_) => self.tolerance_loop.push(tolerance),
-            }
-        }
-        pub fn compute_multiplier (&mut self) {
-            for tol in &mut self.tolerance_loop {
-                match tol {
-                    ToleranceType::Linear(tol) => tol.compute_multiplier(),
-                    ToleranceType::Float(tol) => tol.compute_multiplier(),
-                    ToleranceType::Compound(tol) => tol.compute_multiplier(),
-                }
-            }
-        }
-    }
-    
-    #[derive(Debug, Deserialize, Serialize)]
-    pub struct SimulationParams{
-        pub part_sigma: f64,
-        pub assy_sigma: f64,
-        pub n_iterations: usize,
-    }
-
-    #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
-    pub enum ToleranceType{
-        Linear(LinearTL),
-        Float(FloatTL),
-        Compound(CompoundFloatTL),
-    }
-
-    pub fn serialize_csv(data: Vec<f64>, filename: &str)-> Result<(), Box<dyn Error>> {
-        let mut wtr = Writer::from_path(filename)?;
-        for entry in data {
-            wtr.serialize(entry)?;
-        }
-        wtr.flush()?;
-        Ok(())
-    }
-
-    pub fn file_write(path: &Path, data: String)-> Result<(), Box<dyn Error>> {
-        let display = path.display();
-
-        let mut file = match File::create(&path) {
-            Err(why) => panic!("Couldn't create {}: {}", display, why.description()),
-            Ok(file) => file,
-        };
-
-        match file.write_all(data.as_bytes()) {
-            Err(why) => panic!("Couldn't write to {}: {}", display, why.description()),
-            Ok(_) => println!("Saving data to {}", display),
-        }
-        Ok(())
-    }
-
-    pub fn deserialize_json(filename: &str) -> Result<SimulationModel, Box<dyn Error>> {
-        let filename_full = &[filename, ".json"].concat();
-        let path = Path::new(filename_full);
-        let file = File::open(path)?;
-        let mut result: SimulationModel = serde_json::from_reader(file)?;
-        result.compute_multiplier();
-        Ok(result)
-    }
-
-    pub trait MonteCarlo: Send + Sync + 'static {
-        fn mc_tolerance(&self) -> f64;
-        fn compute_multiplier (&mut self);
-        //fn get_name(&self) -> &str;
-    }
-
-    #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
-    pub struct DimTol{
-        dim: f64,
-        tol_pos: f64,
-        tol_neg: f64,
-        #[serde(skip)]
-        tol_multiplier: f64,
-        sigma: f64,
-    }
-    impl DimTol{
-        pub fn new(dim: f64, tol_pos: f64, tol_neg: f64, sigma: f64) -> Self {
-            let tol_multiplier: f64 = (tol_pos + tol_neg) / 2.0 / sigma;
-            DimTol{
-                dim,
-                tol_pos,
-                tol_neg,
-                tol_multiplier,
-                sigma,
-            }
-        }
-
-        fn rand_bound_norm(&self) -> f64 {
-            let mut sample: f64 = thread_rng().sample(StandardNormal);
-            sample *= self.tol_multiplier;
-            while sample < -self.tol_neg || sample > self.tol_pos {
-                sample = thread_rng().sample(StandardNormal);
-                sample *= self.tol_multiplier;
-            }
-            sample
-        }
-
-        fn sample(&self) -> f64 {
-            self.dim + self.rand_bound_norm()
-        }
-
-        pub fn compute_multiplier(&mut self) {
-            self.tol_multiplier = (self.tol_pos + self.tol_neg) / 2.0 / self.sigma;
-        }
-    }
-
-    #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
-    pub struct LinearTL {
-        //name: String,
-        distance: DimTol,
-    }
-    impl  LinearTL {
-        pub fn new(distance: DimTol) -> Self {
-            LinearTL {
-                //name,
-                distance,
-            }
-        }
-    }
-    impl  MonteCarlo for LinearTL {
-        fn mc_tolerance(&self) -> f64 {
-            self.distance.sample()
-        }
-        //fn get_name(&self) -> &str {
-        //    &self.name
-        //}
-        fn compute_multiplier (&mut self) {
-            self.distance.compute_multiplier();
-        }
-    }
-
-
-    #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
-    pub struct FloatTL {
-        //name: String,
-        hole: DimTol,
-        pin: DimTol,
-        sigma: f64,
-    }
-    impl  FloatTL {
-        pub fn new(hole: DimTol, pin: DimTol, sigma: f64) -> Self {
-            FloatTL {
-                //name,
-                hole,
-                pin,
-                sigma,
-            }
-        }
-    }
-    impl  MonteCarlo for FloatTL {
-        fn mc_tolerance(&self) -> f64 {
-            let hole_sample = self.hole.rand_bound_norm();
-            let pin_sample = self.pin.rand_bound_norm();
-            let hole_pin_slop = ( hole_sample - pin_sample ) / 2.0;
-            if hole_pin_slop <= 0.0 {
-                0.0
-            } else {
-                DimTol::new(0.0, 
-                    hole_pin_slop, 
-                    hole_pin_slop, 
-                    self.sigma).rand_bound_norm()
-            }
-        }
-        fn compute_multiplier (&mut self) {
-            self.hole.compute_multiplier();
-            self.pin.compute_multiplier();
-        }
-        //fn get_name(&self) -> &str {
-        //    &self.name
-        //}
-    }
-
-
-    #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
-    pub struct CompoundFloatTL {
-        //name: String,
-        datum_start: DimTol,
-        datum_end: DimTol,
-        float_list: OffsetFloat,
-        sigma: f64,
-    }
-    impl  CompoundFloatTL {
-        pub fn new(datumtime_start: DimTol, datumend: DimTol, floatlist: OffsetFloat, sigma: f64) -> Self {
-            CompoundFloatTL{
-                //name,
-                datum_start: datumtime_start,
-                datum_end: datumend,
-                float_list: floatlist,
-                sigma,
-            }
-        }
-    }
-    impl  MonteCarlo for CompoundFloatTL {
-        fn mc_tolerance(&self) -> f64 {
-            let ds = self.datum_start.sample();
-            let de = self.datum_end.sample();
-            let datum_hole = if self.datum_start.dim > self.datum_end.dim {ds} else {de};
-            let datum_pin = if self.datum_start.dim < self.datum_end.dim {ds} else {de};
-            let clearance_dia = datum_hole - datum_pin;
-
-            let mut min_clearance_l = clearance_dia;
-            let mut min_clearance_r = clearance_dia;
-
-            //for float_pair in self.float_list.iter() {
-                let hole_sample = self.float_list.hole.sample();
-                let pin_sample = self.float_list.pin.sample();
-                let hole_spacing_sample = self.float_list.hole_spacing.sample();
-                let pin_spacing_sample = self.float_list.pin_spacing.sample();
-                let clearance_dia = hole_sample - pin_sample;
-                let misalignment = hole_spacing_sample - pin_spacing_sample;
-                let clearance_r = clearance_dia + misalignment;
-                let clearance_l = clearance_dia - misalignment;
-                min_clearance_r = clamp(clearance_r, 0.0, min_clearance_r);
-                min_clearance_l = clamp(clearance_l, 0.0, min_clearance_l);
-            //}
-
-            let mut bias = (min_clearance_r - min_clearance_l)/2.0;
-            let bias_dir = if self.datum_start.dim > self.datum_end.dim {1.0} else {-1.0};
-            bias *= bias_dir;
-
-            DimTol::new(bias, min_clearance_r, min_clearance_l, self.sigma).sample()
-        }
-        fn compute_multiplier (&mut self) {
-            self.datum_start.compute_multiplier();
-            self.datum_end.compute_multiplier();
-            self.float_list.hole.compute_multiplier();
-            self.float_list.pin.compute_multiplier();
-            self.float_list.hole_spacing.compute_multiplier();
-            self.float_list.pin_spacing.compute_multiplier();
-        }
-        //fn get_name(&self) -> &str {
-        //    &self.name
-        //}
-    }
-
-    #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
-    pub struct OffsetFloat {
-        hole: DimTol,
-        pin: DimTol,
-        hole_spacing: DimTol,
-        pin_spacing: DimTol,
-    }
-    impl  OffsetFloat {
-        pub fn new(hole: DimTol, pin: DimTol, hole_spacing: DimTol, pin_spacing: DimTol) -> Self {
-            OffsetFloat {
-                hole,
-                pin,
-                hole_spacing,
-                pin_spacing,
-            }
-        }
-    }
-
-    pub fn dummy_data() -> SimulationModel {
-
-        let params = SimulationParams{
-            part_sigma: 3.0,
-            assy_sigma: 4.0,
-            n_iterations: 10000000,
-        };
-
-        let mut model = SimulationModel {
-            params,
-            tolerance_loop: Vec::new(),
-        };
-
-
-        model.add(ToleranceType::Linear(LinearTL::new(
-            DimTol::new(5.58, 0.03, 0.03, 3.0),
-        )));
-        model.add(ToleranceType::Linear(LinearTL::new(
-            DimTol::new(-25.78, 0.07, 0.07, 3.0),
-        )));
-        model.add(ToleranceType::Float(FloatTL::new(
-            DimTol::new(2.18, 0.03, 0.03, 3.0),
-            DimTol::new(2.13, 0.05, 0.05, 3.0),
-            3.0,
-        )));
-        model.add(ToleranceType::Linear(LinearTL::new(
-            DimTol::new(14.58, 0.05, 0.05, 3.0),
-        )));
-        model.add(ToleranceType::Compound(CompoundFloatTL::new(
-            DimTol::new(1.2, 0.03, 0.03, 3.0),
-            DimTol::new(1.0, 0.03, 0.03, 3.0),
-            OffsetFloat::new(
-                DimTol::new(0.972, 0.03, 0.03, 3.0),
-                DimTol::new(0.736, 0.03, 0.03, 3.0),
-                DimTol::new(2.5, 0.05, 0.05, 3.0),
-                DimTol::new(2.5, 0.3, 0.3, 3.0),
-            ),
-            3.0,
-        )));
-        model.add(ToleranceType::Linear(LinearTL::new(
-            DimTol::new(2.5, 0.3, 0.3, 3.0),
-        )));
-        model.add(ToleranceType::Linear(LinearTL::new(
-            DimTol::new(3.85, 0.25, 0.25, 3.0),
-        )));
-        model.add(ToleranceType::Linear(LinearTL::new(
-            DimTol::new(-0.3, 0.15, 0.15, 3.0),
-        )));
-        
-        model
-    }
-
-    pub fn data() -> SimulationModel {
-
-        let params = SimulationParams{
-            part_sigma: 3.0,
-            assy_sigma: 4.0,
-            n_iterations: 10000000,
-        };
-
-        let mut model = SimulationModel {
-            params,
-            tolerance_loop: Vec::new(),
-        };
-    
-        model.add(ToleranceType::Linear(LinearTL::new(
-            DimTol::new(65.88, 0.17, 0.17, 3.0),
-        )));
-        
-        model.add(ToleranceType::Float(FloatTL::new(
-            DimTol::new(2.50, 0.1, 0.0, 3.0),
-            DimTol::new(3.0, 0.08, 0.22, 3.0),
-            3.0,
-        )));
-
-        model.add(ToleranceType::Float(FloatTL::new(
-            DimTol::new(2.50, 0.1, 0.0, 3.0),
-            DimTol::new(3.0, 0.08, 0.22, 3.0),
-            3.0,
-        )));
-
-        model
-    }
+    Ok(ModelResults{
+        mean: result_mean,
+        tolerance: result_tol,
+        stddev: result_stddev,
+        iterations: real_iters,
+    })
 }

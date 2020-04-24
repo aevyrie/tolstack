@@ -2,7 +2,7 @@
   "params": {
     "part_sigma": 3.0,
     "assy_sigma": 4.0,
-    "n_iterations": 10000000
+    "n_iterations": 1000000
   },
   "tolerance_loop": [
     {
