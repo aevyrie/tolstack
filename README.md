@@ -35,9 +35,9 @@ The tolerance model is defined in a JSON file.
     {
       "Linear": {
         "distance": {
-          "dim": 65.88,
-          "tol_pos": 0.17,
-          "tol_neg": 0.17,
+          "dim": 12.5,
+          "tol_pos": 0.1,
+          "tol_neg": 0.2,
           "sigma": 3.0
         }
       }
