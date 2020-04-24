@@ -9,7 +9,7 @@ use std::time::Instant;
 use std::error::Error;
 
 fn main() -> Result<(),Box<dyn Error>> {
-    //ui::run();
+    ui::run();
 
     let time_start = Instant::now();
 
