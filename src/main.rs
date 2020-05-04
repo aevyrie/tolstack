@@ -1,16 +1,85 @@
-mod simulation_model;
+mod model;
 mod tolerances;
-mod ui;
 
+use iced::{button, Align, Button, Column, Element, Sandbox, Settings, Text};
+
+fn main() {
+    StackupApp::run(Settings::default())
+}
+
+// The state of the application
+#[derive(Default)]
+struct StackupApp {
+    // The counter value
+    value: i32,
+
+    // The local state of the two buttons
+    new_entry: button::State,
+    delete_entry: button::State,
+    solve: button::State,
+}
+
+// Messages - events for users to change the application state
+#[derive(Debug, Clone, Copy)]
+pub enum Message {
+    Loaded(Result<SavedState, LoadError>),
+    Saved(Result<(), SaveError>),
+    NewEntryPressed,
+    EditEntyPressed,
+    DeleteEntryPressed,
+    SolvePressed,
+    EditNamePressed,
+    OpenFilePressed,
+    SaveFilePressed,
+}
+
+
+impl Application for StackupApp {
+    type Message = Message;
+
+    fn new() -> Self {
+        Self::default()
+    }
+
+    fn title(&self) -> String {
+        String::from("Stackup - New")
+    }
+
+    // Update logic - how to react to messages sent through the application
+    fn update(&mut self, message: Message) {
+        match message {
+            Message::IncrementPressed => {
+                self.value += 1;
+            }
+            Message::DecrementPressed => {
+                self.value -= 1;
+            }
+        }
+    }
+
+    // View logic - a way to display the state of the application as widgets that can produce messages
+    fn view(&mut self) -> Element<Message> {
+        Column::new()
+            .padding(20)
+            .align_items(Align::Center)
+            .push(
+                Button::new(&mut self.increment_button, Text::new("Increment"))
+                    .on_press(Message::IncrementPressed),
+            )
+            .push(Text::new(self.value.to_string()).size(50))
+            .push(
+                Button::new(&mut self.decrement_button, Text::new("Decrement"))
+                    .on_press(Message::DecrementPressed),
+            )
+            .into()
+    }
+}
+
+/*
 use num_format::{Locale, ToFormattedString};
-use statistical::*;
-use simulation_model::*;
+use model::*;
 use std::time::Instant;
 use std::error::Error;
-
-fn main() -> Result<(),Box<dyn Error>> {
-    ui::run();
-
     let time_start = Instant::now();
 
     // Load model data
@@ -30,7 +99,7 @@ fn main() -> Result<(),Box<dyn Error>> {
     model.serialize_json("save")?;
     println!("{:.3?} to load data.", time_start.elapsed());
 
-    let results = run_model(&model)?;
+    let results = model::run(&model)?;
 
     let duration = time_start.elapsed();
 
@@ -49,41 +118,4 @@ fn main() -> Result<(),Box<dyn Error>> {
 
     Ok(())
 }
-
-pub struct ModelResults {
-    pub mean: f64,
-    pub tolerance: f64,
-    pub stddev: f64,
-    pub iterations: usize,
-}
-
-fn run_model(model: &SimulationModel) -> Result<ModelResults,Box<dyn Error>> {
-    // Divide the desired number of iterations into chunks. This is done [1] to avoid floating point
-    //  errors (as the divisor gets large when averaging you lose precision) and [2] to prevent huge 
-    //  memory use for large numbers of iterations. This can also be used to tune performance.
-    let chunk_size = 100000;
-    let chunks = model.params.n_iterations/chunk_size;
-    let real_iters = chunks * chunk_size;
-    let mut result_mean = 0f64;
-    let mut result_stddev = 0f64;
-    for n in 0..chunks {
-        // TODO: validate n_iterations is nicely divisible by chunk_size and n_threads.
-        // Gather samples into a stack that is `chunk_size` long for each ToleranceType
-        let stack = compute_stackup(model.tolerance_loop.clone(), chunk_size);
-        // Sum each
-        let stack_mean = mean(&stack);
-        let stack_stddev = standard_deviation(&stack, Some(stack_mean));
-        // Weighted average
-        result_mean = result_mean*(n as f64/(n as f64 + 1.0)) + stack_mean*(1.0/(n as f64 + 1.0));
-        result_stddev = result_stddev*(n as f64/(n as f64 + 1.0)) + stack_stddev*(1.0/(n as f64 + 1.0));
-        serialize_csv(stack, "data.csv")?;
-    }
-    let result_tol = result_stddev * model.params.assy_sigma;
-
-    Ok(ModelResults{
-        mean: result_mean,
-        tolerance: result_tol,
-        stddev: result_stddev,
-        iterations: real_iters,
-    })
-}
+*/

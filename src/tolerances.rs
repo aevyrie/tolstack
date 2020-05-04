@@ -1,7 +1,6 @@
 /// Contains structures used to define tolerances in a tolerance loop.
 use serde_derive::*;
 
-
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub struct DimTol{
     pub dim: f64,

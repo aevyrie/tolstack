@@ -10,23 +10,48 @@ use std::sync::mpsc;
 use csv::Writer;
 use num::clamp;
 use serde_derive::*;
-use serde_yaml;
 use serde_json;
 use rand::prelude::*;
 use rand_distr::StandardNormal;
+use statistical::*;
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct SimulationModel {
-    pub params: SimulationParams,
-    pub tolerance_loop: Vec<ToleranceType>,
+pub struct SimulationParams{
+    assy_sigma: f64,
+    n_iterations: usize,
 }
-impl SimulationModel {
-    pub fn serialize_yaml(&self, filename: &str)-> Result<(), Box<dyn Error>> {
-        let data = serde_yaml::to_string(self)?;
-        let filename_full = &[filename, ".yaml"].concat();
-        let path = Path::new(filename_full);
-        file_write(path, data)?;
-        Ok(())
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ModelResults {
+    mean: f64,
+    tolerance: f64,
+    stddev: f64,
+    iterations: usize,
+}
+impl ModelResults {
+    pub fn new() -> Self {
+        ModelResults {
+            mean: 0.0,
+            tolerance: 0.0,
+            stddev: 0.0,
+            iterations: 0,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct SimulationState {
+    parameters: SimulationParams,
+    tolerance_loop: Vec<ToleranceType>,
+    results: ModelResults,
+}
+impl SimulationState {
+    pub fn new(parameters: SimulationParams) -> Self {
+        SimulationState {
+            parameters,
+            tolerance_loop: Vec::new(),
+            results: ModelResults::new(),
+        }
     }
     pub fn serialize_json(&self, filename: &str)-> Result<(), Box<dyn Error>> {
         let data = serde_json::to_string_pretty(self)?;
@@ -53,11 +78,35 @@ impl SimulationModel {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct SimulationParams{
-    pub part_sigma: f64,
-    pub assy_sigma: f64,
-    pub n_iterations: usize,
+pub fn run(state: &SimulationState) -> Result<ModelResults,Box<dyn Error>> {
+    // Divide the desired number of iterations into chunks. This is done [1] to avoid floating point
+    //  errors (as the divisor gets large when averaging you lose precision) and [2] to prevent huge 
+    //  memory use for large numbers of iterations. This can also be used to tune performance.
+    let chunk_size = 100000;
+    let chunks = state.parameters.n_iterations/chunk_size;
+    let real_iters = chunks * chunk_size;
+    let mut result_mean = 0f64;
+    let mut result_stddev = 0f64;
+    for n in 0..chunks {
+        // TODO: validate n_iterations is nicely divisible by chunk_size and n_threads.
+        // Gather samples into a stack that is `chunk_size` long for each ToleranceType
+        let stack = compute_stackup(state.tolerance_loop.clone(), chunk_size);
+        // Sum each
+        let stack_mean = mean(&stack);
+        let stack_stddev = standard_deviation(&stack, Some(stack_mean));
+        // Weighted average
+        result_mean = result_mean*(n as f64/(n as f64 + 1.0)) + stack_mean*(1.0/(n as f64 + 1.0));
+        result_stddev = result_stddev*(n as f64/(n as f64 + 1.0)) + stack_stddev*(1.0/(n as f64 + 1.0));
+        serialize_csv(stack, "data.csv")?;
+    }
+    let result_tol = result_stddev * state.parameters.assy_sigma;
+
+    Ok(ModelResults{
+        mean: result_mean,
+        tolerance: result_tol,
+        stddev: result_stddev,
+        iterations: real_iters,
+    })
 }
 
 /// Generate a sample for each object in the tolerance collection, n_iterations times. Then sum
@@ -246,28 +295,23 @@ pub fn file_write(path: &Path, data: String)-> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn deserialize_json(filename: &str) -> Result<SimulationModel, Box<dyn Error>> {
+pub fn deserialize_json(filename: &str) -> Result<SimulationState, Box<dyn Error>> {
     let filename_full = &[filename, ".json"].concat();
     let path = Path::new(filename_full);
     let file = File::open(path)?;
-    let mut result: SimulationModel = serde_json::from_reader(file)?;
+    let mut result: SimulationState = serde_json::from_reader(file)?;
     result.compute_multiplier();
     Ok(result)
 }
 
-pub fn dummy_data() -> SimulationModel {
+pub fn dummy_data() -> SimulationState {
 
-    let params = SimulationParams{
-        part_sigma: 3.0,
+    let parameters = SimulationParams{
         assy_sigma: 4.0,
         n_iterations: 10000000,
     };
 
-    let mut model = SimulationModel {
-        params,
-        tolerance_loop: Vec::new(),
-    };
-
+    let mut model = SimulationState::new(parameters);
 
     model.add(ToleranceType::Linear(LinearTL::new(
         DimTol::new(5.58, 0.03, 0.03, 3.0),
@@ -307,18 +351,14 @@ pub fn dummy_data() -> SimulationModel {
     model
 }
 
-pub fn data() -> SimulationModel {
+pub fn data() -> SimulationState {
 
-    let params = SimulationParams{
-        part_sigma: 3.0,
+    let parameters = SimulationParams{
         assy_sigma: 4.0,
         n_iterations: 10000000,
     };
 
-    let mut model = SimulationModel {
-        params,
-        tolerance_loop: Vec::new(),
-    };
+    let mut model = SimulationState::new(parameters);
 
     model.add(ToleranceType::Linear(LinearTL::new(
         DimTol::new(65.88, 0.17, 0.17, 3.0),
