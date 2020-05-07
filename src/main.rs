@@ -7,41 +7,123 @@ use iced::{
     Column, Command, Container, Element, Font, HorizontalAlignment, Length,
     Row, Scrollable, Settings, Text, TextInput,
 };
+use serde::{Deserialize, Serialize};
+use serde_derive::*;
 
 fn main() {
     TolStack::run(Settings::default())
 }
 
 // Loading state wrapper
-#[derive(Default)]
-struct TolStack {
+#[derive(Debug)]
+enum TolStack {
     Loading,
-    Loaded(State)
+    Loaded(State),
 }
 
 // The state of the application
 #[derive(Debug, Default)]
 struct State {
+    Description: String,
     scroll: scrollable::State,
     input: text_input::State,
-    input_value: String,
     filter: Filter,
     simulation: SimulationState,
-    controls: Controls,
+    filter_controls: FilterControls,
     dirty: bool,
     saving: bool,
 }
 
 // Messages - events for users to change the application state
-#[derive(Debug, Clone, Copy)]
-pub enum Message {
+#[derive(Debug, Clone)]
+enum Message {
     Loaded(Result<SavedState, LoadError>),
     Saved(Result<(), SaveError>),
-    InputChanged(String),
+    DescriptionChanged(String),
     CreateTol,
     FilterChanged(Filter),
     TolMessage(usize, TolMessage),
-    ProgramButtons,
+    Controls,
+}
+
+
+impl Application for TolStack {
+    type Executor = iced::executor::Default;
+    type Message = Message;
+    type Flags = ();
+
+    fn new(_flags: ()) -> (TolStack, Command<Message>) {
+        (
+            TolStack::Loading,
+            //Command::perform(SavedState::load(), Message::Loaded),
+            Command::none(),
+        )
+    }
+
+    fn title(&self) -> String {
+        String::from("TolStack - New")
+    }
+
+    // Update logic - how to react to messages sent through the application
+    fn update(&mut self, message: Message) -> Command<Message> {
+        match self {
+            TolStack::Loading => {
+                Command::none()
+            }
+            TolStack::Loaded(state) => {
+                Command::none()
+            }
+        }
+    }
+
+    // View logic - a way to display the state of the application as widgets that can produce messages
+    fn view(&mut self) -> Element<Message> {
+        match self {
+            TolStack::Loading => loading_message(),
+            TolStack::Loaded(State {
+                Description,
+                scroll,
+                input,
+                filter,
+                simulation,
+                filter_controls,
+                dirty,
+                saving,
+            }) => {
+                let title = Text::new("TolStack")
+                    .width(Length::Fill)
+                    .size(100)
+                    .color([0.5, 0.5, 0.5])
+                    .horizontal_alignment(HorizontalAlignment::Center);
+                
+                let content = Column::new()
+                    .max_width(800)
+                    .spacing(20)
+                    .push(title);
+
+                Scrollable::new(scroll)
+                    .padding(40)
+                    .push(
+                        Container::new(content).width(Length::Fill).center_x(),
+                    )
+                    .into()
+            }
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+struct FilterControls {
+    all_button: button::State,
+    linear_button: button::State,
+    float_button: button::State,
+    compound_button: button::State,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct SavedState {
+    filter: Filter,
+    simulation: SimulationState,
 }
 
 #[derive(Debug, Clone)]
@@ -52,6 +134,7 @@ pub enum TolMessage {
     Delete,
 }
 
+#[derive(Debug, Clone)]
 pub enum TolInput {
     Name,
     Description,
@@ -59,36 +142,52 @@ pub enum TolInput {
     Tolerance,
 }
 
-pub enum ProgramButtons {
+#[derive(Debug, Clone)]
+pub enum Controls {
     SolvePressed,
-    EditNamePressed(String),
     OpenFilePressed,
     SaveFilePressed,
-
 }
 
-
-impl Application for TolStack {
-    type Message = Message;
-
-    fn new() -> Self {
-        Self::default()
-    }
-
-    fn title(&self) -> String {
-        String::from("Stackup - New")
-    }
-
-    // Update logic - how to react to messages sent through the application
-    fn update(&mut self, message: Message) {
-        match message {
-        }
-    }
-
-    // View logic - a way to display the state of the application as widgets that can produce messages
-    fn view(&mut self) -> Element<Message> {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Filter {
+    All,
+    Linear,
+    Float,
+    Compound,
+}
+impl Default for Filter {
+    fn default() -> Self {
+        Filter::All
     }
 }
+
+#[derive(Debug, Clone)]
+enum LoadError {
+    FileError,
+    FormatError,
+}
+
+#[derive(Debug, Clone)]
+enum SaveError {
+    DirectoryError,
+    FileError,
+    WriteError,
+    FormatError,
+}
+
+fn loading_message() -> Element<'static, Message> {
+    Container::new(
+        Text::new("Loading...")
+            .horizontal_alignment(HorizontalAlignment::Center)
+            .size(50),
+    )
+    .width(Length::Fill)
+    .height(Length::Fill)
+    .center_y()
+    .into()
+}
+
 
 /*
 use num_format::{Locale, ToFormattedString};
