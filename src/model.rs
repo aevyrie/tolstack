@@ -16,14 +16,14 @@ use rand_distr::StandardNormal;
 use statistical::*;
 
 /// Structure used to hold simulation input parameters
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct SimulationParams{
     assy_sigma: f64,
     n_iterations: usize,
 }
 
 /// Structure used to hold the output of a simulaion
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct ModelResults {
     mean: f64,
     tolerance: f64,
@@ -43,7 +43,7 @@ impl ModelResults {
 }
 
 /// Holds the working state of the simulation, including inputs and outputs
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct SimulationState {
     parameters: SimulationParams,
     tolerance_loop: Vec<ToleranceType>,
@@ -311,7 +311,7 @@ pub fn deserialize_json(filename: &str) -> Result<SimulationState, Box<dyn Error
     Ok(result)
 }
 
-
+/// Data for testing purposes
 pub fn dummy_data() -> SimulationState {
 
     let parameters = SimulationParams{
@@ -359,7 +359,7 @@ pub fn dummy_data() -> SimulationState {
     model
 }
 
-
+/// Data for testing purposes
 pub fn data() -> SimulationState {
 
     let parameters = SimulationParams{
