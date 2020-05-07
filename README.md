@@ -1,4 +1,4 @@
-# mctol: Monte-Carlo Tolerance Simulation
+# TolStack
 
 Simple 1D Monte-Carlo simulation of tolerance chains.
 
