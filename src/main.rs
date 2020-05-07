@@ -111,14 +111,18 @@ impl Application for TolStack {
             }) => {
                 let title = Text::new("TolStack")
                     .width(Length::Fill)
-                    .size(100)
+                    .size(32)
                     .color([0.5, 0.5, 0.5])
                     .horizontal_alignment(HorizontalAlignment::Center);
-                
+                let controls = filter_controls.view(&simulation.tolerance_loop, *filter);
+                let filtered_tols =
+                    simulation.tolerance_loop.iter().filter(|tol| filter.matches(tol));
                 let content = Column::new()
                     .max_width(800)
                     .spacing(20)
-                    .push(title);
+                    .push(title)
+                    .push(controls);
+                    //.push(filtered_tols);
 
                 Scrollable::new(scroll)
                     .padding(40)
@@ -131,12 +135,65 @@ impl Application for TolStack {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 struct FilterControls {
     all_button: button::State,
     linear_button: button::State,
     float_button: button::State,
     compound_button: button::State,
+}
+impl FilterControls {
+    fn view(&mut self, tols: &Vec<ToleranceType>, current_filter: Filter) -> Row<Message> {
+        let FilterControls {
+            all_button,
+            linear_button,
+            float_button,
+            compound_button,
+        } = self;
+
+        let filter_button = |state, label, filter, current_filter| {
+            let label = Text::new(label).size(16);
+            let button =
+                Button::new(state, label).style(style::Button::Filter {
+                    selected: filter == current_filter,
+                });
+
+            button.on_press(Message::FilterChanged(filter)).padding(8)
+        };
+
+        Row::new()
+            .spacing(20)
+            .align_items(Align::Center)
+            .push(
+                Row::new()
+                    .width(Length::Shrink)
+                    .spacing(10)
+                    .push(filter_button(
+                        all_button,
+                        "All",
+                        Filter::All,
+                        current_filter,
+                    ))
+                    .push(filter_button(
+                        linear_button,
+                        "Linear",
+                        Filter::Linear,
+                        current_filter,
+                    ))
+                    .push(filter_button(
+                        float_button,
+                        "Float",
+                        Filter::Float,
+                        current_filter,
+                    ))
+                    .push(filter_button(
+                        compound_button,
+                        "Compound",
+                        Filter::Compound,
+                        current_filter,
+                    )),
+            )
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -175,6 +232,16 @@ pub enum Filter {
     Linear,
     Float,
     Compound,
+}
+impl Filter {
+    fn matches(&self, tol: &ToleranceType) -> bool {
+        match self {
+            Filter::All => true,
+            Filter::Linear => tol.is_linear(),
+            Filter::Float => tol.is_float(),
+            Filter::Compound => tol.is_compound(),
+        }
+    }
 }
 impl Default for Filter {
     fn default() -> Self {
@@ -270,6 +337,66 @@ fn loading_message() -> Element<'static, Message> {
     .center_y()
     .center_x()
     .into()
+}
+
+mod style {
+    use iced::{button, Background, Color, Vector};
+
+    pub enum Button {
+        Filter { selected: bool },
+        Icon,
+        Destructive,
+    }
+
+    impl button::StyleSheet for Button {
+        fn active(&self) -> button::Style {
+            match self {
+                Button::Filter { selected } => {
+                    if *selected {
+                        button::Style {
+                            background: Some(Background::Color(
+                                Color::from_rgb(0.2, 0.2, 0.7),
+                            )),
+                            border_radius: 10,
+                            text_color: Color::WHITE,
+                            ..button::Style::default()
+                        }
+                    } else {
+                        button::Style::default()
+                    }
+                }
+                Button::Icon => button::Style {
+                    text_color: Color::from_rgb(0.5, 0.5, 0.5),
+                    ..button::Style::default()
+                },
+                Button::Destructive => button::Style {
+                    background: Some(Background::Color(Color::from_rgb(
+                        0.8, 0.2, 0.2,
+                    ))),
+                    border_radius: 5,
+                    text_color: Color::WHITE,
+                    shadow_offset: Vector::new(1.0, 1.0),
+                    ..button::Style::default()
+                },
+            }
+        }
+
+        fn hovered(&self) -> button::Style {
+            let active = self.active();
+
+            button::Style {
+                text_color: match self {
+                    Button::Icon => Color::from_rgb(0.2, 0.2, 0.7),
+                    Button::Filter { selected } if !selected => {
+                        Color::from_rgb(0.2, 0.2, 0.7)
+                    }
+                    _ => active.text_color,
+                },
+                shadow_offset: active.shadow_offset + Vector::new(0.0, 1.0),
+                ..active
+            }
+        }
+    }
 }
 
 

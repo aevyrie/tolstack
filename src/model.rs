@@ -46,7 +46,7 @@ impl ModelResults {
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct SimulationState {
     parameters: SimulationParams,
-    tolerance_loop: Vec<ToleranceType>,
+    pub tolerance_loop: Vec<ToleranceType>,
     results: ModelResults,
 }
 impl SimulationState {
@@ -167,6 +167,26 @@ pub enum ToleranceType{
     Linear(LinearTL),
     Float(FloatTL),
     Compound(CompoundFloatTL),
+}
+impl ToleranceType {
+    pub fn is_linear(&self) -> bool {
+        match self {
+            ToleranceType::Linear(_) => true,
+            _ => false   
+        }
+    }
+    pub fn is_float(&self) -> bool {
+        match self {
+            ToleranceType::Float(_) => true,
+            _ => false   
+        }
+    }
+    pub fn is_compound(&self) -> bool {
+        match self {
+            ToleranceType::Compound(_) => true,
+            _ => false   
+        }
+    }
 }
 
 pub trait MonteCarlo: Send + Sync + 'static {
