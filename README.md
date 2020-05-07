@@ -1,6 +1,6 @@
 # TolStack
 
-Simple 1D Monte-Carlo simulation of tolerance chains.
+Simple 1D Monte-Carlo simulation of tolerance chains. **Unstable, GUI implementation in progress.**
 
 ## Features
 
@@ -23,6 +23,7 @@ Input/Output
 
 ## Todo
 
+* Test coverage
 * GUI for building tolerance model as well as saving/loading.
 * Generalize the Compound tolerance interface to allow for more than two pairs of connected holes and pins
 * Add RSS tolerance analysis
@@ -31,62 +32,3 @@ Input/Output
 * Make threading more intelligent, detect num_cpus
 * Revisit optimization
 * Go 2D?
-
-## Input Example
-The tolerance model is defined in a JSON file (for now).
-
-```JSON
-{
-  "params": {
-    "part_sigma": 3.0,
-    "assy_sigma": 4.0,
-    "n_iterations": 1000000
-  },
-  "tolerance_loop": [
-    {
-      "Linear": {
-        "distance": {
-          "dim": 65.88,
-          "tol_pos": 0.17,
-          "tol_neg": 0.17,
-          "sigma": 3.0
-        }
-      }
-    },
-    {
-      "Float": {
-        "hole": {
-          "dim": 2.5,
-          "tol_pos": 0.1,
-          "tol_neg": 0.0,
-          "sigma": 3.0
-        },
-        "pin": {
-          "dim": 3.0,
-          "tol_pos": 0.08,
-          "tol_neg": 0.22,
-          "sigma": 3.0
-        },
-        "sigma": 3.0
-      }
-    },
-    {
-      "Float": {
-        "hole": {
-          "dim": 2.5,
-          "tol_pos": 0.1,
-          "tol_neg": 0.0,
-          "sigma": 3.0
-        },
-        "pin": {
-          "dim": 3.0,
-          "tol_pos": 0.08,
-          "tol_neg": 0.22,
-          "sigma": 3.0
-        },
-        "sigma": 3.0
-      }
-    }
-  ]
-}
-```
