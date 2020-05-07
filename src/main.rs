@@ -61,7 +61,12 @@ impl Application for TolStack {
     }
 
     fn title(&self) -> String {
-        String::from("TolStack - New")
+        let dirty = match self {
+            TolStack::Loading => false,
+            TolStack::Loaded(state) => state.dirty,
+        };
+
+        format!("TolStack Tolerance Analysis - New{}", if dirty { "*" } else { "" })
     }
 
     // Update logic - how to react to messages sent through the application
