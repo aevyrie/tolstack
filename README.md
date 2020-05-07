@@ -14,7 +14,7 @@ Tolerances
 
 * Unilateral tolerances (+0/-0.5)
 * Equal bilateral tolerances (+/-0.5)
-* Unequal bilateral tolerances (5.2mm +0.2/-0.1)
+* Unequal bilateral tolerances (+0.2/-0.1)
 
 Input/Output
 
