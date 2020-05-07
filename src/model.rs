@@ -15,12 +15,14 @@ use rand::prelude::*;
 use rand_distr::StandardNormal;
 use statistical::*;
 
+/// Structure used to hold simulation input parameters
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SimulationParams{
     assy_sigma: f64,
     n_iterations: usize,
 }
 
+/// Structure used to hold the output of a simulaion
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ModelResults {
     mean: f64,
@@ -30,6 +32,7 @@ pub struct ModelResults {
 }
 impl ModelResults {
     pub fn new() -> Self {
+        // TODO: change this to use the Defaults derive
         ModelResults {
             mean: 0.0,
             tolerance: 0.0,
@@ -39,6 +42,7 @@ impl ModelResults {
     }
 }
 
+/// Holds the working state of the simulation, including inputs and outputs
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SimulationState {
     parameters: SimulationParams,
@@ -252,20 +256,23 @@ trait DimTolSampling {
     fn compute_multiplier(&mut self);
 }
 impl DimTolSampling for DimTol {
+    /// Generate a normally distributed random value, discarding values outside of limits
     fn rand_bound_norm(&self) -> f64 {
         let mut sample: f64 = thread_rng().sample(StandardNormal);
         sample *= self.tol_multiplier;
+        // TODO: limit number of checks and error out if needed to escape infinite loop
         while sample < -self.tol_neg || sample > self.tol_pos {
             sample = thread_rng().sample(StandardNormal);
             sample *= self.tol_multiplier;
         }
         sample
     }
-
+    /// Generate a random sample of a given dimension
     fn sample(&self) -> f64 {
         self.dim + self.rand_bound_norm()
     }
 
+    /// Precompute constant in monte carlo equation
     fn compute_multiplier(&mut self) {
         self.tol_multiplier = (self.tol_pos + self.tol_neg) / 2.0 / self.sigma;
     }
@@ -303,6 +310,7 @@ pub fn deserialize_json(filename: &str) -> Result<SimulationState, Box<dyn Error
     result.compute_multiplier();
     Ok(result)
 }
+
 
 pub fn dummy_data() -> SimulationState {
 
@@ -350,6 +358,7 @@ pub fn dummy_data() -> SimulationState {
     
     model
 }
+
 
 pub fn data() -> SimulationState {
 
