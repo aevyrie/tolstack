@@ -28,6 +28,7 @@ struct State {
     scroll: scrollable::State,
     input: text_input::State,
     filter: Filter,
+    tolerance_entries: Vec<ToleranceEntry>,
     simulation: SimulationState,
     filter_controls: FilterControls,
     dirty: bool,
@@ -104,6 +105,7 @@ impl Application for TolStack {
                 scroll,
                 input,
                 filter,
+                tolerance_entries,
                 simulation,
                 filter_controls,
                 dirty,
@@ -115,14 +117,14 @@ impl Application for TolStack {
                     .color([0.5, 0.5, 0.5])
                     .horizontal_alignment(HorizontalAlignment::Center);
                 let controls = filter_controls.view(&simulation.tolerance_loop, *filter);
-                let filtered_tols =
+                let tolerances =
                     simulation.tolerance_loop.iter().filter(|tol| filter.matches(tol));
                 let content = Column::new()
                     .max_width(800)
                     .spacing(20)
                     .push(title)
                     .push(controls);
-                    //.push(filtered_tols);
+                    //.push(tolerances);
 
                 Scrollable::new(scroll)
                     .padding(40)
@@ -133,6 +135,118 @@ impl Application for TolStack {
             }
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct ToleranceEntry {
+    description: String,
+    model_data: Option<ToleranceType>,
+
+    #[serde(skip)]
+    state: EntryState,
+}
+impl ToleranceEntry {
+    fn new(description: String) -> Self {
+        ToleranceEntry {
+            description,
+            model_data: Option::None,
+            state: EntryState::Idle {
+                edit_button: button::State::new(),
+            },
+        }
+    }
+
+    fn update(&mut self, message: TaskMessage) {
+        match message {
+            TaskMessage::Completed(completed) => {
+                self.completed = completed;
+            }
+            TaskMessage::Edit => {
+                self.state = TaskState::Editing {
+                    text_input: text_input::State::focused(),
+                    delete_button: button::State::new(),
+                };
+            }
+            TaskMessage::DescriptionEdited(new_description) => {
+                self.description = new_description;
+            }
+            TaskMessage::FinishEdition => {
+                if !self.description.is_empty() {
+                    self.state = TaskState::Idle {
+                        edit_button: button::State::new(),
+                    }
+                }
+            }
+            TaskMessage::Delete => {}
+        }
+    }
+
+    fn view(&mut self) -> Element<TaskMessage> {
+        match &mut self.state {
+            TaskState::Idle { edit_button } => {
+                let checkbox = Checkbox::new(
+                    self.completed,
+                    &self.description,
+                    TaskMessage::Completed,
+                )
+                .width(Length::Fill);
+
+                Row::new()
+                    .spacing(20)
+                    .align_items(Align::Center)
+                    .push(checkbox)
+                    .push(
+                        Button::new(edit_button, edit_icon())
+                            .on_press(TaskMessage::Edit)
+                            .padding(10)
+                            .style(style::Button::Icon),
+                    )
+                    .into()
+            }
+            TaskState::Editing {
+                text_input,
+                delete_button,
+            } => {
+                let text_input = TextInput::new(
+                    text_input,
+                    "Describe your task...",
+                    &self.description,
+                    TaskMessage::DescriptionEdited,
+                )
+                .on_submit(TaskMessage::FinishEdition)
+                .padding(10);
+
+                Row::new()
+                    .spacing(20)
+                    .align_items(Align::Center)
+                    .push(text_input)
+                    .push(
+                        Button::new(
+                            delete_button,
+                            Row::new()
+                                .spacing(10)
+                                .push(delete_icon())
+                                .push(Text::new("Delete")),
+                        )
+                        .on_press(TaskMessage::Delete)
+                        .padding(10)
+                        .style(style::Button::Destructive),
+                    )
+                    .into()
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum EntryState {
+    Idle {
+        edit_button: button::State,
+    },
+    Editing {
+        text_input: text_input::State,
+        delete_button: button::State,
+    },
 }
 
 #[derive(Debug, Default, Clone)]
@@ -325,6 +439,8 @@ impl SavedState {
         Ok(())
     }
 }
+
+
 
 fn loading_message() -> Element<'static, Message> {
     Container::new(

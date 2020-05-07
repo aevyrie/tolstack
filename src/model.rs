@@ -65,19 +65,11 @@ impl SimulationState {
         Ok(())
     }
     pub fn add(&mut self, tolerance: ToleranceType) {
-        match tolerance {
-            ToleranceType::Linear(_) => self.tolerance_loop.push(tolerance),
-            ToleranceType::Float(_) => self.tolerance_loop.push(tolerance),
-            ToleranceType::Compound(_) => self.tolerance_loop.push(tolerance),
-        }
+        self.tolerance_loop.push(tolerance);
     }
     pub fn compute_multiplier (&mut self) {
         for tol in &mut self.tolerance_loop {
-            match tol {
-                ToleranceType::Linear(tol) => tol.compute_multiplier(),
-                ToleranceType::Float(tol) => tol.compute_multiplier(),
-                ToleranceType::Compound(tol) => tol.compute_multiplier(),
-            }
+            tol.compute_multiplier();
         }
     }
 }
@@ -135,6 +127,7 @@ pub fn compute_stackup(tol_collection: Vec<ToleranceType>, n_iterations: usize) 
                 for _i in 0..n_iterations/n_threads {
                     result.push(
                         match tol_struct {
+                            
                             // I thought this would result in branching, but it didn't impact perf.
                             ToleranceType::Linear(val) => val.mc_tolerance(),
                             ToleranceType::Float(val) => val.mc_tolerance(),
@@ -185,6 +178,13 @@ impl ToleranceType {
         match self {
             ToleranceType::Compound(_) => true,
             _ => false   
+        }
+    }
+    fn compute_multiplier(&mut self) {
+        match self {
+            ToleranceType::Linear(tol) => tol.compute_multiplier(),
+            ToleranceType::Float(tol) => tol.compute_multiplier(),
+            ToleranceType::Compound(tol) => tol.compute_multiplier(),
         }
     }
 }
