@@ -1,22 +1,35 @@
 mod model;
 mod tolerances;
 
-use iced::{button, Align, Button, Column, Element, Sandbox, Settings, Text};
+use model::*;
+use iced::{
+    button, scrollable, text_input, Align, Application, Button, Checkbox,
+    Column, Command, Container, Element, Font, HorizontalAlignment, Length,
+    Row, Scrollable, Settings, Text, TextInput,
+};
 
 fn main() {
-    StackupApp::run(Settings::default())
+    TolStack::run(Settings::default())
+}
+
+// Loading state wrapper
+#[derive(Default)]
+struct TolStack {
+    Loading,
+    Loaded(State)
 }
 
 // The state of the application
-#[derive(Default)]
-struct StackupApp {
-    // The counter value
-    value: i32,
-
-    // The local state of the two buttons
-    new_entry: button::State,
-    delete_entry: button::State,
-    solve: button::State,
+#[derive(Debug, Default)]
+struct State {
+    scroll: scrollable::State,
+    input: text_input::State,
+    input_value: String,
+    filter: Filter,
+    simulation: SimulationState,
+    controls: Controls,
+    dirty: bool,
+    saving: bool,
 }
 
 // Messages - events for users to change the application state
@@ -24,17 +37,38 @@ struct StackupApp {
 pub enum Message {
     Loaded(Result<SavedState, LoadError>),
     Saved(Result<(), SaveError>),
-    NewEntryPressed,
-    EditEntyPressed,
-    DeleteEntryPressed,
+    InputChanged(String),
+    CreateTol,
+    FilterChanged(Filter),
+    TolMessage(usize, TolMessage),
+    ProgramButtons,
+}
+
+#[derive(Debug, Clone)]
+pub enum TolMessage {
+    Active(bool),
+    Edit,
+    InputEdited(TolInput, String),
+    Delete,
+}
+
+pub enum TolInput {
+    Name,
+    Description,
+    Dimension,
+    Tolerance,
+}
+
+pub enum ProgramButtons {
     SolvePressed,
-    EditNamePressed,
+    EditNamePressed(String),
     OpenFilePressed,
     SaveFilePressed,
+
 }
 
 
-impl Application for StackupApp {
+impl Application for TolStack {
     type Message = Message;
 
     fn new() -> Self {
@@ -48,30 +82,11 @@ impl Application for StackupApp {
     // Update logic - how to react to messages sent through the application
     fn update(&mut self, message: Message) {
         match message {
-            Message::IncrementPressed => {
-                self.value += 1;
-            }
-            Message::DecrementPressed => {
-                self.value -= 1;
-            }
         }
     }
 
     // View logic - a way to display the state of the application as widgets that can produce messages
     fn view(&mut self) -> Element<Message> {
-        Column::new()
-            .padding(20)
-            .align_items(Align::Center)
-            .push(
-                Button::new(&mut self.increment_button, Text::new("Increment"))
-                    .on_press(Message::IncrementPressed),
-            )
-            .push(Text::new(self.value.to_string()).size(50))
-            .push(
-                Button::new(&mut self.decrement_button, Text::new("Decrement"))
-                    .on_press(Message::DecrementPressed),
-            )
-            .into()
     }
 }
 
