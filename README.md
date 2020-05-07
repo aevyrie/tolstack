@@ -23,6 +23,7 @@ Input/Output
 
 ## Todo
 
+* Test coverage
 * GUI for building tolerance model as well as saving/loading.
 * Generalize the Compound tolerance interface to allow for more than two pairs of connected holes and pins
 * Add RSS tolerance analysis
