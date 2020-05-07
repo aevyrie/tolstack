@@ -33,7 +33,7 @@ Input/Output
 * Go 2D?
 
 ## Input Example
-The tolerance model is defined in a JSON file.
+The tolerance model is defined in a JSON file (for now).
 
 ```JSON
 {
