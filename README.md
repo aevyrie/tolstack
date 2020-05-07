@@ -1,6 +1,6 @@
 # mctol: Monte-Carlo Tolerance Simulation
 
-Basic 1D Monte-Carlo simulation of tolerance chains.
+Simple 1D Monte-Carlo simulation of tolerance chains.
 
 ## Features
 
@@ -20,6 +20,17 @@ Input/Output
 
 * Saving/loading JSON files
 * Exports simulation output data to CSV for plotting
+
+## Todo
+
+* GUI for building tolerance model as well as saving/loading.
+* Generalize the Compound tolerance interface to allow for more than two pairs of connected holes and pins
+* Add RSS tolerance analysis
+* Add worst case tolerance calculation
+* Generate plots in GUI
+* Make threading more intelligent, detect num_cpus
+* Revisit optimization
+* Go 2D?
 
 ## Input Example
 The tolerance model is defined in a JSON file.
