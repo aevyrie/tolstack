@@ -24,7 +24,7 @@ enum TolStack {
 // The state of the application
 #[derive(Debug, Default)]
 struct State {
-    Description: String,
+    description: String,
     scroll: scrollable::State,
     input: text_input::State,
     filter: Filter,
@@ -73,6 +73,21 @@ impl Application for TolStack {
     fn update(&mut self, message: Message) -> Command<Message> {
         match self {
             TolStack::Loading => {
+                match message {
+                    Message::Loaded(Ok(state)) => {
+                        *self = TolStack::Loaded(State {
+                            description: state.description,
+                            filter: state.filter,
+                            simulation: state.simulation,
+                            ..State::default()
+                        });
+                    }
+                    Message::Loaded(Err(_)) => {
+                        *self = TolStack::Loaded(State::default());
+                    }
+                    _ => {}
+                }
+
                 Command::none()
             }
             TolStack::Loaded(state) => {
@@ -86,7 +101,7 @@ impl Application for TolStack {
         match self {
             TolStack::Loading => loading_message(),
             TolStack::Loaded(State {
-                Description,
+                description,
                 scroll,
                 input,
                 filter,
@@ -127,6 +142,7 @@ struct FilterControls {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct SavedState {
+    description: String,
     filter: Filter,
     simulation: SimulationState,
 }
