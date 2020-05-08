@@ -258,7 +258,6 @@ impl Application for TolStack {
                                     .padding(10)
                                 )
                             .push(scrollable_content)
-                            .max_width(1000)
                         )
                         .style(style::Container::Background)
                         .padding(10)
@@ -447,7 +446,7 @@ impl ToleranceControls {
             .on_submit(Message::CreateTol);
 
         let button = |state, label, tolerance: ToleranceTypes, current_tol: ToleranceTypes| {
-            let label = Text::new(label).size(16);
+            let label = Text::new(label).size(24);
             let button =
                 Button::new(state, label).style(style::Button::Filter {
                     selected: tolerance == current_tol,
@@ -710,9 +709,9 @@ mod style {
                     if *selected {
                         button::Style {
                             background: Some(Background::Color(
-                                Color::from_rgb(0.2, 0.2, 0.7),
+                                Color::from_rgb(0.2, 0.4, 0.7),
                             )),
-                            border_radius: 10,
+                            border_radius: 5,
                             text_color: Color::WHITE,
                             ..button::Style::default()
                         }
@@ -743,7 +742,7 @@ mod style {
                 text_color: match self {
                     Button::Icon => Color::from_rgb(0.2, 0.2, 0.7),
                     Button::Filter { selected } if !selected => {
-                        Color::from_rgb(0.2, 0.2, 0.7)
+                        Color::from_rgb(0.3, 0.5, 0.8)
                     }
                     _ => active.text_color,
                 },
