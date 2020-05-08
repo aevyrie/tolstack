@@ -224,13 +224,18 @@ impl Application for TolStack {
                     })
                 };
 
-                let header = Column::new()
+                let header = Container::new(
+                Column::new()
                     .max_width(800)
                     .spacing(20)
                     .push(title)
                     .push(filename)
                     .push(tolerance_controls)
-                    .push(filter_controls);
+                    .push(filter_controls)
+                )
+                .width(Length::Fill)
+                .center_x();
+                
                 let content = Column::new()
                     .max_width(800)
                     .spacing(20)
