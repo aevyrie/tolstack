@@ -560,7 +560,7 @@ impl ToleranceControls {
 
         let tolerance_label = Text::new("Add Tolerance:")
                     .width(Length::Shrink)
-                    .size(12)
+                    .size(24)
                     .color([0.0, 0.0, 0.0])
                     .horizontal_alignment(HorizontalAlignment::Left);
         let tolerance_text = TextInput::new(
@@ -573,7 +573,7 @@ impl ToleranceControls {
             .on_submit(Message::CreateTol);
 
         let button = |state, label, tolerance: ToleranceTypes, current_tol: ToleranceTypes| {
-            let label = Text::new(label).size(12);
+            let label = Text::new(label).size(24);
             let button =
                 Button::new(state, label).style(style::Button::Choice {
                     selected: tolerance == current_tol,
@@ -582,34 +582,37 @@ impl ToleranceControls {
             button.on_press(Message::TolTypeChanged(tolerance)).padding(8)
         };
 
-        Row::new()
-            .spacing(20)
-            .align_items(Align::Center)
-            .push(tolerance_label)
-            .push(
-                Row::new()
-                    .width(Length::Shrink)
-                    .spacing(10)
-                    .push(button(
-                        linear_button,
-                        "Linear",
-                        ToleranceTypes::Linear,
-                        self.tolerance_type,
-                    ))
-                    .push(button(
-                        float_button,
-                        "Float",
-                        ToleranceTypes::Float,
-                        self.tolerance_type,
-                    ))
-                    .push(button(
-                        compound_button,
-                        "Compound",
-                        ToleranceTypes::Compound,
-                        self.tolerance_type,
-                    ))
+        Row::new().push(Column::new()
+            .push(Row::new()
+                .spacing(20)
+                .align_items(Align::Center)
+                .push(tolerance_label)
+                .push(
+                    Row::new()
+                        .width(Length::Shrink)
+                        .spacing(10)
+                        .push(button(
+                            linear_button,
+                            "Linear",
+                            ToleranceTypes::Linear,
+                            self.tolerance_type,
+                        ))
+                        .push(button(
+                            float_button,
+                            "Float",
+                            ToleranceTypes::Float,
+                            self.tolerance_type,
+                        ))
+                        .push(button(
+                            compound_button,
+                            "Compound",
+                            ToleranceTypes::Compound,
+                            self.tolerance_type,
+                        ))
+                )
             )
             .push(tolerance_text)
+        )
     }
 }
 
