@@ -390,6 +390,11 @@ impl ToleranceControls {
             compound_button,
         } = self;
 
+        let tolerance_label = Text::new("Add Tolerance:")
+                    .width(Length::Shrink)
+                    .size(32)
+                    .color([1.0, 1.0, 1.0])
+                    .horizontal_alignment(HorizontalAlignment::Left);
         let tolerance_text = TextInput::new(
             tolerance_text_state,
             "Tolerance name, press enter to add.",
@@ -416,7 +421,7 @@ impl ToleranceControls {
                 Row::new()
                     .width(Length::Shrink)
                     .spacing(10)
-                    .push(tolerance_text)
+                    .push(tolerance_label)
                     .push(button(
                         linear_button,
                         "Linear",
@@ -434,7 +439,8 @@ impl ToleranceControls {
                         "Compound",
                         ToleranceTypes::Compound,
                         self.tolerance_type,
-                    )),
+                    ))
+                    .push(tolerance_text)
             )
     }
 }
