@@ -189,12 +189,11 @@ impl Application for TolStack {
                     .color([0.5, 0.5, 0.5])
                     .horizontal_alignment(HorizontalAlignment::Left);
                 let project_name: Row<_> = Row::new()
-                    .push(Container::new(project_pretext)
-                        .center_y()
-                    )
+                    .push(project_pretext)
                     .push(project_name.view().map( move |message| {
                         Message::LabelMessage(message)
                     }))
+                    .align_items(Align::Center)
                     .into();
                 
                 let project_title = Row::new()
