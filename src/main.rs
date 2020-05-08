@@ -205,7 +205,8 @@ impl Application for TolStack {
                     
                 let project_title = Container::new(project_title)
                     .width(Length::Fill)
-                    .center_x();
+                    .center_x()
+                    .center_y();
 
                 let tolerance_controls = tolerance_controls.view();
                 let filter_controls = filter_controls.view(&tolerance_entries, *filter_value);
