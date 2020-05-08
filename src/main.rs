@@ -612,7 +612,7 @@ impl ToleranceControls {
                 )
             )
             .push(tolerance_text)
-            .padding(20)
+            .spacing(20)
         )
     }
 }
