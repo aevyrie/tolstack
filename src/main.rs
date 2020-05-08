@@ -282,7 +282,7 @@ impl Application for TolStack {
                         .width(Length::FillPortion(1));
                 
                 Column::new()
-                    .padding(40)
+                    .padding(20)
                     .push(header)
                     .push(Row::new()
                         .push(tol_chain_input)
@@ -612,7 +612,7 @@ impl ToleranceControls {
                 )
             )
             .push(tolerance_text)
-            .spacing(20)
+            .spacing(10)
         )
     }
 }
