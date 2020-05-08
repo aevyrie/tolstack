@@ -238,11 +238,19 @@ impl Application for TolStack {
                 let content = Column::new()
                     .spacing(20)
                     .push(tolerance_entries);
+                let stack_title = Text::new("Tolerance Stack")
+                    .width(Length::Fill)
+                    .size(16)
+                    .color([0.5, 0.5, 0.5])
+                    .horizontal_alignment(HorizontalAlignment::Left);
                 let scrollable_content = Scrollable::new(scroll_state)
                     .padding(10)
                     .height(Length::Fill)
                     .width(Length::Shrink)
-                    .push(filter_controls.align_items(Align::End))
+                    .push( Row::new()
+                        .push(stack_title)
+                        .push(filter_controls)
+                    )
                     .push(
                         Container::new(content).width(Length::Shrink).center_x(),
                     );
