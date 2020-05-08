@@ -206,7 +206,7 @@ impl Application for TolStack {
                     .center_x()
                     .center_y();
 
-                let tolerance_controls = tolerance_controls.view();
+                let tolerance_controls = tolerance_controls.view().padding(20);
                 let filter_controls = filter_controls.view(&tolerance_entries, *filter_value);
                 let filtered_tols =
                     tolerance_entries.iter().filter(|tol| filter_value.matches(tol.tolerance_type));
@@ -560,7 +560,7 @@ impl ToleranceControls {
 
         let tolerance_label = Text::new("Add Tolerance:")
                     .width(Length::Shrink)
-                    .size(24)
+                    .size(12)
                     .color([0.0, 0.0, 0.0])
                     .horizontal_alignment(HorizontalAlignment::Left);
         let tolerance_text = TextInput::new(
@@ -573,7 +573,7 @@ impl ToleranceControls {
             .on_submit(Message::CreateTol);
 
         let button = |state, label, tolerance: ToleranceTypes, current_tol: ToleranceTypes| {
-            let label = Text::new(label).size(24);
+            let label = Text::new(label).size(12);
             let button =
                 Button::new(state, label).style(style::Button::Choice {
                     selected: tolerance == current_tol,
