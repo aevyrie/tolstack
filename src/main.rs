@@ -331,7 +331,6 @@ impl EditableLabel {
                     .horizontal_alignment(HorizontalAlignment::Left);
 
                 let row_contents = Row::new()
-                    .padding(10)    
                     .spacing(20)
                     .align_items(Align::Center)
                     .push(label)
