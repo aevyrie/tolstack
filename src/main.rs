@@ -242,25 +242,17 @@ impl Application for TolStack {
                     .padding(10)
                     .height(Length::Fill)
                     .width(Length::Shrink)
+                    .push(filter_controls.align_items(Align::End))
                     .push(
                         Container::new(content).width(Length::Shrink).center_x(),
                     );
                 let stack_area = Container::new(
-                    Column::new()
-                        .push(filter_controls.align_items(Align::End))
-                        .push( Container::new(
-                            Container::new(scrollable_content)
-                                .style(style::Container::Background)
-                                .width(Length::Shrink)
-                                .padding(10)
-                                .center_x()
-                            )
-                            .width(Length::Fill)
-                            .padding(10)
-                            .center_x()
-                        )
-                        .max_width(1000)
-                    ).center_x();
+                Container::new(scrollable_content)
+                    .style(style::Container::Background)
+                    .width(Length::Shrink)
+                    .padding(10)
+                    .center_x()
+                    );
                 
                 Column::new()
                     .padding(40)
