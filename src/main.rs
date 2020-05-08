@@ -75,7 +75,7 @@ impl Application for TolStack {
                 state.filename_value.clone()
             }};
 
-        format!("TolStack Tolerance Analysis - {}{}", filename, if dirty { "*" } else { "" })
+        format!("{}{} - TolStack Tolerance Analysis", filename, if dirty { "*" } else { "" })
     }
 
     // Update logic - how to react to messages sent through the application
@@ -185,7 +185,7 @@ impl Application for TolStack {
                 dirty,
                 saving,
             }) => {
-                let title = Text::new("TolStack")
+                let title = Text::new("TolStack Tolerance Analysis")
                     .width(Length::Fill)
                     .size(32)
                     .color([0.5, 0.5, 0.5])
