@@ -110,6 +110,9 @@ impl Application for TolStack {
                     Message::TolTypeChanged(value) => {
                         state.tolerance_controls.tolerance_type = value;
                     }
+                    Message::TolNameChanged(value) => {
+                        state.tolerance_controls.tolerance_text_value = value;
+                    }
                     Message::CreateTol => {
                         let input_text = state.tolerance_controls.tolerance_text_value.clone();
                         let input_type = state.tolerance_controls.tolerance_type;
