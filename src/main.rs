@@ -237,7 +237,6 @@ impl Application for TolStack {
                     .max_width(800)
                     .spacing(20)
                     .push(project_title)
-                    .push(tolerance_controls)
                 )
                 .width(Length::Fill)
                 .center_x();
@@ -257,7 +256,7 @@ impl Application for TolStack {
                     .push(
                         Container::new(content).width(Length::Shrink).center_x(),
                     );
-                let stack_area = Container::new(
+                let filtereable_scroll_region = Container::new(
                     Container::new(Column::new()
                             .push( Row::new()
                                     .push(stack_title)
@@ -273,11 +272,22 @@ impl Application for TolStack {
                     .padding(20)
                     .width(Length::Fill)
                     .center_x();
+
+                    let tol_chain_input = Column::new()
+                        .push(tolerance_controls)
+                        .push(filtereable_scroll_region)
+                        .width(Length::FillPortion(1));
+
+                    let tol_chain_output = Column::new()
+                        .width(Length::FillPortion(1));
                 
                 Column::new()
                     .padding(40)
                     .push(header)
-                    .push(stack_area)
+                    .push(Row::new()
+                        .push(tol_chain_input)
+                        .push(tol_chain_output)
+                    )
                     .into()
             }
         }
