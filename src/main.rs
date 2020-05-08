@@ -24,7 +24,7 @@ enum TolStack {
 // The state of the application
 #[derive(Debug, Default)]
 struct State {
-    filename: EditableLabel,
+    project_name: EditableLabel,
     scroll_state: scrollable::State,
     tolerance_controls: ToleranceControls,
     filter_value: Filter,
@@ -40,7 +40,6 @@ struct State {
 enum Message {
     Loaded(Result<SavedState, LoadError>),
     Saved(Result<(), SaveError>),
-    FileNameChanged(String),
     TolNameChanged(String),
     TolTypeChanged(ToleranceTypes),
     CreateTol,
@@ -67,15 +66,15 @@ impl Application for TolStack {
             TolStack::Loading => false,
             TolStack::Loaded(state) => state.dirty,
         };
-        let filename = match self {
+        let project_name = match self {
             TolStack::Loading => String::from("Loading..."),
-            TolStack::Loaded(state) => if state.filename.text.len() == 0 {
-                String::from("New")
+            TolStack::Loaded(state) => if state.project_name.text.len() == 0 {
+                String::from("New Project")
             } else {
-                state.filename.text.clone()
+                state.project_name.text.clone()
             }};
 
-        format!("{}{} - TolStack Tolerance Analysis", filename, if dirty { "*" } else { "" })
+        format!("{}{} - TolStack Tolerance Analysis", project_name, if dirty { "*" } else { "" })
     }
 
     // Update logic - how to react to messages sent through the application
@@ -86,7 +85,7 @@ impl Application for TolStack {
                     // Take the loaded state and assign to the working state
                     Message::Loaded(Ok(state)) => {
                         *self = TolStack::Loaded(State {
-                            filename: state.filename,
+                            project_name: state.project_name,
                             filter_value: state.filter,
                             simulation_state: state.simulation,
                             ..State::default()
@@ -104,9 +103,6 @@ impl Application for TolStack {
                 let mut saved = false;
 
                 match message {
-                    Message::FileNameChanged(value) => {
-                        state.filename.text = value;
-                    }
                     Message::TolTypeChanged(value) => {
                         state.tolerance_controls.tolerance_type = value;
                     }
@@ -135,7 +131,7 @@ impl Application for TolStack {
                         }
                     }
                     Message::LabelMessage(label_message) => {
-                        state.filename.update(label_message);
+                        state.project_name.update(label_message);
                     }
                     Message::FilterChanged(filter) => {
                         state.filter_value = filter;
@@ -158,7 +154,7 @@ impl Application for TolStack {
 
                     Command::perform(
                         SavedState {
-                            filename: state.filename.clone(),
+                            project_name: state.project_name.clone(),
                             filter: state.filter_value,
                             simulation: state.simulation_state.clone(),
                         }
@@ -177,7 +173,7 @@ impl Application for TolStack {
         match self {
             TolStack::Loading => loading_message(),
             TolStack::Loaded(State {
-                filename,
+                project_name,
                 scroll_state,
                 tolerance_controls,
                 filter_value,
@@ -192,15 +188,17 @@ impl Application for TolStack {
                     .size(32)
                     .color([0.5, 0.5, 0.5])
                     .horizontal_alignment(HorizontalAlignment::Left);
-                let filename: Row<_> = Row::new()
-                    .push(project_pretext)
-                    .push(filename.view().map( move |message| {
+                let project_name: Row<_> = Row::new()
+                    .push(Container::new(project_pretext)
+                        .center_y()
+                    )
+                    .push(project_name.view().map( move |message| {
                         Message::LabelMessage(message)
                     }))
                     .into();
                 
                 let project_title = Row::new()
-                    .push(filename)
+                    .push(project_name)
                     .width(Length::Shrink);
                     
                 let project_title = Container::new(project_title)
@@ -667,7 +665,7 @@ impl FilterControls {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct SavedState {
-    filename: EditableLabel,
+    project_name: EditableLabel,
     filter: Filter,
     simulation: SimulationState,
 }
