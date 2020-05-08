@@ -116,9 +116,29 @@ impl Application for TolStack {
                     .size(32)
                     .color([0.5, 0.5, 0.5])
                     .horizontal_alignment(HorizontalAlignment::Center);
-                let controls = filter_controls.view(&simulation.tolerance_loop, *filter);
-                let tolerances =
-                    simulation.tolerance_loop.iter().filter(|tol| filter.matches(tol));
+                let controls = filter_controls.view(&tolerance_entries, *filter);
+                let filtered_tols =
+                    tolerance_entries.iter().filter(|tol| filter.matches(&tol.tolerance_type));
+                let tolerance_entries: Element<_> = if filtered_tols.count() > 0 {
+                    tolerance_entries
+                        .iter_mut()
+                        .enumerate()
+                        .filter(|(_, tol)| filter.matches(&tol.tolerance_type))
+                        .fold(Column::new().spacing(20), |column, (i, tol)| {
+                            column.push(tol.view().map( move |message| {
+                                Message::TolMessage(i, message)
+                            }))
+                        })
+                        .into()
+                    } else {
+                    empty_message(match filter {
+                        Filter::All => "",
+                        Filter::Linear => "",
+                        Filter::Float => "",
+                        Filter::Compound => "",
+                    })
+                };
+
                 let content = Column::new()
                     .max_width(800)
                     .spacing(20)
@@ -141,53 +161,60 @@ impl Application for TolStack {
 struct ToleranceEntry {
     description: String,
     model_data: Option<ToleranceType>,
+    tolerance_type: Filter,
+    active: bool,
 
     #[serde(skip)]
     state: EntryState,
 }
 impl ToleranceEntry {
-    fn new(description: String) -> Self {
+    fn new(description: String, tolerance_type: Filter) -> Self {
         ToleranceEntry {
             description,
             model_data: Option::None,
+            tolerance_type,
+            active: true,
             state: EntryState::Idle {
                 edit_button: button::State::new(),
             },
         }
     }
 
-    fn update(&mut self, message: TaskMessage) {
+    fn update(&mut self, message: TolMessage) {
         match message {
-            TaskMessage::Completed(completed) => {
-                self.completed = completed;
+            TolMessage::Active(is_active) => {
+                self.active = is_active;
             }
-            TaskMessage::Edit => {
-                self.state = TaskState::Editing {
+            TolMessage::Edit => {
+                self.state = EntryState::Editing {
                     text_input: text_input::State::focused(),
                     delete_button: button::State::new(),
                 };
             }
-            TaskMessage::DescriptionEdited(new_description) => {
+            TolMessage::DescriptionEdited(new_description) => {
                 self.description = new_description;
             }
-            TaskMessage::FinishEdition => {
+            TolMessage::TolEdited(tolerance) => {
+                self.model_data = Some(tolerance);
+            }
+            TolMessage::FinishEditing => {
                 if !self.description.is_empty() {
-                    self.state = TaskState::Idle {
+                    self.state = EntryState::Idle {
                         edit_button: button::State::new(),
                     }
                 }
             }
-            TaskMessage::Delete => {}
+            TolMessage::Delete => {}
         }
     }
 
-    fn view(&mut self) -> Element<TaskMessage> {
+    fn view(&mut self) -> Element<TolMessage> {
         match &mut self.state {
-            TaskState::Idle { edit_button } => {
+            EntryState::Idle { edit_button } => {
                 let checkbox = Checkbox::new(
-                    self.completed,
+                    self.active,
                     &self.description,
-                    TaskMessage::Completed,
+                    TolMessage::Active,
                 )
                 .width(Length::Fill);
 
@@ -197,23 +224,23 @@ impl ToleranceEntry {
                     .push(checkbox)
                     .push(
                         Button::new(edit_button, edit_icon())
-                            .on_press(TaskMessage::Edit)
+                            .on_press(TolMessage::Edit)
                             .padding(10)
                             .style(style::Button::Icon),
                     )
                     .into()
             }
-            TaskState::Editing {
+            EntryState::Editing {
                 text_input,
                 delete_button,
             } => {
                 let text_input = TextInput::new(
                     text_input,
-                    "Describe your task...",
+                    "Describe this tolerance...",
                     &self.description,
-                    TaskMessage::DescriptionEdited,
+                    TolMessage::DescriptionEdited,
                 )
-                .on_submit(TaskMessage::FinishEdition)
+                .on_submit(TolMessage::FinishEditing)
                 .padding(10);
 
                 Row::new()
@@ -228,7 +255,7 @@ impl ToleranceEntry {
                                 .push(delete_icon())
                                 .push(Text::new("Delete")),
                         )
-                        .on_press(TaskMessage::Delete)
+                        .on_press(TolMessage::Delete)
                         .padding(10)
                         .style(style::Button::Destructive),
                     )
@@ -248,6 +275,13 @@ pub enum EntryState {
         delete_button: button::State,
     },
 }
+impl Default for EntryState {
+    fn default() -> Self {
+        EntryState::Idle {
+            edit_button: button::State::new(),
+        }
+    }
+}
 
 #[derive(Debug, Default, Clone)]
 struct FilterControls {
@@ -257,7 +291,7 @@ struct FilterControls {
     compound_button: button::State,
 }
 impl FilterControls {
-    fn view(&mut self, tols: &Vec<ToleranceType>, current_filter: Filter) -> Row<Message> {
+    fn view(&mut self, tols: &Vec<ToleranceEntry>, current_filter: Filter) -> Row<Message> {
         let FilterControls {
             all_button,
             linear_button,
@@ -321,14 +355,14 @@ struct SavedState {
 pub enum TolMessage {
     Active(bool),
     Edit,
-    InputEdited(TolInput, String),
+    DescriptionEdited(String),
+    TolEdited(ToleranceType),
+    FinishEditing,
     Delete,
 }
 
 #[derive(Debug, Clone)]
 pub enum TolInput {
-    Name,
-    Description,
     Dimension,
     Tolerance,
 }
@@ -348,12 +382,12 @@ pub enum Filter {
     Compound,
 }
 impl Filter {
-    fn matches(&self, tol: &ToleranceType) -> bool {
+    fn matches(&self, tol: &Filter) -> bool {
         match self {
             Filter::All => true,
-            Filter::Linear => tol.is_linear(),
-            Filter::Float => tol.is_float(),
-            Filter::Compound => tol.is_compound(),
+            Filter::Linear => match tol { Filter::Linear => true, _ => false },
+            Filter::Float => match tol { Filter::Float => true, _ => false },
+            Filter::Compound => match tol { Filter::Compound => true, _ => false },
         }
     }
 }
@@ -515,6 +549,41 @@ mod style {
     }
 }
 
+fn empty_message(message: &str) -> Element<'static, Message> {
+    Container::new(
+        Text::new(message)
+            .width(Length::Fill)
+            .size(25)
+            .horizontal_alignment(HorizontalAlignment::Center)
+            .color([0.7, 0.7, 0.7]),
+    )
+    .width(Length::Fill)
+    .height(Length::Units(200))
+    .center_y()
+    .into()
+}
+
+// Fonts
+const ICONS: Font = Font::External {
+    name: "Icons",
+    bytes: include_bytes!("../fonts/icons.ttf"),
+};
+
+fn icon(unicode: char) -> Text {
+    Text::new(&unicode.to_string())
+        .font(ICONS)
+        .width(Length::Units(20))
+        .horizontal_alignment(HorizontalAlignment::Center)
+        .size(20)
+}
+
+fn edit_icon() -> Text {
+    icon('\u{F303}')
+}
+
+fn delete_icon() -> Text {
+    icon('\u{F1F8}')
+}
 
 /*
 use num_format::{Locale, ToFormattedString};
