@@ -460,11 +460,11 @@ impl ToleranceControls {
         Row::new()
             .spacing(20)
             .align_items(Align::Center)
+            .push(tolerance_label)
             .push(
                 Row::new()
                     .width(Length::Shrink)
                     .spacing(10)
-                    .push(tolerance_label)
                     .push(button(
                         linear_button,
                         "Linear",
@@ -483,9 +483,8 @@ impl ToleranceControls {
                         ToleranceTypes::Compound,
                         self.tolerance_type,
                     ))
-                    .push(tolerance_text)
             )
-            .height(Length::Fill)
+            .push(tolerance_text)
     }
 }
 
