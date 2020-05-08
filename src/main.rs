@@ -346,6 +346,7 @@ impl ToleranceEntry {
                 .padding(10);
 
                 let row_contents = Row::new()
+                    .padding(10)
                     .spacing(20)
                     .align_items(Align::Center)
                     .push(text_input)
