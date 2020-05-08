@@ -194,6 +194,7 @@ impl Application for TolStack {
                         Message::LabelMessage(message)
                     }))
                     .align_items(Align::Center)
+                    .spacing(20)
                     .into();
                 
                 let project_title = Row::new()
@@ -347,12 +348,13 @@ impl EditableLabel {
             } => {
                 let text_input = TextInput::new(
                     text_input,
-                    "add a project title",
+                    "New Project",
                     &self.text,
                     LabelMessage::TextEdited,
                 )
                 .on_submit(LabelMessage::FinishEditing)
-                .padding(10);
+                .padding(10)
+                .width(Length::Shrink);   
 
                 let row_contents = Row::new()
                     .padding(10)
