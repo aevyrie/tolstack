@@ -354,7 +354,7 @@ impl EditableLabel {
                 )
                 .on_submit(LabelMessage::FinishEditing)
                 .padding(10)
-                .width(Length::Shrink);   
+                .width(Length::Fill);   
 
                 let row_contents = Row::new()
                     .padding(10)
