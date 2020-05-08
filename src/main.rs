@@ -193,6 +193,7 @@ impl Application for TolStack {
                     .color([0.5, 0.5, 0.5])
                     .horizontal_alignment(HorizontalAlignment::Center);
                 let filename: Row<_> = Row::new()
+                    .push(Text::new("Project:"))
                     .push(filename.view().map( move |message| {
                         Message::LabelMessage(message)
                     }))
@@ -316,7 +317,7 @@ impl EditableLabel {
     fn view(&mut self) -> Element<LabelMessage> {
         match &mut self.state {
             TextEditState::Idle { edit_button } => {
-                let label = Text::new(format!("Project: {}", self.text.clone()))
+                let label = Text::new(self.text.clone())
                     .width(Length::Fill)
                     .size(32)
                     .color([0.5, 0.5, 0.5])
@@ -335,7 +336,6 @@ impl EditableLabel {
                     );
 
                 Container::new(row_contents)
-                    .style(style::Container::Entry)
                     .into()
             }
             TextEditState::Editing {
@@ -356,7 +356,6 @@ impl EditableLabel {
                     .align_items(Align::Center)
                     .push(text_input);
                 Container::new(row_contents)
-                    .style(style::Container::Entry)
                     .into()
             }
         }
@@ -365,7 +364,7 @@ impl EditableLabel {
 impl Default for EditableLabel {
     fn default() -> Self {
         EditableLabel {
-            text: String::from("Enter text here..."),
+            text: String::from(""),
             state: TextEditState::default(),
         }
     }
