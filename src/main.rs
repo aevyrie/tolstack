@@ -41,13 +41,12 @@ struct State {
 enum Message {
     Loaded(Result<SavedState, LoadError>),
     Saved(Result<(), SaveError>),
-    DescriptionChanged(String),
+    FileNameChanged(String),
     TolNameChanged(String),
     TolTypeChanged(ToleranceTypes),
     CreateTol,
     FilterChanged(Filter),
     TolMessage(usize, TolMessage),
-    Controls,
 }
 
 
@@ -98,8 +97,11 @@ impl Application for TolStack {
                 let mut saved = false;
 
                 match message {
-                    Message::DescriptionChanged(value) => {
+                    Message::FileNameChanged(value) => {
                         state.filename_value = value;
+                    }
+                    Message::TolTypeChanged(value) => {
+                        state.tolerance_controls.tolerance_type = value;
                     }
                     Message::CreateTol => {
                         let input_text = state.tolerance_controls.tolerance_text_value.clone();
@@ -174,7 +176,7 @@ impl Application for TolStack {
                     filename_state,
                     "What do you want to call this file?",
                     filename_value,
-                    Message::TolNameChanged,
+                    Message::FileNameChanged,
                     )
                     .padding(15)
                     .size(30);
@@ -376,7 +378,8 @@ impl ToleranceControls {
             tolerance_text_value,
             Message::TolNameChanged,
             )
-            .padding(15);
+            .padding(15)
+            .on_submit(Message::CreateTol);
 
         let button = |state, label, tolerance: ToleranceTypes| {
             let label = Text::new(label).size(16);
