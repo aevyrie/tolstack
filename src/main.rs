@@ -231,7 +231,6 @@ impl Application for TolStack {
                     .push(title)
                     .push(filename)
                     .push(tolerance_controls)
-                    .push(filter_controls)
                 )
                 .width(Length::Fill)
                 .center_x();
@@ -250,6 +249,7 @@ impl Application for TolStack {
                 Column::new()
                     .padding(40)
                     .push(header)
+                    .push(filter_controls)
                     .push(Container::new(Container::new(scrollable_content)
                             .style(style::Container::Background)
                             .width(Length::Shrink)
