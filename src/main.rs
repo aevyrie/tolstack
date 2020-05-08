@@ -224,20 +224,25 @@ impl Application for TolStack {
                     })
                 };
 
-                let content = Column::new()
+                let header = Column::new()
                     .max_width(800)
                     .spacing(20)
                     .push(title)
                     .push(filename)
                     .push(tolerance_controls)
-                    .push(filter_controls)
+                    .push(filter_controls);
+                let content = Column::new()
+                    .max_width(800)
+                    .spacing(20)
                     .push(tolerance_entries);
-
-                Scrollable::new(scroll_state)
+                let scrollable_content = Scrollable::new(scroll_state)
                     .padding(40)
                     .push(
                         Container::new(content).width(Length::Fill).center_x(),
-                    )
+                    );
+                Column::new()
+                    .push(header)
+                    .push(scrollable_content)
                     .into()
             }
         }
@@ -305,7 +310,7 @@ impl ToleranceEntry {
                 )
                 .width(Length::Fill);
 
-                Row::new()
+                let row_contents = Row::new()
                     .spacing(20)
                     .align_items(Align::Center)
                     .push(checkbox)
@@ -314,7 +319,10 @@ impl ToleranceEntry {
                             .on_press(TolMessage::Edit)
                             .padding(10)
                             .style(style::Button::Icon),
-                    )
+                    );
+
+                Container::new(row_contents)
+                    .style(style::Container::Entry)
                     .into()
             }
             EntryState::Editing {
@@ -654,14 +662,13 @@ fn loading_message() -> Element<'static, Message> {
 }
 
 mod style {
-    use iced::{button, Background, Color, Vector};
+    use iced::{button, container, Background, Color, Vector};
 
     pub enum Button {
         Filter { selected: bool },
         Icon,
         Destructive,
     }
-
     impl button::StyleSheet for Button {
         fn active(&self) -> button::Style {
             match self {
@@ -708,6 +715,23 @@ mod style {
                 },
                 shadow_offset: active.shadow_offset + Vector::new(0.0, 1.0),
                 ..active
+            }
+        }
+    }
+
+    pub enum Container {
+        Entry,
+    }
+    impl container::StyleSheet for Container {
+        fn style(&self) -> container::Style {
+            match self {
+                Container::Entry => container::Style {
+                    text_color: Some(Color::from_rgb(0.5, 0.5, 0.5)),
+                    background: Some(Background::Color(Color::from_rgb(0.9, 0.9, 0.9))),
+                    border_radius: 10,
+                    border_width: 3,
+                    border_color: Color::from_rgb(0.8, 0.8, 0.8),
+                }
             }
         }
     }
