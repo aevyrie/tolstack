@@ -245,7 +245,7 @@ impl Application for TolStack {
                     .height(Length::Fill)
                     .width(Length::Shrink)
                     .push(
-                        Container::new(content).width(Length::Fill).center_x(),
+                        Container::new(content).width(Length::Shrink).center_x(),
                     );
                 Column::new()
                     .padding(40)
