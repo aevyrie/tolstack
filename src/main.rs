@@ -187,17 +187,25 @@ impl Application for TolStack {
                 dirty,
                 saving,
             }) => {
-                let title = Text::new("TolStack Tolerance Analysis")
-                    .width(Length::Fill)
+                let project_pretext = Text::new("Project: ")
+                    .width(Length::Shrink)
                     .size(32)
                     .color([0.5, 0.5, 0.5])
-                    .horizontal_alignment(HorizontalAlignment::Center);
+                    .horizontal_alignment(HorizontalAlignment::Left);
                 let filename: Row<_> = Row::new()
-                    .push(Text::new("Project:"))
+                    .push(project_pretext)
                     .push(filename.view().map( move |message| {
                         Message::LabelMessage(message)
                     }))
                     .into();
+                
+                let project_title = Row::new()
+                    .push(filename)
+                    .width(Length::Shrink);
+                    
+                let project_title = Container::new(project_title)
+                    .width(Length::Fill)
+                    .center_x();
 
                 let tolerance_controls = tolerance_controls.view();
                 let filter_controls = filter_controls.view(&tolerance_entries, *filter_value);
@@ -229,8 +237,7 @@ impl Application for TolStack {
                 Column::new()
                     .max_width(800)
                     .spacing(20)
-                    .push(title)
-                    .push(filename)
+                    .push(project_title)
                     .push(tolerance_controls)
                 )
                 .width(Length::Fill)
@@ -318,10 +325,10 @@ impl EditableLabel {
         match &mut self.state {
             TextEditState::Idle { edit_button } => {
                 let label = Text::new(self.text.clone())
-                    .width(Length::Fill)
+                    .width(Length::Shrink)
                     .size(32)
                     .color([0.5, 0.5, 0.5])
-                    .horizontal_alignment(HorizontalAlignment::Center);
+                    .horizontal_alignment(HorizontalAlignment::Left);
 
                 let row_contents = Row::new()
                     .padding(10)    
