@@ -226,7 +226,6 @@ impl Application for TolStack {
 
                 let header = Container::new(
                 Column::new()
-                    .padding(40)
                     .max_width(800)
                     .spacing(20)
                     .push(title)
@@ -242,14 +241,18 @@ impl Application for TolStack {
                     .spacing(20)
                     .push(tolerance_entries);
                 let scrollable_content = Scrollable::new(scroll_state)
-                    .padding(5)
+                    .padding(10)
+                    .height(Length::Fill)
+                    .width(Length::Shrink)
                     .push(
                         Container::new(content).width(Length::Fill).center_x(),
                     );
                 Column::new()
+                    .padding(40)
                     .push(header)
                     .push(Container::new(scrollable_content)
                         .style(style::Container::Background)
+                        .center_x()
                     )
                     .into()
             }
