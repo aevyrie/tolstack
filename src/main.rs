@@ -393,7 +393,7 @@ impl ToleranceControls {
         let tolerance_label = Text::new("Add Tolerance:")
                     .width(Length::Shrink)
                     .size(32)
-                    .color([1.0, 1.0, 1.0])
+                    .color([0.0, 0.0, 0.0])
                     .horizontal_alignment(HorizontalAlignment::Left);
         let tolerance_text = TextInput::new(
             tolerance_text_state,
