@@ -95,7 +95,56 @@ impl Application for TolStack {
                 Command::none()
             }
             TolStack::Loaded(state) => {
-                Command::none()
+                let mut saved = false;
+
+                match message {
+                    Message::DescriptionChanged(value) => {
+                        state.filename_value = value;
+                    }
+                    Message::CreateTol => {
+                        let input_text = state.tolerance_controls.tolerance_text_value.clone();
+                        let input_type = state.tolerance_controls.tolerance_type;
+                        if !input_text.is_empty() {
+                            state
+                                .tolerance_entries
+                                .push(ToleranceEntry::new(
+                                    input_text.clone(),
+                                    input_type.clone(),
+                                ));
+                            state.tolerance_controls.tolerance_text_value.clear();
+                        }
+                    }
+                    Message::FilterChanged(filter) => {
+                        state.filter_value = filter;
+                    }
+
+                    Message::Saved(_) => {
+                        state.saving = false;
+                        saved = true;
+                    }
+                    _ => {}
+                }
+
+                if !saved {
+                    state.dirty = true;
+                }
+
+                if state.dirty && !state.saving {
+                    state.dirty = false;
+                    state.saving = true;
+
+                    Command::perform(
+                        SavedState {
+                            filename: state.filename_value.clone(),
+                            filter: state.filter_value,
+                            simulation: state.simulation_state.clone(),
+                        }
+                        .save(),
+                        Message::Saved,
+                    )
+                } else {
+                    Command::none()
+                }
             }
         }
     }
@@ -132,12 +181,12 @@ impl Application for TolStack {
                 let tolerance_controls = tolerance_controls.view();
                 let filter_controls = filter_controls.view(&tolerance_entries, *filter_value);
                 let filtered_tols =
-                    tolerance_entries.iter().filter(|tol| filter_value.matches(&tol.tolerance_type));
+                    tolerance_entries.iter().filter(|tol| filter_value.matches(tol.tolerance_type));
                 let tolerance_entries: Element<_> = if filtered_tols.count() > 0 {
                     tolerance_entries
                         .iter_mut()
                         .enumerate()
-                        .filter(|(_, tol)| filter_value.matches(&tol.tolerance_type))
+                        .filter(|(_, tol)| filter_value.matches(tol.tolerance_type))
                         .fold(Column::new().spacing(20), |column, (i, tol)| {
                             column.push(tol.view().map( move |message| {
                                 Message::TolMessage(i, message)
@@ -179,14 +228,14 @@ impl Application for TolStack {
 struct ToleranceEntry {
     description: String,
     model_data: Option<ToleranceType>,
-    tolerance_type: Filter,
+    tolerance_type: ToleranceTypes,
     active: bool,
 
     #[serde(skip)]
     state: EntryState,
 }
 impl ToleranceEntry {
-    fn new(description: String, tolerance_type: Filter) -> Self {
+    fn new(description: String, tolerance_type: ToleranceTypes) -> Self {
         ToleranceEntry {
             description,
             model_data: Option::None,
@@ -303,6 +352,7 @@ impl Default for EntryState {
 
 #[derive(Debug, Default, Clone)]
 struct ToleranceControls {
+    tolerance_type: ToleranceTypes,
     tolerance_text_value: String,
     tolerance_text_state: text_input::State,
     linear_button: button::State,
@@ -312,6 +362,7 @@ struct ToleranceControls {
 impl ToleranceControls {
     fn view(&mut self) -> Row<Message> {
         let ToleranceControls {
+            tolerance_type,
             tolerance_text_value,
             tolerance_text_state,
             linear_button,
@@ -455,6 +506,11 @@ pub enum ToleranceTypes {
     Float,
     Compound,
 }
+impl Default for ToleranceTypes {
+    fn default() -> Self {
+        ToleranceTypes::Linear
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Filter {
@@ -462,8 +518,11 @@ pub enum Filter {
     Some(ToleranceTypes),
 }
 impl Filter {
-    fn matches(&self, tol: &Filter) -> bool {
-        self == tol
+    fn matches(&self, tol: ToleranceTypes) -> bool {
+        match self {
+            Filter::All => true,
+            Filter::Some(tol_self) => *tol_self == tol,
+        }
     }
 }
 impl Default for Filter {
