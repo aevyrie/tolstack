@@ -345,7 +345,7 @@ impl ToleranceEntry {
                 .on_submit(TolMessage::FinishEditing)
                 .padding(10);
 
-                Row::new()
+                let row_contents = Row::new()
                     .spacing(20)
                     .align_items(Align::Center)
                     .push(text_input)
@@ -360,7 +360,10 @@ impl ToleranceEntry {
                         .on_press(TolMessage::Delete)
                         .padding(10)
                         .style(style::Button::Destructive),
-                    )
+                    );
+                
+                Container::new(row_contents)
+                    .style(style::Container::Entry)
                     .into()
             }
         }
@@ -734,10 +737,10 @@ mod style {
             match self {
                 Container::Entry => container::Style {
                     text_color: Some(Color::from_rgb(0.5, 0.5, 0.5)),
-                    background: Some(Background::Color(Color::from_rgb(0.9, 0.9, 0.9))),
-                    border_radius: 10,
-                    border_width: 3,
-                    border_color: Color::from_rgb(0.8, 0.8, 0.8),
+                    background: Some(Background::Color(Color::from_rgb(0.98, 0.98, 0.98))),
+                    border_radius: 5,
+                    border_width: 1,
+                    border_color: Color::from_rgb(0.9, 0.9, 0.9),
                 }
             }
         }
