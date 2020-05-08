@@ -24,8 +24,7 @@ enum TolStack {
 // The state of the application
 #[derive(Debug, Default)]
 struct State {
-    filename_state: text_input::State,
-    filename_value: String,
+    filename: EditableLabel,
     scroll_state: scrollable::State,
     tolerance_controls: ToleranceControls,
     filter_value: Filter,
@@ -47,6 +46,7 @@ enum Message {
     CreateTol,
     FilterChanged(Filter),
     TolMessage(usize, TolMessage),
+    LabelMessage(LabelMessage),
 }
 
 
@@ -69,10 +69,10 @@ impl Application for TolStack {
         };
         let filename = match self {
             TolStack::Loading => String::from("Loading..."),
-            TolStack::Loaded(state) => if state.filename_value.len() == 0 {
+            TolStack::Loaded(state) => if state.filename.text.len() == 0 {
                 String::from("New")
             } else {
-                state.filename_value.clone()
+                state.filename.text.clone()
             }};
 
         format!("{}{} - TolStack Tolerance Analysis", filename, if dirty { "*" } else { "" })
@@ -86,7 +86,7 @@ impl Application for TolStack {
                     // Take the loaded state and assign to the working state
                     Message::Loaded(Ok(state)) => {
                         *self = TolStack::Loaded(State {
-                            filename_value: state.filename,
+                            filename: state.filename,
                             filter_value: state.filter,
                             simulation_state: state.simulation,
                             ..State::default()
@@ -105,7 +105,7 @@ impl Application for TolStack {
 
                 match message {
                     Message::FileNameChanged(value) => {
-                        state.filename_value = value;
+                        state.filename.text = value;
                     }
                     Message::TolTypeChanged(value) => {
                         state.tolerance_controls.tolerance_type = value;
@@ -134,6 +134,9 @@ impl Application for TolStack {
                             tol.update(tol_message);
                         }
                     }
+                    Message::LabelMessage(label_message) => {
+                        state.filename.update(label_message);
+                    }
                     Message::FilterChanged(filter) => {
                         state.filter_value = filter;
                     }
@@ -155,7 +158,7 @@ impl Application for TolStack {
 
                     Command::perform(
                         SavedState {
-                            filename: state.filename_value.clone(),
+                            filename: state.filename.clone(),
                             filter: state.filter_value,
                             simulation: state.simulation_state.clone(),
                         }
@@ -174,8 +177,7 @@ impl Application for TolStack {
         match self {
             TolStack::Loading => loading_message(),
             TolStack::Loaded(State {
-                filename_state,
-                filename_value,
+                filename,
                 scroll_state,
                 tolerance_controls,
                 filter_value,
@@ -190,14 +192,12 @@ impl Application for TolStack {
                     .size(32)
                     .color([0.5, 0.5, 0.5])
                     .horizontal_alignment(HorizontalAlignment::Center);
-                let filename = TextInput::new(
-                    filename_state,
-                    "What do you want to call this file?",
-                    filename_value,
-                    Message::FileNameChanged,
-                    )
-                    .padding(15)
-                    .size(30);
+                let filename: Row<_> = Row::new()
+                    .push(filename.view().map( move |message| {
+                        Message::LabelMessage(message)
+                    }))
+                    .into();
+
                 let tolerance_controls = tolerance_controls.view();
                 let filter_controls = filter_controls.view(&tolerance_entries, *filter_value);
                 let filtered_tols =
@@ -270,12 +270,124 @@ impl Application for TolStack {
                 Column::new()
                     .padding(40)
                     .push(header)
-                    .push( stack_area)
+                    .push(stack_area)
                     .into()
             }
         }
     }
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct EditableLabel {
+    text: String,
+    #[serde(skip)]
+    state: TextEditState,
+}
+impl EditableLabel {
+    fn new(text: String) -> Self {
+        EditableLabel {
+            text,
+            state: TextEditState::Idle {
+                edit_button: button::State::new(),
+            },
+        }
+    }
+
+    fn update(&mut self, message: LabelMessage) {
+        match message {
+            LabelMessage::Edit => {
+                self.state = TextEditState::Editing {
+                    text_input: text_input::State::focused(),
+                };
+            }
+            LabelMessage::TextEdited(new_text) => {
+                self.text = new_text;
+            }
+            LabelMessage::FinishEditing => {
+                if !self.text.is_empty() {
+                    self.state = TextEditState::Idle {
+                        edit_button: button::State::new(),
+                    }
+                }
+            }
+        }
+    }
+
+    fn view(&mut self) -> Element<LabelMessage> {
+        match &mut self.state {
+            TextEditState::Idle { edit_button } => {
+                let label = Text::new(format!("Project: {}", self.text.clone()))
+                    .width(Length::Fill)
+                    .size(32)
+                    .color([0.5, 0.5, 0.5])
+                    .horizontal_alignment(HorizontalAlignment::Center);
+
+                let row_contents = Row::new()
+                    .padding(10)    
+                    .spacing(20)
+                    .align_items(Align::Center)
+                    .push(label)
+                    .push(
+                        Button::new(edit_button, edit_icon())
+                            .on_press(LabelMessage::Edit)
+                            .padding(10)
+                            .style(style::Button::Icon),
+                    );
+
+                Container::new(row_contents)
+                    .style(style::Container::Entry)
+                    .into()
+            }
+            TextEditState::Editing {
+                text_input,
+            } => {
+                let text_input = TextInput::new(
+                    text_input,
+                    "add a project title",
+                    &self.text,
+                    LabelMessage::TextEdited,
+                )
+                .on_submit(LabelMessage::FinishEditing)
+                .padding(10);
+
+                let row_contents = Row::new()
+                    .padding(10)
+                    .spacing(20)
+                    .align_items(Align::Center)
+                    .push(text_input);
+                Container::new(row_contents)
+                    .style(style::Container::Entry)
+                    .into()
+            }
+        }
+    }
+}
+impl Default for EditableLabel {
+    fn default() -> Self {
+        EditableLabel {
+            text: String::from("Enter text here..."),
+            state: TextEditState::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum TextEditState {
+    Idle {
+        edit_button: button::State,
+    },
+    Editing {
+        text_input: text_input::State,
+    },
+}
+impl Default for TextEditState {
+    fn default() -> Self {
+        TextEditState::Idle {
+            edit_button: button::State::new(),
+        }
+    }
+}
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct ToleranceEntry {
@@ -549,7 +661,7 @@ impl FilterControls {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct SavedState {
-    filename: String,
+    filename: EditableLabel,
     filter: Filter,
     simulation: SimulationState,
 }
@@ -562,6 +674,13 @@ pub enum TolMessage {
     TolEdited(ToleranceType),
     FinishEditing,
     Delete,
+}
+
+#[derive(Debug, Clone)]
+pub enum LabelMessage {
+    Edit,
+    TextEdited(String),
+    FinishEditing,
 }
 
 #[derive(Debug, Clone)]
