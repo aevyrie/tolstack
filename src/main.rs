@@ -236,7 +236,6 @@ impl Application for TolStack {
                 .center_x();
                 
                 let content = Column::new()
-                    .max_width(1000)
                     .spacing(20)
                     .push(tolerance_entries);
                 let scrollable_content = Scrollable::new(scroll_state)
@@ -260,7 +259,8 @@ impl Application for TolStack {
                             .padding(10)
                             .center_x()
                         )
-                    );
+                        .max_width(1000)
+                    ).center_x();
                 
                 Column::new()
                     .padding(40)
