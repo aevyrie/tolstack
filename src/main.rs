@@ -274,9 +274,13 @@ impl Application for TolStack {
                     .center_x();
 
                     let tol_chain_input = Column::new()
-                        .push(Container::new(tolerance_controls)
-                            .style(style::Container::Background)
-                            .padding(10)
+                        .push(Container::new(Container::new(tolerance_controls)
+                                .style(style::Container::Background)
+                                .padding(5)
+                            )
+                            .padding(20)
+                            .width(Length::Fill)
+                            .center_x()
                         )
                         .push(filtereable_scroll_region)
                         .width(Length::FillPortion(1));
