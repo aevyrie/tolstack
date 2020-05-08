@@ -126,6 +126,14 @@ impl Application for TolStack {
                             state.tolerance_controls.tolerance_text_value.clear();
                         }
                     }
+                    Message::TolMessage(i, TolMessage::Delete) => {
+                        state.tolerance_entries.remove(i);
+                    }
+                    Message::TolMessage(i, tol_message) => {
+                        if let Some(tol) = state.tolerance_entries.get_mut(i) {
+                            tol.update(tol_message);
+                        }
+                    }
                     Message::FilterChanged(filter) => {
                         state.filter_value = filter;
                     }
