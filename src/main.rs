@@ -448,7 +448,7 @@ impl ToleranceControls {
         let button = |state, label, tolerance: ToleranceTypes, current_tol: ToleranceTypes| {
             let label = Text::new(label).size(24);
             let button =
-                Button::new(state, label).style(style::Button::Filter {
+                Button::new(state, label).style(style::Button::Choice {
                     selected: tolerance == current_tol,
                 });
 
@@ -699,6 +699,7 @@ mod style {
 
     pub enum Button {
         Filter { selected: bool },
+        Choice { selected: bool },
         Icon,
         Destructive,
     }
@@ -706,6 +707,20 @@ mod style {
         fn active(&self) -> button::Style {
             match self {
                 Button::Filter { selected } => {
+                    if *selected {
+                        button::Style {
+                            background: Some(Background::Color(
+                                Color::from_rgb(0.5, 0.5, 0.5),
+                            )),
+                            border_radius: 5,
+                            text_color: Color::WHITE,
+                            ..button::Style::default()
+                        }
+                    } else {
+                        button::Style::default()
+                    }
+                }
+                Button::Choice { selected } => {
                     if *selected {
                         button::Style {
                             background: Some(Background::Color(
@@ -741,6 +756,9 @@ mod style {
             button::Style {
                 text_color: match self {
                     Button::Icon => Color::from_rgb(0.2, 0.2, 0.7),
+                    Button::Filter { selected } if !selected => {
+                        Color::from_rgb(0.5, 0.5, 0.5)
+                    }
                     Button::Filter { selected } if !selected => {
                         Color::from_rgb(0.3, 0.5, 0.8)
                     }
