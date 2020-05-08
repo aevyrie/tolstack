@@ -24,12 +24,13 @@ enum TolStack {
 // The state of the application
 #[derive(Debug, Default)]
 struct State {
-    description: String,
-    scroll: scrollable::State,
-    input: text_input::State,
-    filter: Filter,
+    filename_state: text_input::State,
+    filename_value: String,
+    scroll_state: scrollable::State,
+    tolerance_controls: ToleranceControls,
+    filter_value: Filter,
     tolerance_entries: Vec<ToleranceEntry>,
-    simulation: SimulationState,
+    simulation_state: SimulationState,
     filter_controls: FilterControls,
     dirty: bool,
     saving: bool,
@@ -41,6 +42,8 @@ enum Message {
     Loaded(Result<SavedState, LoadError>),
     Saved(Result<(), SaveError>),
     DescriptionChanged(String),
+    TolNameChanged(String),
+    TolTypeChanged()
     CreateTol,
     FilterChanged(Filter),
     TolMessage(usize, TolMessage),
@@ -74,11 +77,12 @@ impl Application for TolStack {
         match self {
             TolStack::Loading => {
                 match message {
+                    // Take the loaded state and assign to the working state
                     Message::Loaded(Ok(state)) => {
                         *self = TolStack::Loaded(State {
-                            description: state.description,
-                            filter: state.filter,
-                            simulation: state.simulation,
+                            filename_value: state.filename,
+                            filter_value: state.filter,
+                            simulation_state: state.simulation,
                             ..State::default()
                         });
                     }
@@ -101,12 +105,13 @@ impl Application for TolStack {
         match self {
             TolStack::Loading => loading_message(),
             TolStack::Loaded(State {
-                description,
-                scroll,
-                input,
-                filter,
+                filename_state,
+                filename_value,
+                scroll_state,
+                tolerance_controls,
+                filter_value,
                 tolerance_entries,
-                simulation,
+                simulation_state,
                 filter_controls,
                 dirty,
                 saving,
@@ -116,14 +121,23 @@ impl Application for TolStack {
                     .size(32)
                     .color([0.5, 0.5, 0.5])
                     .horizontal_alignment(HorizontalAlignment::Center);
-                let controls = filter_controls.view(&tolerance_entries, *filter);
+                let filename = TextInput::new(
+                    filename_state,
+                    "What do you want to call this file?",
+                    filename_value,
+                    Message::TolNameChanged,
+                    )
+                    .padding(15)
+                    .size(30);
+                let tolerance_controls = tolerance_controls.view();
+                let filter_controls = filter_controls.view(&tolerance_entries, *filter_value);
                 let filtered_tols =
-                    tolerance_entries.iter().filter(|tol| filter.matches(&tol.tolerance_type));
+                    tolerance_entries.iter().filter(|tol| filter_value.matches(&tol.tolerance_type));
                 let tolerance_entries: Element<_> = if filtered_tols.count() > 0 {
                     tolerance_entries
                         .iter_mut()
                         .enumerate()
-                        .filter(|(_, tol)| filter.matches(&tol.tolerance_type))
+                        .filter(|(_, tol)| filter_value.matches(&tol.tolerance_type))
                         .fold(Column::new().spacing(20), |column, (i, tol)| {
                             column.push(tol.view().map( move |message| {
                                 Message::TolMessage(i, message)
@@ -131,11 +145,11 @@ impl Application for TolStack {
                         })
                         .into()
                     } else {
-                    empty_message(match filter {
-                        Filter::All => "",
-                        Filter::Linear => "",
-                        Filter::Float => "",
-                        Filter::Compound => "",
+                    empty_message(match filter_value {
+                        Filter::All => "You haven't added a tolerance to the chain yet.",
+                        Filter::Linear => "No linear tolerances in the chain.",
+                        Filter::Float => "No float tolerances in the chain.",
+                        Filter::Compound => "No compoind tolerances in the chain.",
                     })
                 };
 
@@ -143,10 +157,12 @@ impl Application for TolStack {
                     .max_width(800)
                     .spacing(20)
                     .push(title)
-                    .push(controls);
-                    //.push(tolerances);
+                    .push(filename)
+                    .push(tolerance_controls)
+                    .push(filter_controls)
+                    .push(tolerance_entries);
 
-                Scrollable::new(scroll)
+                Scrollable::new(scroll_state)
                     .padding(40)
                     .push(
                         Container::new(content).width(Length::Fill).center_x(),
@@ -284,6 +300,76 @@ impl Default for EntryState {
 }
 
 #[derive(Debug, Default, Clone)]
+struct ToleranceControls {
+    tolerance_text: text_input::State,
+    linear_button: button::State,
+    float_button: button::State,
+    compound_button: button::State,
+}
+impl ToleranceControls {
+    fn view(&mut self) -> Row<Message> {
+        let ToleranceControls {
+            tolerance_text,
+            linear_button,
+            float_button,
+            compound_button,
+        } = self;
+
+        let input = TextInput::new(
+            input,
+            "Tolerance name, press enter to add.",
+            input_value,
+            Message::TolNameChanged,
+            )
+            .padding(15);
+
+        let button = |state, label| {
+            let label = Text::new(label).size(16);
+            let button =
+                Button::new(state, label).style(style::Button::Filter {
+                    selected: filter == current_filter,
+                });
+
+            button.on_press(Message::FilterChanged(filter)).padding(8)
+        };
+
+        Row::new()
+            .spacing(20)
+            .align_items(Align::Center)
+            .push(
+                Row::new()
+                    .width(Length::Shrink)
+                    .spacing(10)
+                    .push(filter_button(
+                        all_button,
+                        "All",
+                        Filter::All,
+                        current_filter,
+                    ))
+                    .push(filter_button(
+                        linear_button,
+                        "Linear",
+                        Filter::Linear,
+                        current_filter,
+                    ))
+                    .push(filter_button(
+                        float_button,
+                        "Float",
+                        Filter::Float,
+                        current_filter,
+                    ))
+                    .push(filter_button(
+                        compound_button,
+                        "Compound",
+                        Filter::Compound,
+                        current_filter,
+                    )),
+            )
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone)]
 struct FilterControls {
     all_button: button::State,
     linear_button: button::State,
@@ -346,7 +432,7 @@ impl FilterControls {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct SavedState {
-    description: String,
+    filename: String,
     filter: Filter,
     simulation: SimulationState,
 }
@@ -362,24 +448,22 @@ pub enum TolMessage {
 }
 
 #[derive(Debug, Clone)]
-pub enum TolInput {
-    Dimension,
-    Tolerance,
-}
-
-#[derive(Debug, Clone)]
 pub enum Controls {
     SolvePressed,
     OpenFilePressed,
     SaveFilePressed,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Filter {
-    All,
+pub enum ToleranceTypes {
     Linear,
     Float,
     Compound,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Filter {
+    All,
+    Some(ToleranceTypes),
 }
 impl Filter {
     fn matches(&self, tol: &Filter) -> bool {
