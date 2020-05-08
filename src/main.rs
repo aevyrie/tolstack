@@ -252,6 +252,8 @@ impl Application for TolStack {
                     .push(header)
                     .push(Container::new(scrollable_content)
                         .style(style::Container::Background)
+                        .width(Length::Shrink)
+                        .padding(10)
                         .center_x()
                     )
                     .into()
