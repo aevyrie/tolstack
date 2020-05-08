@@ -239,6 +239,7 @@ impl Application for TolStack {
                     .push(project_title)
                 )
                 .width(Length::Fill)
+                .padding(10)
                 .center_x();
                 
                 let content = Column::new()
