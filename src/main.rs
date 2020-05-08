@@ -43,7 +43,7 @@ enum Message {
     Saved(Result<(), SaveError>),
     DescriptionChanged(String),
     TolNameChanged(String),
-    TolTypeChanged()
+    TolTypeChanged(ToleranceTypes),
     CreateTol,
     FilterChanged(Filter),
     TolMessage(usize, TolMessage),
@@ -301,7 +301,8 @@ impl Default for EntryState {
 
 #[derive(Debug, Default, Clone)]
 struct ToleranceControls {
-    tolerance_text: text_input::State,
+    tolerance_text_value: String,
+    tolerance_text_state: text_input::State,
     linear_button: button::State,
     float_button: button::State,
     compound_button: button::State,
@@ -309,28 +310,29 @@ struct ToleranceControls {
 impl ToleranceControls {
     fn view(&mut self) -> Row<Message> {
         let ToleranceControls {
-            tolerance_text,
+            tolerance_text_value,
+            tolerance_text_state,
             linear_button,
             float_button,
             compound_button,
         } = self;
 
-        let input = TextInput::new(
-            input,
+        let tolerance_text = TextInput::new(
+            tolerance_text_state,
             "Tolerance name, press enter to add.",
-            input_value,
-            Message::TolNameChanged,
+            tolerance_text_value,
+            Message::TolNameChanged(tolerance_text_value),
             )
             .padding(15);
 
-        let button = |state, label| {
+        let button = |state, label, tolerance: ToleranceTypes| {
             let label = Text::new(label).size(16);
             let button =
                 Button::new(state, label).style(style::Button::Filter {
                     selected: filter == current_filter,
                 });
 
-            button.on_press(Message::FilterChanged(filter)).padding(8)
+            button.on_press(Message::TolTypeChanged(tolerance)).padding(8)
         };
 
         Row::new()
@@ -340,32 +342,23 @@ impl ToleranceControls {
                 Row::new()
                     .width(Length::Shrink)
                     .spacing(10)
-                    .push(filter_button(
-                        all_button,
-                        "All",
-                        Filter::All,
-                        current_filter,
-                    ))
+                    .push(tolerance_text)
                     .push(filter_button(
                         linear_button,
                         "Linear",
-                        Filter::Linear,
-                        current_filter,
+                        ToleranceTypes::Linear,
                     ))
                     .push(filter_button(
                         float_button,
                         "Float",
-                        Filter::Float,
-                        current_filter,
+                        ToleranceTypes::Float,
                     ))
                     .push(filter_button(
                         compound_button,
                         "Compound",
-                        Filter::Compound,
-                        current_filter,
+                        ToleranceTypes::Compound,
                     )),
             )
-        }
     }
 }
 
