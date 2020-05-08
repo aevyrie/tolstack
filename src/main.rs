@@ -264,6 +264,7 @@ impl Application for TolStack {
                         .padding(10)
                         .width(Length::Shrink)
                     )
+                    .padding(20)
                     .width(Length::Fill)
                     .center_x();
                 
