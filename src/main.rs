@@ -485,6 +485,7 @@ impl ToleranceControls {
                     ))
             )
             .push(tolerance_text)
+            .height(Length::Shrink)
     }
 }
 
