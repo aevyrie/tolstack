@@ -67,8 +67,15 @@ impl Application for TolStack {
             TolStack::Loading => false,
             TolStack::Loaded(state) => state.dirty,
         };
+        let filename = match self {
+            TolStack::Loading => String::from("Loading..."),
+            TolStack::Loaded(state) => if state.filename_value.len() == 0 {
+                String::from("New")
+            } else {
+                state.filename_value.clone()
+            }};
 
-        format!("TolStack Tolerance Analysis - New{}", if dirty { "*" } else { "" })
+        format!("TolStack Tolerance Analysis - {}{}", filename, if dirty { "*" } else { "" })
     }
 
     // Update logic - how to react to messages sent through the application
