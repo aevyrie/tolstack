@@ -201,7 +201,7 @@ impl Application for TolStack {
                         Filter::Some(tol) => match tol {
                             ToleranceTypes::Linear => "No linear tolerances in the chain.",
                             ToleranceTypes::Float => "No float tolerances in the chain.",
-                            ToleranceTypes::Compound => "No compoind tolerances in the chain.",
+                            ToleranceTypes::Compound => "No compound tolerances in the chain.",
                         }
                     })
                 };
