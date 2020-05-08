@@ -388,11 +388,11 @@ impl ToleranceControls {
             .padding(15)
             .on_submit(Message::CreateTol);
 
-        let button = |state, label, tolerance: ToleranceTypes| {
+        let button = |state, label, tolerance: ToleranceTypes, current_tol: ToleranceTypes| {
             let label = Text::new(label).size(16);
             let button =
                 Button::new(state, label).style(style::Button::Filter {
-                    selected: tolerance == ToleranceTypes::Linear,
+                    selected: tolerance == current_tol,
                 });
 
             button.on_press(Message::TolTypeChanged(tolerance)).padding(8)
@@ -410,16 +410,19 @@ impl ToleranceControls {
                         linear_button,
                         "Linear",
                         ToleranceTypes::Linear,
+                        self.tolerance_type,
                     ))
                     .push(button(
                         float_button,
                         "Float",
                         ToleranceTypes::Float,
+                        self.tolerance_type,
                     ))
                     .push(button(
                         compound_button,
                         "Compound",
                         ToleranceTypes::Compound,
+                        self.tolerance_type,
                     )),
             )
     }
