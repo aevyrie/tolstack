@@ -238,7 +238,6 @@ impl Application for TolStack {
                 .center_x();
                 
                 let content = Column::new()
-                    .padding(40)
                     .max_width(800)
                     .spacing(20)
                     .push(tolerance_entries);
@@ -318,6 +317,7 @@ impl ToleranceEntry {
                 .width(Length::Fill);
 
                 let row_contents = Row::new()
+                    .padding(10)    
                     .spacing(20)
                     .align_items(Align::Center)
                     .push(checkbox)
