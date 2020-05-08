@@ -258,13 +258,13 @@ impl Application for TolStack {
                                     .padding(10)
                                 )
                             .push(scrollable_content)
+                            .max_width(1000)
                         )
                         .style(style::Container::Background)
-                        .width(Length::Shrink)
-                        .max_width(1000)
                         .padding(10)
-                        .center_x()
+                        .width(Length::Shrink)
                     )
+                    .width(Length::Fill)
                     .center_x();
                 
                 Column::new()
