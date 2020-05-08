@@ -434,7 +434,6 @@ impl ToleranceControls {
 
         let tolerance_label = Text::new("Add Tolerance:")
                     .width(Length::Shrink)
-                    .height(Length::Fill)
                     .size(24)
                     .color([0.0, 0.0, 0.0])
                     .horizontal_alignment(HorizontalAlignment::Left);
@@ -485,7 +484,6 @@ impl ToleranceControls {
                     ))
             )
             .push(tolerance_text)
-            .height(Length::Shrink)
     }
 }
 
