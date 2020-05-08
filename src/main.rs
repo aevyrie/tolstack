@@ -226,6 +226,7 @@ impl Application for TolStack {
 
                 let header = Container::new(
                 Column::new()
+                    .padding(40)
                     .max_width(800)
                     .spacing(20)
                     .push(title)
@@ -237,6 +238,7 @@ impl Application for TolStack {
                 .center_x();
                 
                 let content = Column::new()
+                    .padding(40)
                     .max_width(800)
                     .spacing(20)
                     .push(tolerance_entries);
