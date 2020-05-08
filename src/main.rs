@@ -147,9 +147,11 @@ impl Application for TolStack {
                     } else {
                     empty_message(match filter_value {
                         Filter::All => "You haven't added a tolerance to the chain yet.",
-                        Filter::Linear => "No linear tolerances in the chain.",
-                        Filter::Float => "No float tolerances in the chain.",
-                        Filter::Compound => "No compoind tolerances in the chain.",
+                        Filter::Some(tol) => match tol {
+                            ToleranceTypes::Linear => "No linear tolerances in the chain.",
+                            ToleranceTypes::Float => "No float tolerances in the chain.",
+                            ToleranceTypes::Compound => "No compoind tolerances in the chain.",
+                        }
                     })
                 };
 
@@ -321,7 +323,7 @@ impl ToleranceControls {
             tolerance_text_state,
             "Tolerance name, press enter to add.",
             tolerance_text_value,
-            Message::TolNameChanged(tolerance_text_value),
+            Message::TolNameChanged,
             )
             .padding(15);
 
@@ -329,7 +331,7 @@ impl ToleranceControls {
             let label = Text::new(label).size(16);
             let button =
                 Button::new(state, label).style(style::Button::Filter {
-                    selected: filter == current_filter,
+                    selected: tolerance == ToleranceTypes::Linear,
                 });
 
             button.on_press(Message::TolTypeChanged(tolerance)).padding(8)
@@ -343,17 +345,17 @@ impl ToleranceControls {
                     .width(Length::Shrink)
                     .spacing(10)
                     .push(tolerance_text)
-                    .push(filter_button(
+                    .push(button(
                         linear_button,
                         "Linear",
                         ToleranceTypes::Linear,
                     ))
-                    .push(filter_button(
+                    .push(button(
                         float_button,
                         "Float",
                         ToleranceTypes::Float,
                     ))
-                    .push(filter_button(
+                    .push(button(
                         compound_button,
                         "Compound",
                         ToleranceTypes::Compound,
@@ -404,19 +406,19 @@ impl FilterControls {
                     .push(filter_button(
                         linear_button,
                         "Linear",
-                        Filter::Linear,
+                        Filter::Some(ToleranceTypes::Linear),
                         current_filter,
                     ))
                     .push(filter_button(
                         float_button,
                         "Float",
-                        Filter::Float,
+                        Filter::Some(ToleranceTypes::Float),
                         current_filter,
                     ))
                     .push(filter_button(
                         compound_button,
                         "Compound",
-                        Filter::Compound,
+                        Filter::Some(ToleranceTypes::Compound),
                         current_filter,
                     )),
             )
@@ -447,6 +449,7 @@ pub enum Controls {
     SaveFilePressed,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ToleranceTypes {
     Linear,
     Float,
@@ -460,12 +463,7 @@ pub enum Filter {
 }
 impl Filter {
     fn matches(&self, tol: &Filter) -> bool {
-        match self {
-            Filter::All => true,
-            Filter::Linear => match tol { Filter::Linear => true, _ => false },
-            Filter::Float => match tol { Filter::Float => true, _ => false },
-            Filter::Compound => match tol { Filter::Compound => true, _ => false },
-        }
+        self == tol
     }
 }
 impl Default for Filter {
