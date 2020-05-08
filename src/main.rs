@@ -560,7 +560,7 @@ impl ToleranceControls {
 
         let tolerance_label = Text::new("Add Tolerance:")
                     .width(Length::Shrink)
-                    .size(24)
+                    .size(18)
                     .color([0.0, 0.0, 0.0])
                     .horizontal_alignment(HorizontalAlignment::Left);
         let tolerance_text = TextInput::new(
@@ -573,7 +573,7 @@ impl ToleranceControls {
             .on_submit(Message::CreateTol);
 
         let button = |state, label, tolerance: ToleranceTypes, current_tol: ToleranceTypes| {
-            let label = Text::new(label).size(24);
+            let label = Text::new(label).size(18);
             let button =
                 Button::new(state, label).style(style::Button::Choice {
                     selected: tolerance == current_tol,
@@ -612,6 +612,7 @@ impl ToleranceControls {
                 )
             )
             .push(tolerance_text)
+            .padding(20)
         )
     }
 }
