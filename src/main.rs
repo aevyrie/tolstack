@@ -240,7 +240,7 @@ impl Application for TolStack {
                     .push(tolerance_entries);
                 let stack_title = Text::new("Tolerance Stack")
                     .width(Length::Fill)
-                    .size(16)
+                    .size(24)
                     .color([0.5, 0.5, 0.5])
                     .horizontal_alignment(HorizontalAlignment::Left);
                 let scrollable_content = Scrollable::new(scroll_state)
@@ -258,6 +258,7 @@ impl Application for TolStack {
                 Container::new(scrollable_content)
                     .style(style::Container::Background)
                     .width(Length::Shrink)
+                    .max_width(1000)
                     .padding(10)
                     .center_x()
                     );
@@ -428,7 +429,7 @@ impl ToleranceControls {
 
         let tolerance_label = Text::new("Add Tolerance:")
                     .width(Length::Shrink)
-                    .size(32)
+                    .size(24)
                     .color([0.0, 0.0, 0.0])
                     .horizontal_alignment(HorizontalAlignment::Left);
         let tolerance_text = TextInput::new(
