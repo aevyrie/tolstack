@@ -242,13 +242,15 @@ impl Application for TolStack {
                     .spacing(20)
                     .push(tolerance_entries);
                 let scrollable_content = Scrollable::new(scroll_state)
-                    .padding(40)
+                    .padding(5)
                     .push(
                         Container::new(content).width(Length::Fill).center_x(),
                     );
                 Column::new()
                     .push(header)
-                    .push(scrollable_content)
+                    .push(Container::new(scrollable_content)
+                        .style(style::Container::Background)
+                    )
                     .into()
             }
         }
@@ -732,6 +734,7 @@ mod style {
 
     pub enum Container {
         Entry,
+        Background,
     }
     impl container::StyleSheet for Container {
         fn style(&self) -> container::Style {
@@ -742,10 +745,18 @@ mod style {
                     border_radius: 5,
                     border_width: 1,
                     border_color: Color::from_rgb(0.9, 0.9, 0.9),
-                }
+                },
+                Container::Background => container::Style {
+                    text_color: Some(Color::from_rgb(0.5, 0.5, 0.5)),
+                    background: Some(Background::Color(Color::from_rgb(1.0, 1.0, 1.0))),
+                    border_radius: 5,
+                    border_width: 1,
+                    border_color: Color::from_rgb(0.9, 0.9, 0.9),
+                },
             }
         }
     }
+
 }
 
 fn empty_message(message: &str) -> Element<'static, Message> {
