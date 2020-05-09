@@ -287,9 +287,9 @@ impl Application for TolStack {
                         .width(Length::FillPortion(1));
 
                     let tol_chain_output = Column::new()
-                    .push(Container::new(Container::new(Row::new()
+                    .push(Container::new(Container::new(Column::new().push(Row::new()
                                 .push(Text::new("Output Placeholder"))
-                            )
+                            ))
                             .style(style::Container::Background)
                             .padding(5)
                             .width(Length::Fill)
