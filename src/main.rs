@@ -223,11 +223,11 @@ impl Application for TolStack {
                         .into()
                     } else {
                     empty_message(match filter_value {
-                        Filter::All => "You haven't added a tolerance to the chain yet.",
+                        Filter::All => "There are no tolerances in the stack yet.",
                         Filter::Some(tol) => match tol {
-                            ToleranceTypes::Linear => "No linear tolerances in the chain.",
-                            ToleranceTypes::Float => "No float tolerances in the chain.",
-                            ToleranceTypes::Compound => "No compound tolerances in the chain.",
+                            ToleranceTypes::Linear => "No linear tolerances in the stack.",
+                            ToleranceTypes::Float => "No float tolerances in the stack.",
+                            ToleranceTypes::Compound => "No compound tolerances in the stack.",
                         }
                     })
                 };
