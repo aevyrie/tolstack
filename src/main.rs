@@ -274,6 +274,11 @@ impl Application for TolStack {
                     .width(Length::Fill)
                     .center_x();
 
+
+                    let results_summary = Column::new()
+                        .push(Row::new());
+
+
                     let tol_chain_input = Column::new()
                         .push(Container::new(Container::new(tolerance_controls)
                                 .style(style::Container::Background)
@@ -287,12 +292,9 @@ impl Application for TolStack {
                         .width(Length::FillPortion(1));
 
                     let tol_chain_output = Column::new()
-                    .push(Container::new(Container::new(Column::new().push(Row::new()
-                                .push(Text::new("Output Placeholder"))
-                            ).height(Length::Fill))
+                    .push(Container::new(Container::new(results_summary)
                             .style(style::Container::Background)
                             .padding(5)
-                            .width(Length::Fill)
                         )
                         .padding(20)
                         .width(Length::Fill)
