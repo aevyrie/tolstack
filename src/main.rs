@@ -427,12 +427,31 @@ impl Default for TextEditState {
     }
 }
 
+// TODO combine ToleranceTypes with ValueInputFormTolerance
+#[derive(Debug, Clone, Serialize, Deserialize)]
+enum ValueInputFormTolerance {
+    Linear { 
+        value_input_description: String,
+        value_input_dimension: String,
+        value_input_tolerance: String,
+    },
+    Float {
+        value_input_description: String,
+        value_input_tolerance_hole: String,
+        value_input_tolerance_pin: String,
+    },
+    Compound {
+        value_input_description: String,
+        value_input_tolerance_hole_1: String,
+        value_input_tolerance_pin_1: String,
+        value_input_tolerance_hole_2: String,
+        value_input_tolerance_pin_2: String,
+    },
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct ToleranceEntry {
-    value_input_description: String,
-    value_input_dimension: String,
-    value_input_tolerance: String,
+    value_input: ValueInputFormTolerance,
     backend_model_data: Option<Tolerance>,
     tolerance_type: ToleranceTypes,
     active: bool,
@@ -443,9 +462,31 @@ struct ToleranceEntry {
 impl ToleranceEntry {
     fn new(description: String, tolerance_type: ToleranceTypes) -> Self {
         ToleranceEntry {
-            value_input_description: description,
-            value_input_dimension: String::from(""),
-            value_input_tolerance: String::from(""),
+            value_input: match tolerance_type {
+                ToleranceTypes::Linear => {
+                    ValueInputFormTolerance::Linear{
+                        value_input_description: description,
+                        value_input_dimension: String::from(""),
+                        value_input_tolerance: String::from(""),
+                    }
+                }
+                ToleranceTypes::Float => {
+                    ValueInputFormTolerance::Float{
+                        value_input_description: description,
+                        value_input_tolerance_hole: String::from(""),
+                        value_input_tolerance_pin: String::from(""),
+                    }
+                }
+                ToleranceTypes::Compound => {
+                    ValueInputFormTolerance::Compound{
+                        value_input_description: description,
+                        value_input_tolerance_hole_1: String::from(""),
+                        value_input_tolerance_pin_1: String::from(""),
+                        value_input_tolerance_hole_2: String::from(""),
+                        value_input_tolerance_pin_2: String::from(""),
+                    }
+                }
+            },
             backend_model_data: None,
             tolerance_type: tolerance_type,
             active: false,
@@ -476,6 +517,11 @@ impl ToleranceEntry {
                     ToleranceTypes::Float => {
                         StateEntryTolerance::Editing {
                             state_form_tolentry: StateFormTolerance::Float {
+                                state_button_save: button::State::new(),
+                                state_button_delete: button::State::new(),
+                                state_input_description: text_input::State::focused(),
+                                state_input_tolerance_hole: text_input::State::new(),
+                                state_input_tolerance_pin: text_input::State::new(),
                             }
                         }
                     }
@@ -488,22 +534,67 @@ impl ToleranceEntry {
                 };
             }
             MessageEntryTolerance::EntryFinishEditing => {
-                if !self.value_input_description.is_empty()
-                {
+                if match &self.value_input {
+                    ValueInputFormTolerance::Linear{value_input_description,..} => {
+                        !value_input_description.is_empty()
+                    },
+                    ValueInputFormTolerance::Float{value_input_description,..} => {
+                        !value_input_description.is_empty()
+                    },
+                    ValueInputFormTolerance::Compound{value_input_description,..} => {
+                        !value_input_description.is_empty()
+                    },
+                } {
                     self.state = StateEntryTolerance::Idle {
                         state_button_edit: button::State::new(),
                     }
                 }
             }
             MessageEntryTolerance::EntryDelete => {}
-            MessageEntryTolerance::EditedDescription(new_description) => {
-                self.value_input_description = new_description;
+            MessageEntryTolerance::EditedDescription(input) => {
+                match &mut self.value_input {
+                    ValueInputFormTolerance::Linear{value_input_description,..} => {
+                        *value_input_description = input
+                    },
+                    ValueInputFormTolerance::Float{value_input_description,..} => {
+                        *value_input_description = input
+                    },
+                    ValueInputFormTolerance::Compound{value_input_description,..} => {
+                        *value_input_description = input
+                    },
+                };
             }
-            MessageEntryTolerance::EditedDimension(new_dimension) => {
-                self.value_input_dimension = new_dimension;
+            MessageEntryTolerance::EditedLinearDimension(input) => {
+                match &mut self.value_input {
+                    ValueInputFormTolerance::Linear{value_input_dimension,..} => {
+                        *value_input_dimension = input
+                    },
+                    _ => {}
+                };
             }
-            MessageEntryTolerance::EditedTolerance(new_tolerance) => {
-                self.value_input_tolerance = new_tolerance;
+            MessageEntryTolerance::EditedLinearTolerance(input) => {
+                match &mut self.value_input {
+                    ValueInputFormTolerance::Linear{value_input_tolerance,..} => {
+                        *value_input_tolerance = input
+                    },
+                    _ => {}
+                };
+            }
+            MessageEntryTolerance::EditedFloatTolHole(input) => {
+                match &mut self.value_input {
+                    ValueInputFormTolerance::Float{value_input_tolerance_hole,..} => {
+                        *value_input_tolerance_hole = input
+                    },
+                    _ => {}
+                };
+            }
+            MessageEntryTolerance::EditedFloatTolPin(input) => {
+                match &mut self.value_input {
+                    ValueInputFormTolerance::Float{value_input_tolerance_pin,..} => {
+                        *value_input_tolerance_pin = input
+                    },
+                    _ => {}
+                };
             }
         }
     }
@@ -513,7 +604,17 @@ impl ToleranceEntry {
             StateEntryTolerance::Idle { state_button_edit } => {
                 let checkbox = Checkbox::new(
                     self.active,
-                    &self.value_input_description,
+                    match &self.value_input {
+                        ValueInputFormTolerance::Linear{value_input_description,..} => {
+                            value_input_description
+                        },
+                        ValueInputFormTolerance::Float{value_input_description,..} => {
+                            value_input_description
+                        },
+                        ValueInputFormTolerance::Compound{value_input_description,..} => {
+                            value_input_description
+                        },
+                    },
                     MessageEntryTolerance::EntryActive,
                 )
                 .width(Length::Fill);
@@ -572,7 +673,12 @@ impl ToleranceEntry {
                             TextInput::new(
                                 state_input_description,
                                 "Enter a description",
-                                &self.value_input_description,
+                                match &self.value_input {
+                                    ValueInputFormTolerance::Linear{value_input_description,..} => {
+                                        value_input_description
+                                    },
+                                    _ => {"Error: tolerance type mismatch"}
+                                },
                                 MessageEntryTolerance::EditedDescription,
                             )
                             .on_submit(MessageEntryTolerance::EntryFinishEditing)
@@ -582,8 +688,13 @@ impl ToleranceEntry {
                             TextInput::new(
                                 state_input_dimension,
                                 "Enter a value",
-                                &self.value_input_dimension,
-                                MessageEntryTolerance::EditedDimension,
+                                match &self.value_input {
+                                    ValueInputFormTolerance::Linear{value_input_dimension,..} => {
+                                        value_input_dimension
+                                    },
+                                    _ => {"Error: tolerance type mismatch"}
+                                },
+                                MessageEntryTolerance::EditedLinearDimension,
                             )
                             .on_submit(MessageEntryTolerance::EntryFinishEditing)
                             .padding(10);
@@ -592,8 +703,13 @@ impl ToleranceEntry {
                             TextInput::new(
                                 state_input_tolerance,
                                 "Enter a value",
-                                &self.value_input_tolerance,
-                                MessageEntryTolerance::EditedTolerance,
+                                match &self.value_input {
+                                    ValueInputFormTolerance::Linear{value_input_tolerance,..} => {
+                                        value_input_tolerance
+                                    },
+                                    _ => {"Error: tolerance type mismatch"}
+                                },
+                                MessageEntryTolerance::EditedLinearTolerance,
                             )
                             .on_submit(MessageEntryTolerance::EntryFinishEditing)
                             .padding(10);
@@ -634,8 +750,118 @@ impl ToleranceEntry {
                             .style(style::Container::Entry)
                             .into()
                     },
-                    StateFormTolerance::Float {} => {
-                        Container::new(Row::new()).into()
+                    StateFormTolerance::Float {
+                        state_button_save,
+                        state_button_delete,
+                        state_input_description,
+                        state_input_tolerance_hole,
+                        state_input_tolerance_pin,
+                    } => {
+                        
+                        let view_button_save =
+                            Button::new(
+                                state_button_save,
+                                Row::new()
+                                    .spacing(10)
+                                    .push(check_icon())
+                                    .push(Text::new("Save")),
+                            )
+                            .on_press(MessageEntryTolerance::EntryFinishEditing)
+                            .padding(10)
+                            .style(style::Button::Constructive);
+                        
+                        let view_button_delete =
+                            Button::new(
+                                state_button_delete,
+                                Row::new()
+                                    .spacing(10)
+                                    .push(delete_icon())
+                                    .push(Text::new("Delete")),
+                            )
+                            .on_press(MessageEntryTolerance::EntryDelete)
+                            .padding(10)
+                            .style(style::Button::Destructive);
+
+                        let view_input_description = 
+                            TextInput::new(
+                                state_input_description,
+                                "Enter a description",
+                                match &self.value_input {
+                                    ValueInputFormTolerance::Float{value_input_description,..} => {
+                                        value_input_description
+                                    },
+                                    _ => {"Error: tolerance type mismatch"}
+                                },
+                                MessageEntryTolerance::EditedDescription,
+                            )
+                            .on_submit(MessageEntryTolerance::EntryFinishEditing)
+                            .padding(10);
+                        
+                        let view_input_tolerance_hole = 
+                            TextInput::new(
+                                state_input_tolerance_hole,
+                                "Enter a value",
+                                match &self.value_input {
+                                    ValueInputFormTolerance::Float{value_input_tolerance_hole,..} => {
+                                        value_input_tolerance_hole
+                                    },
+                                    _ => {"Error: tolerance type mismatch"}
+                                },
+                                MessageEntryTolerance::EditedFloatTolHole,
+                            )
+                            .on_submit(MessageEntryTolerance::EntryFinishEditing)
+                            .padding(10);
+                        
+                        let view_input_tolerance_pin = 
+                            TextInput::new(
+                                state_input_tolerance_pin,
+                                "Enter a value",
+                                match &self.value_input {
+                                    ValueInputFormTolerance::Float{value_input_tolerance_pin,..} => {
+                                        value_input_tolerance_pin
+                                    },
+                                    _ => {"Error: tolerance type mismatch"}
+                                },
+                                MessageEntryTolerance::EditedFloatTolPin,
+                            )
+                            .on_submit(MessageEntryTolerance::EntryFinishEditing)
+                            .padding(10);
+
+                        let row_description = Row::new()
+                            .push(Text::new("Description"))
+                            .push(view_input_description)
+                            .spacing(10)
+                            .align_items(Align::Center);
+
+                        let row_dimension = Row::new()
+                            .push(Text::new("Hole Tolerance"))
+                            .push(view_input_tolerance_hole)
+                            .spacing(10)
+                            .align_items(Align::Center);
+
+                        let row_tolerance = Row::new()
+                            .push(Text::new("Pin Tolerance"))
+                            .push(view_input_tolerance_pin)
+                            .spacing(10)
+                            .align_items(Align::Center);
+
+                        let row_buttons = Row::new()
+                            .push(view_button_delete)
+                            .push(view_button_save)
+                            .spacing(10)
+                            .align_items(Align::Center);
+        
+                        let entry_contents = Column::new()
+                            .push(row_description)
+                            .push(row_dimension)
+                            .push(row_tolerance)
+                            .push(row_buttons)
+                            .spacing(10)
+                            .padding(20);
+                        
+                        Container::new(entry_contents)
+                            .style(style::Container::Entry)
+                            .into()
                     },
                     StateFormTolerance::Compound {} => {
                         Container::new(Row::new()).into()
@@ -673,7 +899,13 @@ pub enum StateFormTolerance {
         state_input_dimension: text_input::State,
         state_input_tolerance: text_input::State,
     },
-    Float {},
+    Float {
+        state_button_save: button::State,
+        state_button_delete: button::State,
+        state_input_description: text_input::State,
+        state_input_tolerance_hole: text_input::State,
+        state_input_tolerance_pin: text_input::State,
+    },
     Compound {},
 }
 
@@ -827,15 +1059,19 @@ struct SavedState {
 
 #[derive(Debug, Clone)]
 pub enum MessageEntryTolerance {
-    //Entry messages
+    // Entry messages
     EntryActive(bool),
     EntryEdit,
     EntryDelete,
     EntryFinishEditing,
-    //Field messages
+    // Shared Field messages
     EditedDescription(String),
-    EditedDimension(String),
-    EditedTolerance(String),
+    // Linear entry messages
+    EditedLinearDimension(String),
+    EditedLinearTolerance(String),
+    // Float entry messages
+    EditedFloatTolHole(String),
+    EditedFloatTolPin(String),
 }
 
 #[derive(Debug, Clone)]
