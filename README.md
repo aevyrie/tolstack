@@ -1,6 +1,6 @@
 # TolStack
 
-Simple 1D Monte-Carlo simulation of tolerance chains. **Unstable, GUI implementation in progress.**
+Simple 1D Monte-Carlo simulation of tolerance chains. **Unfinished and Unstable WIP.**
 
 ![Screenshot](docs/screenshot.png)
 
