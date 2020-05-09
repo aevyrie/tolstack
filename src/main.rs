@@ -287,6 +287,14 @@ impl Application for TolStack {
                         .width(Length::FillPortion(1));
 
                     let tol_chain_output = Column::new()
+                    .push(Container::new(Container::new(Row::new())
+                            .style(style::Container::Background)
+                            .padding(5)
+                        )
+                        .padding(20)
+                        .width(Length::Fill)
+                        .center_x()
+                    )
                         .width(Length::FillPortion(1));
                 
                 Column::new()
@@ -568,7 +576,7 @@ impl ToleranceControls {
 
         let tolerance_label = Text::new("Add Tolerance:")
                     .width(Length::Shrink)
-                    .size(18)
+                    .size(24)
                     .color([0.0, 0.0, 0.0])
                     .horizontal_alignment(HorizontalAlignment::Left);
         let tolerance_text = TextInput::new(
