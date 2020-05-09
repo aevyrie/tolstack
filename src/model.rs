@@ -46,7 +46,7 @@ impl ModelResults {
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct SimulationState {
     parameters: SimulationParams,
-    pub tolerance_loop: Vec<ToleranceType>,
+    pub tolerance_loop: Vec<Tolerance>,
     results: ModelResults,
 }
 impl SimulationState {
@@ -64,7 +64,7 @@ impl SimulationState {
         file_write(path, data)?;
         Ok(())
     }
-    pub fn add(&mut self, tolerance: ToleranceType) {
+    pub fn add(&mut self, tolerance: Tolerance) {
         self.tolerance_loop.push(tolerance);
     }
     pub fn compute_multiplier (&mut self) {
@@ -85,7 +85,7 @@ pub fn run(state: &SimulationState) -> Result<ModelResults,Box<dyn Error>> {
     let mut result_stddev = 0f64;
     for n in 0..chunks {
         // TODO: validate n_iterations is nicely divisible by chunk_size and n_threads.
-        // Gather samples into a stack that is `chunk_size` long for each ToleranceType
+        // Gather samples into a stack that is `chunk_size` long for each Tolerance
         let stack = compute_stackup(state.tolerance_loop.clone(), chunk_size);
         // Sum each
         let stack_mean = mean(&stack);
@@ -107,7 +107,7 @@ pub fn run(state: &SimulationState) -> Result<ModelResults,Box<dyn Error>> {
 
 /// Generate a sample for each object in the tolerance collection, n_iterations times. Then sum
 /// the results for each iteration, resulting in stackup for that iteration of the simulation.
-pub fn compute_stackup(tol_collection: Vec<ToleranceType>, n_iterations: usize) -> Vec<f64> {
+pub fn compute_stackup(tol_collection: Vec<Tolerance>, n_iterations: usize) -> Vec<f64> {
     // Make a local clone of the tolerance collection so the borrow is not returned while the
     //  threads are using the collection.
     let tc_local = tol_collection.clone();
@@ -129,9 +129,9 @@ pub fn compute_stackup(tol_collection: Vec<ToleranceType>, n_iterations: usize) 
                         match tol_struct {
                             
                             // I thought this would result in branching, but it didn't impact perf.
-                            ToleranceType::Linear(val) => val.mc_tolerance(),
-                            ToleranceType::Float(val) => val.mc_tolerance(),
-                            ToleranceType::Compound(val) => val.mc_tolerance(),
+                            Tolerance::Linear(val) => val.mc_tolerance(),
+                            Tolerance::Float(val) => val.mc_tolerance(),
+                            Tolerance::Compound(val) => val.mc_tolerance(),
                         }
                     );
                 }
@@ -156,35 +156,35 @@ pub fn compute_stackup(tol_collection: Vec<ToleranceType>, n_iterations: usize) 
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
-pub enum ToleranceType{
+pub enum Tolerance{
     Linear(LinearTL),
     Float(FloatTL),
     Compound(CompoundFloatTL),
 }
-impl ToleranceType {
+impl Tolerance {
     pub fn is_linear(&self) -> bool {
         match self {
-            ToleranceType::Linear(_) => true,
+            Tolerance::Linear(_) => true,
             _ => false   
         }
     }
     pub fn is_float(&self) -> bool {
         match self {
-            ToleranceType::Float(_) => true,
+            Tolerance::Float(_) => true,
             _ => false   
         }
     }
     pub fn is_compound(&self) -> bool {
         match self {
-            ToleranceType::Compound(_) => true,
+            Tolerance::Compound(_) => true,
             _ => false   
         }
     }
     fn compute_multiplier(&mut self) {
         match self {
-            ToleranceType::Linear(tol) => tol.compute_multiplier(),
-            ToleranceType::Float(tol) => tol.compute_multiplier(),
-            ToleranceType::Compound(tol) => tol.compute_multiplier(),
+            Tolerance::Linear(tol) => tol.compute_multiplier(),
+            Tolerance::Float(tol) => tol.compute_multiplier(),
+            Tolerance::Compound(tol) => tol.compute_multiplier(),
         }
     }
 }
@@ -341,21 +341,21 @@ pub fn dummy_data() -> SimulationState {
 
     let mut model = SimulationState::new(parameters);
 
-    model.add(ToleranceType::Linear(LinearTL::new(
+    model.add(Tolerance::Linear(LinearTL::new(
         DimTol::new(5.58, 0.03, 0.03, 3.0),
     )));
-    model.add(ToleranceType::Linear(LinearTL::new(
+    model.add(Tolerance::Linear(LinearTL::new(
         DimTol::new(-25.78, 0.07, 0.07, 3.0),
     )));
-    model.add(ToleranceType::Float(FloatTL::new(
+    model.add(Tolerance::Float(FloatTL::new(
         DimTol::new(2.18, 0.03, 0.03, 3.0),
         DimTol::new(2.13, 0.05, 0.05, 3.0),
         3.0,
     )));
-    model.add(ToleranceType::Linear(LinearTL::new(
+    model.add(Tolerance::Linear(LinearTL::new(
         DimTol::new(14.58, 0.05, 0.05, 3.0),
     )));
-    model.add(ToleranceType::Compound(CompoundFloatTL::new(
+    model.add(Tolerance::Compound(CompoundFloatTL::new(
         DimTol::new(1.2, 0.03, 0.03, 3.0),
         DimTol::new(1.0, 0.03, 0.03, 3.0),
         OffsetFloat::new(
@@ -366,13 +366,13 @@ pub fn dummy_data() -> SimulationState {
         ),
         3.0,
     )));
-    model.add(ToleranceType::Linear(LinearTL::new(
+    model.add(Tolerance::Linear(LinearTL::new(
         DimTol::new(2.5, 0.3, 0.3, 3.0),
     )));
-    model.add(ToleranceType::Linear(LinearTL::new(
+    model.add(Tolerance::Linear(LinearTL::new(
         DimTol::new(3.85, 0.25, 0.25, 3.0),
     )));
-    model.add(ToleranceType::Linear(LinearTL::new(
+    model.add(Tolerance::Linear(LinearTL::new(
         DimTol::new(-0.3, 0.15, 0.15, 3.0),
     )));
     
@@ -389,17 +389,17 @@ pub fn data() -> SimulationState {
 
     let mut model = SimulationState::new(parameters);
 
-    model.add(ToleranceType::Linear(LinearTL::new(
+    model.add(Tolerance::Linear(LinearTL::new(
         DimTol::new(65.88, 0.17, 0.17, 3.0),
     )));
     
-    model.add(ToleranceType::Float(FloatTL::new(
+    model.add(Tolerance::Float(FloatTL::new(
         DimTol::new(2.50, 0.1, 0.0, 3.0),
         DimTol::new(3.0, 0.08, 0.22, 3.0),
         3.0,
     )));
 
-    model.add(ToleranceType::Float(FloatTL::new(
+    model.add(Tolerance::Float(FloatTL::new(
         DimTol::new(2.50, 0.1, 0.0, 3.0),
         DimTol::new(3.0, 0.08, 0.22, 3.0),
         3.0,

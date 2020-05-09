@@ -428,7 +428,7 @@ impl Default for TextEditState {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct ToleranceEntry {
     description: String,
-    model_data: Option<ToleranceType>,
+    model_data: Option<Tolerance>,
     tolerance_type: ToleranceTypes,
     active: bool,
 
@@ -711,7 +711,7 @@ pub enum TolMessage {
     Active(bool),
     Edit,
     DescriptionEdited(String),
-    TolEdited(ToleranceType),
+    TolEdited(Tolerance),
     FinishEditing,
     Delete,
 }
