@@ -18,12 +18,12 @@ fn main() {
 #[derive(Debug)]
 enum TolStack {
     Loading,
-    Loaded(State),
+    Loaded(StateApplication),
 }
 
 // The state of the application
 #[derive(Debug, Default)]
-struct State {
+struct StateApplication {
     project_name: EditableLabel,
     scroll_state: scrollable::State,
     tolerance_controls: ToleranceControls,
@@ -44,7 +44,7 @@ enum Message {
     TolTypeChanged(ToleranceTypes),
     CreateTol,
     FilterChanged(Filter),
-    TolMessage(usize, TolMessage),
+    TolMessage(usize, MessageEntryTolerance),
     LabelMessage(LabelMessage),
 }
 
@@ -84,15 +84,16 @@ impl Application for TolStack {
                 match message {
                     // Take the loaded state and assign to the working state
                     Message::Loaded(Ok(state)) => {
-                        *self = TolStack::Loaded(State {
+                        *self = TolStack::Loaded(StateApplication {
                             project_name: state.project_name,
                             filter_value: state.filter,
                             simulation_state: state.simulation,
-                            ..State::default()
+                            tolerance_entries: state.tolerance_entries,
+                            ..StateApplication::default()
                         });
                     }
                     Message::Loaded(Err(_)) => {
-                        *self = TolStack::Loaded(State::default());
+                        *self = TolStack::Loaded(StateApplication::default());
                     }
                     _ => {}
                 }
@@ -122,7 +123,7 @@ impl Application for TolStack {
                             state.tolerance_controls.tolerance_text_value.clear();
                         }
                     }
-                    Message::TolMessage(i, TolMessage::Delete) => {
+                    Message::TolMessage(i, MessageEntryTolerance::EntryDelete) => {
                         state.tolerance_entries.remove(i);
                     }
                     Message::TolMessage(i, tol_message) => {
@@ -157,6 +158,7 @@ impl Application for TolStack {
                             project_name: state.project_name.clone(),
                             filter: state.filter_value,
                             simulation: state.simulation_state.clone(),
+                            tolerance_entries: state.tolerance_entries.clone(),
                         }
                         .save(),
                         Message::Saved,
@@ -172,7 +174,7 @@ impl Application for TolStack {
     fn view(&mut self) -> Element<Message> {
         match self {
             TolStack::Loading => loading_message(),
-            TolStack::Loaded(State {
+            TolStack::Loaded(StateApplication {
                 project_name,
                 scroll_state,
                 tolerance_controls,
@@ -183,25 +185,26 @@ impl Application for TolStack {
                 dirty,
                 saving,
             }) => {
-                let project_pretext = Text::new("Project: ")
+                let project_label = Text::new("Project: ")
                     .width(Length::Shrink)
                     .size(32)
                     .color([0.5, 0.5, 0.5])
                     .horizontal_alignment(HorizontalAlignment::Left);
                 let project_name: Row<_> = Row::new()
-                    .push(project_pretext)
+                    .push(project_label)
                     .push(project_name.view().map( move |message| {
                         Message::LabelMessage(message)
                     }))
                     .align_items(Align::Center)
                     .spacing(20)
                     .into();
-                
-                let project_title = Row::new()
-                    .push(project_name)
-                    .width(Length::Shrink);
-                    
-                let project_title = Container::new(project_title)
+                                    
+                let project_title = 
+                    Container::new(
+                        Row::new()
+                            .push(project_name)
+                            .width(Length::Shrink)
+                    )
                     .width(Length::Fill)
                     .center_x()
                     .center_y();
@@ -427,62 +430,91 @@ impl Default for TextEditState {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct ToleranceEntry {
-    description: String,
-    model_data: Option<Tolerance>,
+    value_input_description: String,
+    value_input_dimension: String,
+    value_input_tolerance: String,
+    backend_model_data: Option<Tolerance>,
     tolerance_type: ToleranceTypes,
     active: bool,
 
     #[serde(skip)]
-    state: EntryState,
+    state: StateEntryTolerance,
 }
 impl ToleranceEntry {
     fn new(description: String, tolerance_type: ToleranceTypes) -> Self {
         ToleranceEntry {
-            description,
-            model_data: Option::None,
-            tolerance_type,
-            active: true,
-            state: EntryState::Idle {
-                edit_button: button::State::new(),
+            value_input_description: description,
+            value_input_dimension: String::from(""),
+            value_input_tolerance: String::from(""),
+            backend_model_data: None,
+            tolerance_type: tolerance_type,
+            active: false,
+            state: StateEntryTolerance::Idle {
+                state_button_edit: button::State::new(),
             },
         }
     }
 
-    fn update(&mut self, message: TolMessage) {
+    fn update(&mut self, message: MessageEntryTolerance) {
         match message {
-            TolMessage::Active(is_active) => {
+            MessageEntryTolerance::EntryActive(is_active) => {
                 self.active = is_active;
             }
-            TolMessage::Edit => {
-                self.state = EntryState::Editing {
-                    text_input: text_input::State::focused(),
-                    delete_button: button::State::new(),
+            MessageEntryTolerance::EntryEdit => {
+                self.state = match self.tolerance_type {
+                    ToleranceTypes::Linear => {
+                        StateEntryTolerance::Editing {
+                            state_form_tolentry: StateFormTolerance::Linear {
+                                state_button_save: button::State::new(),
+                                state_button_delete: button::State::new(),
+                                state_input_description: text_input::State::focused(),
+                                state_input_dimension: text_input::State::new(),
+                                state_input_tolerance: text_input::State::new(),
+                            }
+                        }
+                    }
+                    ToleranceTypes::Float => {
+                        StateEntryTolerance::Editing {
+                            state_form_tolentry: StateFormTolerance::Float {
+                            }
+                        }
+                    }
+                    ToleranceTypes::Compound => {
+                        StateEntryTolerance::Editing {
+                            state_form_tolentry: StateFormTolerance::Compound {
+                            }
+                        }
+                    }
                 };
             }
-            TolMessage::DescriptionEdited(new_description) => {
-                self.description = new_description;
-            }
-            TolMessage::TolEdited(tolerance) => {
-                self.model_data = Some(tolerance);
-            }
-            TolMessage::FinishEditing => {
-                if !self.description.is_empty() {
-                    self.state = EntryState::Idle {
-                        edit_button: button::State::new(),
+            MessageEntryTolerance::EntryFinishEditing => {
+                if !self.value_input_description.is_empty()
+                {
+                    self.state = StateEntryTolerance::Idle {
+                        state_button_edit: button::State::new(),
                     }
                 }
             }
-            TolMessage::Delete => {}
+            MessageEntryTolerance::EntryDelete => {}
+            MessageEntryTolerance::EditedDescription(new_description) => {
+                self.value_input_description = new_description;
+            }
+            MessageEntryTolerance::EditedDimension(new_dimension) => {
+                self.value_input_dimension = new_dimension;
+            }
+            MessageEntryTolerance::EditedTolerance(new_tolerance) => {
+                self.value_input_tolerance = new_tolerance;
+            }
         }
     }
 
-    fn view(&mut self) -> Element<TolMessage> {
+    fn view(&mut self) -> Element<MessageEntryTolerance> {
         match &mut self.state {
-            EntryState::Idle { edit_button } => {
+            StateEntryTolerance::Idle { state_button_edit } => {
                 let checkbox = Checkbox::new(
                     self.active,
-                    &self.description,
-                    TolMessage::Active,
+                    &self.value_input_description,
+                    MessageEntryTolerance::EntryActive,
                 )
                 .width(Length::Fill);
 
@@ -490,10 +522,10 @@ impl ToleranceEntry {
                     .padding(10)    
                     .spacing(20)
                     .align_items(Align::Center)
-                    .push(checkbox)
+                    .push( checkbox )
                     .push(
-                        Button::new(edit_button, edit_icon())
-                            .on_press(TolMessage::Edit)
+                        Button::new(state_button_edit, edit_icon())
+                            .on_press(MessageEntryTolerance::EntryEdit)
                             .padding(10)
                             .style(style::Button::Icon),
                     );
@@ -502,61 +534,147 @@ impl ToleranceEntry {
                     .style(style::Container::Entry)
                     .into()
             }
-            EntryState::Editing {
-                text_input,
-                delete_button,
-            } => {
-                let text_input = TextInput::new(
-                    text_input,
-                    "Describe this tolerance...",
-                    &self.description,
-                    TolMessage::DescriptionEdited,
-                )
-                .on_submit(TolMessage::FinishEditing)
-                .padding(10);
+            StateEntryTolerance::Editing { state_form_tolentry } => {
+                match state_form_tolentry {
+                    StateFormTolerance::Linear {
+                        state_button_save,
+                        state_button_delete,
+                        state_input_description,
+                        state_input_dimension,
+                        state_input_tolerance,
+                    } => {
+                        
+                        let view_button_save =
+                            Button::new(
+                                state_button_save,
+                                Row::new()
+                                    .spacing(10)
+                                    .push(check_icon())
+                                    .push(Text::new("Save")),
+                            )
+                            .on_press(MessageEntryTolerance::EntryFinishEditing)
+                            .padding(10)
+                            .style(style::Button::Constructive);
+                        
+                        let view_button_delete =
+                            Button::new(
+                                state_button_delete,
+                                Row::new()
+                                    .spacing(10)
+                                    .push(delete_icon())
+                                    .push(Text::new("Delete")),
+                            )
+                            .on_press(MessageEntryTolerance::EntryDelete)
+                            .padding(10)
+                            .style(style::Button::Destructive);
 
-                let row_contents = Row::new()
-                    .padding(10)
-                    .spacing(20)
-                    .align_items(Align::Center)
-                    .push(text_input)
-                    .push(
-                        Button::new(
-                            delete_button,
-                            Row::new()
-                                .spacing(10)
-                                .push(delete_icon())
-                                .push(Text::new("Delete")),
-                        )
-                        .on_press(TolMessage::Delete)
-                        .padding(10)
-                        .style(style::Button::Destructive),
-                    );
+                        let view_input_description = 
+                            TextInput::new(
+                                state_input_description,
+                                "Enter a description",
+                                &self.value_input_description,
+                                MessageEntryTolerance::EditedDescription,
+                            )
+                            .on_submit(MessageEntryTolerance::EntryFinishEditing)
+                            .padding(10);
+                        
+                        let view_input_dimension = 
+                            TextInput::new(
+                                state_input_dimension,
+                                "Enter a value",
+                                &self.value_input_dimension,
+                                MessageEntryTolerance::EditedDimension,
+                            )
+                            .on_submit(MessageEntryTolerance::EntryFinishEditing)
+                            .padding(10);
+                        
+                        let view_input_tolerance = 
+                            TextInput::new(
+                                state_input_tolerance,
+                                "Enter a value",
+                                &self.value_input_tolerance,
+                                MessageEntryTolerance::EditedTolerance,
+                            )
+                            .on_submit(MessageEntryTolerance::EntryFinishEditing)
+                            .padding(10);
+
+                        let row_description = Row::new()
+                            .push(Text::new("Description"))
+                            .push(view_input_description)
+                            .spacing(10)
+                            .align_items(Align::Center);
+
+                        let row_dimension = Row::new()
+                            .push(Text::new("Dimension"))
+                            .push(view_input_dimension)
+                            .spacing(10)
+                            .align_items(Align::Center);
+
+                        let row_tolerance = Row::new()
+                            .push(Text::new("Tolerance"))
+                            .push(view_input_tolerance)
+                            .spacing(10)
+                            .align_items(Align::Center);
+
+                        let row_buttons = Row::new()
+                            .push(view_button_delete)
+                            .push(view_button_save)
+                            .spacing(10)
+                            .align_items(Align::Center);
+        
+                        let entry_contents = Column::new()
+                            .push(row_description)
+                            .push(row_dimension)
+                            .push(row_tolerance)
+                            .push(row_buttons)
+                            .spacing(10)
+                            .padding(20);
+                        
+                        Container::new(entry_contents)
+                            .style(style::Container::Entry)
+                            .into()
+                    },
+                    StateFormTolerance::Float {} => {
+                        Container::new(Row::new()).into()
+                    },
+                    StateFormTolerance::Compound {} => {
+                        Container::new(Row::new()).into()
+                    },
+                }
                 
-                Container::new(row_contents)
-                    .style(style::Container::Entry)
-                    .into()
             }
         }
     }
 }
 
 #[derive(Debug, Clone)]
-pub enum EntryState {
+pub enum StateEntryTolerance {
     Idle {
-        edit_button: button::State,
+        state_button_edit: button::State,
     },
     Editing {
-        text_input: text_input::State,
-        delete_button: button::State,
+        state_form_tolentry: StateFormTolerance,
     },
 }
-impl Default for EntryState {
+impl Default for StateEntryTolerance {
     fn default() -> Self {
-        EntryState::Idle {
-            edit_button: button::State::new(),
+        StateEntryTolerance::Idle {
+            state_button_edit: button::State::new(),
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub enum StateFormTolerance {
+    Linear {
+        state_button_save: button::State,
+        state_button_delete: button::State,
+        state_input_description: text_input::State,
+        state_input_dimension: text_input::State,
+        state_input_tolerance: text_input::State,
+    },
+    Float {},
+    Compound {},
 }
 
 #[derive(Debug, Default, Clone)]
@@ -704,16 +822,20 @@ struct SavedState {
     project_name: EditableLabel,
     filter: Filter,
     simulation: SimulationState,
+    tolerance_entries: Vec<ToleranceEntry>,
 }
 
 #[derive(Debug, Clone)]
-pub enum TolMessage {
-    Active(bool),
-    Edit,
-    DescriptionEdited(String),
-    TolEdited(Tolerance),
-    FinishEditing,
-    Delete,
+pub enum MessageEntryTolerance {
+    //Entry messages
+    EntryActive(bool),
+    EntryEdit,
+    EntryDelete,
+    EntryFinishEditing,
+    //Field messages
+    EditedDescription(String),
+    EditedDimension(String),
+    EditedTolerance(String),
 }
 
 #[derive(Debug, Clone)]
@@ -838,8 +960,6 @@ impl SavedState {
     }
 }
 
-
-
 fn loading_message() -> Element<'static, Message> {
     Container::new(
         Text::new("Loading...")
@@ -861,6 +981,7 @@ mod style {
         Choice { selected: bool },
         Icon,
         Destructive,
+        Constructive,
     }
     impl button::StyleSheet for Button {
         fn active(&self) -> button::Style {
@@ -900,6 +1021,15 @@ mod style {
                 Button::Destructive => button::Style {
                     background: Some(Background::Color(Color::from_rgb(
                         0.8, 0.2, 0.2,
+                    ))),
+                    border_radius: 5,
+                    text_color: Color::WHITE,
+                    shadow_offset: Vector::new(1.0, 1.0),
+                    ..button::Style::default()
+                },
+                Button::Constructive => button::Style {
+                    background: Some(Background::Color(Color::from_rgb(
+                        0.2, 0.8, 0.2,
                     ))),
                     border_radius: 5,
                     text_color: Color::WHITE,
@@ -990,6 +1120,10 @@ fn edit_icon() -> Text {
 
 fn delete_icon() -> Text {
     icon('\u{F1F8}')
+}
+
+fn check_icon() -> Text {
+    icon('\u{2713}')
 }
 
 /*
