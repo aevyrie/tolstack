@@ -1,7 +1,10 @@
+#![windows_subsystem = "windows"] // Tells windows compiler not to show console window
+
 mod model;
 mod tolerances;
 
 use model::*;
+use tolerances::*;
 use iced::{
     button, scrollable, text_input, Align, Application, Button, Checkbox,
     Column, Command, Container, Element, Font, HorizontalAlignment, Length,
@@ -9,6 +12,7 @@ use iced::{
 };
 use serde::{Deserialize, Serialize};
 use serde_derive::*;
+
 
 fn main() {
     TolStack::run(Settings::default())
@@ -28,7 +32,7 @@ struct StateApplication {
     scroll_state: scrollable::State,
     tolerance_controls: ToleranceControls,
     filter_value: Filter,
-    tolerance_entries: Vec<ToleranceEntry>,
+    tol_entries: Vec<ToleranceEntry>,
     simulation_state: SimulationState,
     filter_controls: FilterControls,
     dirty: bool,
@@ -44,7 +48,7 @@ enum Message {
     TolTypeChanged(ToleranceTypes),
     CreateTol,
     FilterChanged(Filter),
-    TolMessage(usize, MessageEntryTolerance),
+    TolMessage(usize, MessageEntryTol),
     LabelMessage(LabelMessage),
 }
 
@@ -80,6 +84,7 @@ impl Application for TolStack {
     // Update logic - how to react to messages sent through the application
     fn update(&mut self, message: Message) -> Command<Message> {
         match self {
+            // While the application is loading:
             TolStack::Loading => {
                 match message {
                     // Take the loaded state and assign to the working state
@@ -88,7 +93,7 @@ impl Application for TolStack {
                             project_name: state.project_name,
                             filter_value: state.filter,
                             simulation_state: state.simulation,
-                            tolerance_entries: state.tolerance_entries,
+                            tol_entries: state.tolerance_entries,
                             ..StateApplication::default()
                         });
                     }
@@ -100,6 +105,7 @@ impl Application for TolStack {
 
                 Command::none()
             }
+            // Once the application has loaded:
             TolStack::Loaded(state) => {
                 let mut saved = false;
 
@@ -115,7 +121,7 @@ impl Application for TolStack {
                         let input_type = state.tolerance_controls.tolerance_type;
                         if !input_text.is_empty() {
                             state
-                                .tolerance_entries
+                                .tol_entries
                                 .push(ToleranceEntry::new(
                                     input_text.clone(),
                                     input_type.clone(),
@@ -123,11 +129,77 @@ impl Application for TolStack {
                             state.tolerance_controls.tolerance_text_value.clear();
                         }
                     }
-                    Message::TolMessage(i, MessageEntryTolerance::EntryDelete) => {
-                        state.tolerance_entries.remove(i);
+                    Message::TolMessage(i, MessageEntryTol::EntryDelete) => {
+                        state.tol_entries.remove(i);
                     }
                     Message::TolMessage(i, tol_message) => {
-                        if let Some(tol) = state.tolerance_entries.get_mut(i) {
+                        // Some message `tol_message`  from a tolerance entry at index `i`
+                        match &tol_message {
+                            MessageEntryTol::EntryFinishEditing => match state.tol_entries.get_mut(i) {
+                                Some(entry) => match  &entry.value_input {
+                                    ValueInputFormTolerance::Linear {
+                                        value_input_description,
+                                        value_input_dimension,
+                                        value_input_tolerance,
+                                    } => {
+                                        let mut sanitized_dimension = 0.0;
+                                        let mut sanitized_tolerance = 0.0;
+
+                                        entry.valid = true;
+
+                                        match value_input_dimension.parse::<f64>() {
+                                            Ok(value) => {
+                                                sanitized_dimension = value;
+                                            }
+                                            Err(e) => {
+                                                entry.valid = false;
+                                            }
+                                        }
+                                        match value_input_tolerance.parse::<f64>() {
+                                            Ok(value) => {
+                                                sanitized_tolerance = value;
+                                            }
+                                            Err(e) => {
+                                                entry.valid = false;
+                                            }
+                                        }
+                                        if entry.valid {
+                                            let data = DimTol::new(
+                                                sanitized_dimension, 
+                                                sanitized_tolerance, 
+                                                sanitized_tolerance, 
+                                                3.0,
+                                            );
+                                            let data = Some(
+                                                Tolerance::Linear(LinearTL::new(data))
+                                            );
+                                            println!("{:?}",data);
+                                            entry.backend_model_data = data;
+                                        }
+                                    },
+                                    ValueInputFormTolerance::Float {
+                                        value_input_description,
+                                        value_input_tolerance_hole,
+                                        value_input_tolerance_pin,
+                                    } => {
+
+                                    },
+                                    ValueInputFormTolerance::Compound {
+                                        value_input_description,
+                                        value_input_tolerance_hole_1,
+                                        value_input_tolerance_pin_1,
+                                        value_input_tolerance_hole_2,
+                                        value_input_tolerance_pin_2,
+                                    } => {
+
+                                    },
+                                }
+                                ,
+                                None => {}
+                            }
+                            _ => {}
+                        }
+                        if let Some(tol) = state.tol_entries.get_mut(i) {
                             tol.update(tol_message);
                         }
                     }
@@ -158,7 +230,7 @@ impl Application for TolStack {
                             project_name: state.project_name.clone(),
                             filter: state.filter_value,
                             simulation: state.simulation_state.clone(),
-                            tolerance_entries: state.tolerance_entries.clone(),
+                            tolerance_entries: state.tol_entries.clone(),
                         }
                         .save(),
                         Message::Saved,
@@ -179,7 +251,7 @@ impl Application for TolStack {
                 scroll_state,
                 tolerance_controls,
                 filter_value,
-                tolerance_entries,
+                tol_entries,
                 simulation_state,
                 filter_controls,
                 dirty,
@@ -210,11 +282,11 @@ impl Application for TolStack {
                     .center_y();
 
                 let tolerance_controls = tolerance_controls.view().padding(20);
-                let filter_controls = filter_controls.view(&tolerance_entries, *filter_value);
+                let filter_controls = filter_controls.view(&tol_entries, *filter_value);
                 let filtered_tols =
-                    tolerance_entries.iter().filter(|tol| filter_value.matches(tol.tolerance_type));
+                    tol_entries.iter().filter(|tol| filter_value.matches(tol.tolerance_type));
                 let tolerance_entries: Element<_> = if filtered_tols.count() > 0 {
-                    tolerance_entries
+                    tol_entries
                         .iter_mut()
                         .enumerate()
                         .filter(|(_, tol)| filter_value.matches(tol.tolerance_type))
@@ -457,6 +529,7 @@ struct ToleranceEntry {
     backend_model_data: Option<Tolerance>,
     tolerance_type: ToleranceTypes,
     active: bool,
+    valid: bool,
 
     #[serde(skip)]
     state: StateEntryTolerance,
@@ -492,18 +565,19 @@ impl ToleranceEntry {
             backend_model_data: None,
             tolerance_type: tolerance_type,
             active: false,
+            valid: false,
             state: StateEntryTolerance::Idle {
                 state_button_edit: button::State::new(),
             },
         }
     }
 
-    fn update(&mut self, message: MessageEntryTolerance) {
+    fn update(&mut self, message: MessageEntryTol) {
         match message {
-            MessageEntryTolerance::EntryActive(is_active) => {
+            MessageEntryTol::EntryActive(is_active) => {
                 self.active = is_active;
             }
-            MessageEntryTolerance::EntryEdit => {
+            MessageEntryTol::EntryEdit => {
                 self.state = match self.tolerance_type {
                     ToleranceTypes::Linear => {
                         StateEntryTolerance::Editing {
@@ -535,7 +609,7 @@ impl ToleranceEntry {
                     }
                 };
             }
-            MessageEntryTolerance::EntryFinishEditing => {
+            MessageEntryTol::EntryFinishEditing => {
                 if match &self.value_input {
                     ValueInputFormTolerance::Linear{value_input_description,..} => {
                         !value_input_description.is_empty()
@@ -552,8 +626,8 @@ impl ToleranceEntry {
                     }
                 }
             }
-            MessageEntryTolerance::EntryDelete => {}
-            MessageEntryTolerance::EditedDescription(input) => {
+            MessageEntryTol::EntryDelete => {}
+            MessageEntryTol::EditedDescription(input) => {
                 match &mut self.value_input {
                     ValueInputFormTolerance::Linear{value_input_description,..} => {
                         *value_input_description = input
@@ -566,7 +640,7 @@ impl ToleranceEntry {
                     },
                 };
             }
-            MessageEntryTolerance::EditedLinearDimension(input) => {
+            MessageEntryTol::EditedLinearDimension(input) => {
                 match &mut self.value_input {
                     ValueInputFormTolerance::Linear{value_input_dimension,..} => {
                         if input.parse::<f64>().is_ok() {*value_input_dimension = input}
@@ -574,7 +648,7 @@ impl ToleranceEntry {
                     _ => {}
                 };
             }
-            MessageEntryTolerance::EditedLinearTolerance(input) => {
+            MessageEntryTol::EditedLinearTolerance(input) => {
                 match &mut self.value_input {
                     ValueInputFormTolerance::Linear{value_input_tolerance,..} => {
                         if input.parse::<f64>().is_ok() {*value_input_tolerance = input}
@@ -582,7 +656,7 @@ impl ToleranceEntry {
                     _ => {}
                 };
             }
-            MessageEntryTolerance::EditedFloatTolHole(input) => {
+            MessageEntryTol::EditedFloatTolHole(input) => {
                 match &mut self.value_input {
                     ValueInputFormTolerance::Float{value_input_tolerance_hole,..} => {
                         if input.parse::<f64>().is_ok() {*value_input_tolerance_hole = input}
@@ -590,7 +664,7 @@ impl ToleranceEntry {
                     _ => {}
                 };
             }
-            MessageEntryTolerance::EditedFloatTolPin(input) => {
+            MessageEntryTol::EditedFloatTolPin(input) => {
                 match &mut self.value_input {
                     ValueInputFormTolerance::Float{value_input_tolerance_pin,..} => {
                         if input.parse::<f64>().is_ok() {*value_input_tolerance_pin = input}
@@ -601,7 +675,7 @@ impl ToleranceEntry {
         }
     }
 
-    fn view(&mut self) -> Element<MessageEntryTolerance> {
+    fn view(&mut self) -> Element<MessageEntryTol> {
         match &mut self.state {
             StateEntryTolerance::Idle { state_button_edit } => {
                 let checkbox = Checkbox::new(
@@ -617,7 +691,7 @@ impl ToleranceEntry {
                             value_input_description
                         },
                     },
-                    MessageEntryTolerance::EntryActive,
+                    MessageEntryTol::EntryActive,
                 )
                 .width(Length::Fill);
 
@@ -628,7 +702,7 @@ impl ToleranceEntry {
                     .push( checkbox )
                     .push(
                         Button::new(state_button_edit, edit_icon())
-                            .on_press(MessageEntryTolerance::EntryEdit)
+                            .on_press(MessageEntryTol::EntryEdit)
                             .padding(10)
                             .style(style::Button::Icon),
                     );
@@ -655,7 +729,7 @@ impl ToleranceEntry {
                                     .push(check_icon())
                                     .push(Text::new("Save")),
                             )
-                            .on_press(MessageEntryTolerance::EntryFinishEditing)
+                            .on_press(MessageEntryTol::EntryFinishEditing)
                             .padding(10)
                             .style(style::Button::Constructive);
                         
@@ -667,7 +741,7 @@ impl ToleranceEntry {
                                     .push(delete_icon())
                                     .push(Text::new("Delete")),
                             )
-                            .on_press(MessageEntryTolerance::EntryDelete)
+                            .on_press(MessageEntryTol::EntryDelete)
                             .padding(10)
                             .style(style::Button::Destructive);
 
@@ -681,9 +755,9 @@ impl ToleranceEntry {
                                     },
                                     _ => {"Error: tolerance type mismatch"}
                                 },
-                                MessageEntryTolerance::EditedDescription,
+                                MessageEntryTol::EditedDescription,
                             )
-                            .on_submit(MessageEntryTolerance::EntryFinishEditing)
+                            .on_submit(MessageEntryTol::EntryFinishEditing)
                             .padding(10);
                         
                         let view_input_dimension = 
@@ -696,9 +770,9 @@ impl ToleranceEntry {
                                     },
                                     _ => {"Error: tolerance type mismatch"}
                                 },
-                                MessageEntryTolerance::EditedLinearDimension,
+                                MessageEntryTol::EditedLinearDimension,
                             )
-                            .on_submit(MessageEntryTolerance::EntryFinishEditing)
+                            .on_submit(MessageEntryTol::EntryFinishEditing)
                             .padding(10);
                         
                         let view_input_tolerance = 
@@ -711,9 +785,9 @@ impl ToleranceEntry {
                                     },
                                     _ => {"Error: tolerance type mismatch"}
                                 },
-                                MessageEntryTolerance::EditedLinearTolerance,
+                                MessageEntryTol::EditedLinearTolerance,
                             )
-                            .on_submit(MessageEntryTolerance::EntryFinishEditing)
+                            .on_submit(MessageEntryTol::EntryFinishEditing)
                             .padding(10);
 
                         let row_header = Row::new()
@@ -780,7 +854,7 @@ impl ToleranceEntry {
                                     .push(check_icon())
                                     .push(Text::new("Save")),
                             )
-                            .on_press(MessageEntryTolerance::EntryFinishEditing)
+                            .on_press(MessageEntryTol::EntryFinishEditing)
                             .padding(10)
                             .style(style::Button::Constructive);
                         
@@ -792,7 +866,7 @@ impl ToleranceEntry {
                                     .push(delete_icon())
                                     .push(Text::new("Delete")),
                             )
-                            .on_press(MessageEntryTolerance::EntryDelete)
+                            .on_press(MessageEntryTol::EntryDelete)
                             .padding(10)
                             .style(style::Button::Destructive);
 
@@ -806,9 +880,9 @@ impl ToleranceEntry {
                                     },
                                     _ => {"Error: tolerance type mismatch"}
                                 },
-                                MessageEntryTolerance::EditedDescription,
+                                MessageEntryTol::EditedDescription,
                             )
-                            .on_submit(MessageEntryTolerance::EntryFinishEditing)
+                            .on_submit(MessageEntryTol::EntryFinishEditing)
                             .padding(10);
                         
                         let view_input_tolerance_hole = 
@@ -821,9 +895,9 @@ impl ToleranceEntry {
                                     },
                                     _ => {"Error: tolerance type mismatch"}
                                 },
-                                MessageEntryTolerance::EditedFloatTolHole,
+                                MessageEntryTol::EditedFloatTolHole,
                             )
-                            .on_submit(MessageEntryTolerance::EntryFinishEditing)
+                            .on_submit(MessageEntryTol::EntryFinishEditing)
                             .padding(10);
                         
                         let view_input_tolerance_pin = 
@@ -836,9 +910,9 @@ impl ToleranceEntry {
                                     },
                                     _ => {"Error: tolerance type mismatch"}
                                 },
-                                MessageEntryTolerance::EditedFloatTolPin,
+                                MessageEntryTol::EditedFloatTolPin,
                             )
-                            .on_submit(MessageEntryTolerance::EntryFinishEditing)
+                            .on_submit(MessageEntryTol::EntryFinishEditing)
                             .padding(10);
 
                         let row_header = Row::new()
@@ -1083,7 +1157,7 @@ struct SavedState {
 }
 
 #[derive(Debug, Clone)]
-pub enum MessageEntryTolerance {
+pub enum MessageEntryTol {
     // Entry messages
     EntryActive(bool),
     EntryEdit,
