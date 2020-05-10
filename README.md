@@ -16,7 +16,7 @@ Mechanical Interfaces
 
 * `Linear`: Linear dimensions (point A to B)
 * `Float`: Single hole/pin pair (a part with one pin located in another part with one hole)
-* `Compound`: Double hole/pin pairs in parallel (a part with two pins located in another part with two holes)
+* ~~`Compound`: Double hole/pin pairs in parallel (a part with two pins located in another part with two holes)~~
 
 Tolerances
 
