@@ -6,7 +6,7 @@ pub struct DimTol{
     pub dim: f64,
     pub tol_pos: f64,
     pub tol_neg: f64,
-    #[serde(skip)]
+    //#[serde(skip)]
     pub tol_multiplier: f64,
     pub sigma: f64,
 }
