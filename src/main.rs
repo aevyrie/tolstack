@@ -789,7 +789,7 @@ impl ToleranceEntry {
             MessageEntryTol::EditedLinearDimension(input) => {
                 match &mut self.value_input {
                     ValueInputFormTolerance::Linear{value_input_dimension,..} => {
-                        if input.parse::<f64>().is_ok() {*value_input_dimension = input}
+                        *value_input_dimension = numeric_str(value_input_dimension, &input)
                     },
                     _ => {}
                 };
@@ -797,7 +797,7 @@ impl ToleranceEntry {
             MessageEntryTol::EditedLinearTolerance(input) => {
                 match &mut self.value_input {
                     ValueInputFormTolerance::Linear{value_input_tolerance,..} => {
-                        if input.parse::<f64>().is_ok() {*value_input_tolerance = input}
+                        *value_input_tolerance = numeric_str(value_input_tolerance, &input)
                     },
                     _ => {}
                 };
@@ -805,7 +805,7 @@ impl ToleranceEntry {
             MessageEntryTol::EditedFloatTolHole(input) => {
                 match &mut self.value_input {
                     ValueInputFormTolerance::Float{value_input_tolerance_hole,..} => {
-                        if input.parse::<f64>().is_ok() {*value_input_tolerance_hole = input}
+                        *value_input_tolerance_hole = numeric_str(value_input_tolerance_hole, &input)
                     },
                     _ => {}
                 };
@@ -813,7 +813,7 @@ impl ToleranceEntry {
             MessageEntryTol::EditedFloatTolPin(input) => {
                 match &mut self.value_input {
                     ValueInputFormTolerance::Float{value_input_tolerance_pin,..} => {
-                        if input.parse::<f64>().is_ok() {*value_input_tolerance_pin = input}
+                        *value_input_tolerance_pin = numeric_str(value_input_tolerance_pin, &input)
                     },
                     _ => {}
                 };
@@ -1116,6 +1116,14 @@ impl ToleranceEntry {
                 
             }
         }
+    }
+}
+
+pub fn numeric_str(old: &str, input: &str) -> String {
+    if input.parse::<f64>().is_ok() || input == "-" || input == "" {
+        input.to_string()
+    } else {
+        old.to_string()
     }
 }
 
