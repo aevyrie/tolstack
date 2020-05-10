@@ -1,6 +1,6 @@
 # TolStack
 
-Simple 1D tolerance analysis tool. **Unfinished and Unstable WIP.**
+TolStack is a simple tolerance analysis application with a UI for building and analyzing tolerance models. **Unfinished and Unstable WIP.**
 
 ![Screenshot](docs/screenshot.png)
 
