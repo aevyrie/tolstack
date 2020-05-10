@@ -4,6 +4,12 @@ Simple 1D Monte-Carlo simulation of tolerance chains. **Unfinished and Unstable 
 
 ![Screenshot](docs/screenshot.png)
 
+## Build Instructions
+
+1. Clone the repository.
+2. Install Rust via [Rustup](https://www.rust-lang.org/tools/install).
+3. From the root directory, run `cargo run --release` to build and launch the application.
+
 ## Features
 
 Mechanical Interfaces
@@ -20,17 +26,19 @@ Tolerances
 
 Input/Output
 
-* Saving/loading JSON files
-* Exports simulation output data to CSV for plotting
+* Auto saving - no manual save/load yet
+* ~~Saving/loading JSON files~~
+* ~~Exports simulation output data to CSV for plotting~~
 
 ## Todo
 
-* Test coverage
 * GUI for building tolerance model as well as saving/loading.
-* Generalize the Compound tolerance interface to allow for more than two pairs of connected holes and pins
+* Generalize the Compound tolerance interface to instead allow any tolerance to be in parallel instead of serial only.
 * Add RSS tolerance analysis
 * Add worst case tolerance calculation
 * Generate plots in GUI
+* Tolerance stack visualization
 * Make threading more intelligent, detect num_cpus
+* Test coverage
 * Revisit optimization
 * Go 2D?
