@@ -1,13 +1,15 @@
-#![windows_subsystem = "windows"] // Tells windows compiler not to show console window
+//#![windows_subsystem = "windows"] // Tells windows compiler not to show console window
 
 mod model;
 mod tolerances;
 
 use model::*;
 use tolerances::*;
+use std::time::Instant;
+
 use iced::{
     button, scrollable, text_input, Align, Application, Button, Checkbox,
-    Column, Command, Container, Element, Font, HorizontalAlignment, Length,
+    Color, Column, Command, Container, Element, Font, HorizontalAlignment, Length,
     Row, Scrollable, Settings, Text, TextInput,
 };
 use serde::{Deserialize, Serialize};
@@ -18,25 +20,62 @@ fn main() {
     TolStack::run(Settings::default())
 }
 
-// Loading state wrapper
-#[derive(Debug)]
-enum TolStack {
-    Loading,
-    Loaded(StateApplication),
-}
-
 // The state of the application
 #[derive(Debug, Default)]
 struct StateApplication {
     project_name: EditableLabel,
     scroll_state: scrollable::State,
+    button_state: button::State,
     tolerance_controls: ToleranceControls,
     filter_value: Filter,
     tol_entries: Vec<ToleranceEntry>,
     simulation_state: SimulationState,
+    simulation_result: ModelResults,
     filter_controls: FilterControls,
     dirty: bool,
     saving: bool,
+    valid_stack: bool,
+}
+impl StateApplication {
+    fn compute(&mut self) {
+        //self.simulation_state = SimulationState::default();
+        self.simulation_state.clear();
+        // Make sure all active entries are valid
+        let mut valid = true;
+        for entry in &self.tol_entries {
+            if entry.active && !entry.valid { 
+                valid = false;
+            }
+        }
+        // Build the model
+        if valid {
+            for entry in &self.tol_entries {
+                if entry.active {
+                    match &entry.backend_model_data {
+                        Some(data) => {
+                            println!("ADDING TO MODEL: {:#?}", entry);
+                            self.simulation_state.add(data.clone());
+                        },
+                        None => {}, // TODO handle this case, could result in bad output
+                    }
+                }
+            }
+        }
+
+        let time_start = Instant::now();
+        self.simulation_result = model::run(&self.simulation_state).unwrap();
+        let duration = time_start.elapsed();
+
+        println!("Result: {:.3} +/- {:.3}; Stddev: {:.3};\nSamples: {}; Duration: {:.3?}", 
+            self.simulation_result.mean, 
+            self.simulation_result.tolerance, 
+            self.simulation_result.stddev, 
+            self.simulation_result.iterations,
+            duration,
+        );
+
+
+    }
 }
 
 // Messages - events for users to change the application state
@@ -47,12 +86,18 @@ enum Message {
     TolNameChanged(String),
     TolTypeChanged(ToleranceTypes),
     CreateTol,
+    Calculate,
     FilterChanged(Filter),
     TolMessage(usize, MessageEntryTol),
     LabelMessage(LabelMessage),
 }
 
-
+// Loading state wrapper
+#[derive(Debug)]
+enum TolStack {
+    Loading,
+    Loaded(StateApplication),
+}
 impl Application for TolStack {
     type Executor = iced::executor::Default;
     type Message = Message;
@@ -164,17 +209,15 @@ impl Application for TolStack {
                                             }
                                         }
                                         if entry.valid {
-                                            let data = DimTol::new(
+                                            let linear = DimTol::new(
                                                 sanitized_dimension, 
                                                 sanitized_tolerance, 
                                                 sanitized_tolerance, 
                                                 3.0,
                                             );
-                                            let data = Some(
-                                                Tolerance::Linear(LinearTL::new(data))
-                                            );
-                                            println!("{:?}",data);
-                                            entry.backend_model_data = data;
+                                            let linear = Tolerance::Linear(LinearTL::new(linear));
+                                            println!("{:#?}", linear);
+                                            entry.backend_model_data = Some(linear);
                                         }
                                     },
                                     ValueInputFormTolerance::Float {
@@ -182,7 +225,46 @@ impl Application for TolStack {
                                         value_input_tolerance_hole,
                                         value_input_tolerance_pin,
                                     } => {
+                                        let mut sanitized_tolerance_hole = 0.0;
+                                        let mut sanitized_tolerance_pin = 0.0;
 
+                                        entry.valid = true;
+
+                                        match value_input_tolerance_hole.parse::<f64>() {
+                                            Ok(value) => {
+                                                sanitized_tolerance_hole = value;
+                                            }
+                                            Err(e) => {
+                                                entry.valid = false;
+                                            }
+                                        }
+                                        match value_input_tolerance_pin.parse::<f64>() {
+                                            Ok(value) => {
+                                                sanitized_tolerance_pin = value;
+                                            }
+                                            Err(e) => {
+                                                entry.valid = false;
+                                            }
+                                        }
+                                        if entry.valid {
+                                            let hole = DimTol::new(
+                                                0.0, 
+                                                sanitized_tolerance_hole, 
+                                                sanitized_tolerance_hole, 
+                                                3.0,
+                                            );
+                                            let pin = DimTol::new(
+                                                0.0, 
+                                                sanitized_tolerance_pin, 
+                                                sanitized_tolerance_pin, 
+                                                3.0,
+                                            );
+                                            let data = Tolerance::Float(
+                                                FloatTL::new(hole, pin,3.0)
+                                            );
+                                            println!("{:#?}",data);
+                                            entry.backend_model_data = Some(data);
+                                        }
                                     },
                                     ValueInputFormTolerance::Compound {
                                         value_input_description,
@@ -209,12 +291,15 @@ impl Application for TolStack {
                     Message::FilterChanged(filter) => {
                         state.filter_value = filter;
                     }
-
                     Message::Saved(_) => {
                         state.saving = false;
                         saved = true;
                     }
-                    _ => {}
+                    Message::Calculate => {
+                        // Check that all entries are valid
+                        state.compute();
+                    }
+                    Message::Loaded(_) => {}
                 }
 
                 if !saved {
@@ -249,13 +334,16 @@ impl Application for TolStack {
             TolStack::Loaded(StateApplication {
                 project_name,
                 scroll_state,
+                button_state,
                 tolerance_controls,
                 filter_value,
                 tol_entries,
                 simulation_state,
+                simulation_result,
                 filter_controls,
                 dirty,
                 saving,
+                valid_stack,
             }) => {
                 let project_label = Text::new("Project: ")
                     .width(Length::Shrink)
@@ -349,44 +437,70 @@ impl Application for TolStack {
                     .width(Length::Fill)
                     .center_x();
 
-
-                    let results_summary = Column::new()
-                        .push(Row::new().width(Length::Fill))
-                        .height(Length::Fill);
-
-
-                    let tol_chain_input = Column::new()
-                        .push(Container::new(Container::new(tolerance_controls)
-                                .style(style::Container::Background)
+                let results_header = Column::new()
+                    .push(Row::new()
+                        .push(Text::new("Analysis Results")
+                            .size(24)
+                            .width(Length::Fill))
+                        .push(
+                            Button::new( 
+                                button_state, 
+                                Row::new()
+                                    .spacing(10)
+                                    //.push(check_icon())
+                                    .push(Text::new("Calculate")),
                             )
-                            .padding(20)
-                            .width(Length::Fill)
-                            .center_x()
+                            .style(style::Button::Constructive)
+                            .padding(10)
+                            .on_press(Message::Calculate)
                         )
-                        .push(filtereable_scroll_region)
-                        .width(Length::FillPortion(1));
+                        .align_items(Align::Center)
+                        .width(Length::Fill)
+                    );
 
-                    let tol_chain_output = Column::new()
-                    .push(Container::new(Container::new(results_summary)
+                let results_summary = Container::new(Column::new()
+                        .push(results_header)
+                        .height(Length::Fill)
+                    )
+                    .padding(10);
+
+
+                let tol_chain_input = Column::new()
+                    .push(Container::new(Container::new(tolerance_controls)
                             .style(style::Container::Background)
-                            .padding(5)
-                            .height(Length::Fill)
                         )
                         .padding(20)
-                        .height(Length::Fill)
+                        .width(Length::Fill)
                         .center_x()
                     )
+                    .push(filtereable_scroll_region)
+                    .width(Length::FillPortion(1));
+
+                let tol_chain_output = Column::new()
+                .push(Container::new(Container::new(results_summary)
+                        .style(style::Container::Background)
+                        .padding(5)
                         .height(Length::Fill)
-                        .width(Length::FillPortion(1));
+                    )
+                    .padding(20)
+                    .height(Length::Fill)
+                    .center_x()
+                )
+                    .height(Length::Fill)
+                    .width(Length::FillPortion(1));
                 
-                Column::new()
+                let gui: Element<_> = Column::new()
                     .padding(20)
                     .push(header)
                     .push(Row::new()
                         .push(tol_chain_input)
                         .push(tol_chain_output)
                     )
-                    .into()
+                    .into();
+                
+                //let gui = gui.explain(Color::BLACK);
+
+                gui.into()
             }
         }
     }

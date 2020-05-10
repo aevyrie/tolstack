@@ -25,10 +25,10 @@ pub struct SimulationParams{
 /// Structure used to hold the output of a simulaion
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct ModelResults {
-    mean: f64,
-    tolerance: f64,
-    stddev: f64,
-    iterations: usize,
+    pub mean: f64,
+    pub tolerance: f64,
+    pub stddev: f64,
+    pub iterations: usize,
 }
 impl ModelResults {
     pub fn new() -> Self {
@@ -80,7 +80,7 @@ impl Default for SimulationState {
     fn default() -> Self {
         let parameters = SimulationParams{
             assy_sigma: 4.0,
-            n_iterations: 10000000,
+            n_iterations: 1000000,
         };
         SimulationState::new(parameters)
     }
