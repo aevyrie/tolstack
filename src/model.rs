@@ -43,7 +43,7 @@ impl ModelResults {
 }
 
 /// Holds the working state of the simulation, including inputs and outputs
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SimulationState {
     parameters: SimulationParams,
     pub tolerance_loop: Vec<Tolerance>,
@@ -67,10 +67,22 @@ impl SimulationState {
     pub fn add(&mut self, tolerance: Tolerance) {
         self.tolerance_loop.push(tolerance);
     }
+    pub fn clear(&mut self) {
+        self.tolerance_loop = Vec::new();
+    }
     pub fn compute_multiplier (&mut self) {
         for tol in &mut self.tolerance_loop {
             tol.compute_multiplier();
         }
+    }
+}
+impl Default for SimulationState {
+    fn default() -> Self {
+        let parameters = SimulationParams{
+            assy_sigma: 4.0,
+            n_iterations: 10000000,
+        };
+        SimulationState::new(parameters)
     }
 }
 
