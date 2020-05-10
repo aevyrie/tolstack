@@ -210,6 +210,7 @@ impl Application for TolStack {
                                             }
                                         }
                                         if entry.valid {
+                                            entry.active = true;
                                             let linear = DimTol::new(
                                                 sanitized_dimension, 
                                                 sanitized_tolerance, 
@@ -219,7 +220,7 @@ impl Application for TolStack {
                                             let linear = Tolerance::Linear(LinearTL::new(linear));
                                             println!("{:#?}", linear);
                                             entry.backend_model_data = Some(linear);
-                                        }
+                                        } else { entry.active = false; }
                                     },
                                     ValueInputFormTolerance::Float {
                                         value_input_description,
@@ -358,7 +359,7 @@ impl Application for TolStack {
                         Message::LabelMessage(message)
                     }))
                     .align_items(Align::Center)
-                    .spacing(20)
+                    .spacing(10)
                     .into();
                                     
                 let project_title = 
@@ -579,7 +580,7 @@ impl EditableLabel {
                     .horizontal_alignment(HorizontalAlignment::Left);
 
                 let row_contents = Row::new()
-                    .spacing(20)
+                    .spacing(10)
                     .align_items(Align::Center)
                     .push(label)
                     .push(
@@ -619,7 +620,7 @@ impl EditableLabel {
 impl Default for EditableLabel {
     fn default() -> Self {
         EditableLabel {
-            text: String::from(""),
+            text: String::from("New Project"),
             state: TextEditState::default(),
         }
     }
@@ -716,7 +717,11 @@ impl ToleranceEntry {
     fn update(&mut self, message: MessageEntryTol) {
         match message {
             MessageEntryTol::EntryActive(is_active) => {
-                self.active = is_active;
+                if self.valid { 
+                    self.active = is_active 
+                } else {
+                    self.active = false;
+                }
             }
             MessageEntryTol::EntryEdit => {
                 self.state = match self.tolerance_type {
