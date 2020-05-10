@@ -1,6 +1,6 @@
 # TolStack
 
-TolStack is a simple tolerance analysis application with a UI for building and analyzing one-dimensional tolerance models. **Unfinished and Unstable WIP.**
+TolStack is a simple tolerance analysis application with a UI for building and analyzing one-dimensional tolerance models. **Breaking changes in master**
 
 ![Screenshot](docs/screenshot.png)
 
