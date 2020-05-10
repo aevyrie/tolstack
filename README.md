@@ -8,7 +8,7 @@ Simple 1D tolerance analysis tool. **Unfinished and Unstable WIP.**
 
 1. Clone the repository.
 2. Install Rust via [Rustup](https://www.rust-lang.org/tools/install).
-3. From the root directory, run `cargo run --release` to build and launch the application.
+3. From the root directory, run `cargo run --release` to build and launch the application with compiler optimizations.
 
 ## Features
 
