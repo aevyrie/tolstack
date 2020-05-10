@@ -42,3 +42,10 @@ Input/Output
 * Test coverage
 * Revisit optimization
 * Go 2D?
+
+#### Parallel Tolerance Notes
+
+* Linear - need to define whether to take the minimum or maximum of the parallel dimensions as the result
+  * How to refer to this and display this to user?
+* Float - much simpler
+* combinations? need to be able to define linear/float 
