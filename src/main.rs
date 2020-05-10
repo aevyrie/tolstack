@@ -569,7 +569,7 @@ impl ToleranceEntry {
             MessageEntryTolerance::EditedLinearDimension(input) => {
                 match &mut self.value_input {
                     ValueInputFormTolerance::Linear{value_input_dimension,..} => {
-                        *value_input_dimension = input
+                        if input.parse::<f64>().is_ok() {*value_input_dimension = input}
                     },
                     _ => {}
                 };
@@ -577,7 +577,7 @@ impl ToleranceEntry {
             MessageEntryTolerance::EditedLinearTolerance(input) => {
                 match &mut self.value_input {
                     ValueInputFormTolerance::Linear{value_input_tolerance,..} => {
-                        *value_input_tolerance = input
+                        if input.parse::<f64>().is_ok() {*value_input_tolerance = input}
                     },
                     _ => {}
                 };
@@ -585,7 +585,7 @@ impl ToleranceEntry {
             MessageEntryTolerance::EditedFloatTolHole(input) => {
                 match &mut self.value_input {
                     ValueInputFormTolerance::Float{value_input_tolerance_hole,..} => {
-                        *value_input_tolerance_hole = input
+                        if input.parse::<f64>().is_ok() {*value_input_tolerance_hole = input}
                     },
                     _ => {}
                 };
@@ -593,7 +593,7 @@ impl ToleranceEntry {
             MessageEntryTolerance::EditedFloatTolPin(input) => {
                 match &mut self.value_input {
                     ValueInputFormTolerance::Float{value_input_tolerance_pin,..} => {
-                        *value_input_tolerance_pin = input
+                        if input.parse::<f64>().is_ok() {*value_input_tolerance_pin = input}
                     },
                     _ => {}
                 };
