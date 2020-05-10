@@ -31,6 +31,7 @@ struct StateApplication {
     tol_entries: Vec<ToleranceEntry>,
     simulation_state: SimulationState,
     simulation_result: ModelResults,
+    result_output: String,
     filter_controls: FilterControls,
     dirty: bool,
     saving: bool,
@@ -340,6 +341,7 @@ impl Application for TolStack {
                 tol_entries,
                 simulation_state,
                 simulation_result,
+                result_output,
                 filter_controls,
                 dirty,
                 saving,
@@ -458,9 +460,34 @@ impl Application for TolStack {
                         .width(Length::Fill)
                     );
 
+                let results_body = Column::new()
+                    .push(Row::new()
+                        .push(Text::new("Mean:"))
+                        .push(Text::new(simulation_result.mean.to_string()))
+                        .spacing(20)
+                    )
+                    .push(Row::new()
+                        .push(Text::new("Tolerance:"))
+                        .push(Text::new(simulation_result.tolerance.to_string()))
+                        .spacing(20)
+                    )
+                    .push(Row::new()
+                        .push(Text::new("Standard Deviation:"))
+                        .push(Text::new(simulation_result.stddev.to_string()))
+                        .spacing(20)
+                    )
+                    .push(Row::new()
+                        .push(Text::new("Iterations:"))
+                        .push(Text::new(simulation_result.iterations.to_string()))
+                        .spacing(20)
+                    )
+                    .spacing(20);
+
                 let results_summary = Container::new(Column::new()
                         .push(results_header)
+                        .push(results_body)
                         .height(Length::Fill)
+                        .spacing(40)
                     )
                     .padding(10);
 
@@ -474,10 +501,10 @@ impl Application for TolStack {
                         .center_x()
                     )
                     .push(filtereable_scroll_region)
-                    .width(Length::FillPortion(1));
+                    .width(Length::FillPortion(3));
 
                 let tol_chain_output = Column::new()
-                .push(Container::new(Container::new(results_summary)
+                    .push(Container::new(Container::new(results_summary)
                         .style(style::Container::Background)
                         .padding(5)
                         .height(Length::Fill)
@@ -485,9 +512,9 @@ impl Application for TolStack {
                     .padding(20)
                     .height(Length::Fill)
                     .center_x()
-                )
+                    )
                     .height(Length::Fill)
-                    .width(Length::FillPortion(1));
+                    .width(Length::FillPortion(2));
                 
                 let gui: Element<_> = Column::new()
                     .padding(20)
