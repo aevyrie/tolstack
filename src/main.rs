@@ -251,7 +251,6 @@ impl Application for TolStack {
                 let stack_title = Text::new("Tolerance Stack")
                     .width(Length::Fill)
                     .size(24)
-                    .color([0.5, 0.5, 0.5])
                     .horizontal_alignment(HorizontalAlignment::Left);
                 let scrollable_content = Scrollable::new(scroll_state)
                     .padding(10)
@@ -266,6 +265,7 @@ impl Application for TolStack {
                                     .push(stack_title)
                                     .push(filter_controls)
                                     .padding(10)
+                                    .align_items(Align::Center)
                                 )
                             .push(scrollable_content)
                         )
@@ -279,13 +279,13 @@ impl Application for TolStack {
 
 
                     let results_summary = Column::new()
-                        .push(Row::new());
+                        .push(Row::new().width(Length::Fill))
+                        .height(Length::Fill);
 
 
                     let tol_chain_input = Column::new()
                         .push(Container::new(Container::new(tolerance_controls)
                                 .style(style::Container::Background)
-                                .padding(5)
                             )
                             .padding(20)
                             .width(Length::Fill)
@@ -298,11 +298,13 @@ impl Application for TolStack {
                     .push(Container::new(Container::new(results_summary)
                             .style(style::Container::Background)
                             .padding(5)
+                            .height(Length::Fill)
                         )
                         .padding(20)
-                        .width(Length::Fill)
+                        .height(Length::Fill)
                         .center_x()
                     )
+                        .height(Length::Fill)
                         .width(Length::FillPortion(1));
                 
                 Column::new()
@@ -714,34 +716,46 @@ impl ToleranceEntry {
                             .on_submit(MessageEntryTolerance::EntryFinishEditing)
                             .padding(10);
 
+                        let row_header = Row::new()
+                            .push(Text::new("Editing Linear Tolerance")
+                                .size(24)
+                                .width(Length::Fill)
+                                .horizontal_alignment(HorizontalAlignment::Left)
+                            )
+                            .spacing(20)
+                            .align_items(Align::Center);
+
                         let row_description = Row::new()
-                            .push(Text::new("Description"))
+                            .push(Text::new("Description:"))
                             .push(view_input_description)
-                            .spacing(10)
+                            .spacing(20)
                             .align_items(Align::Center);
 
                         let row_dimension = Row::new()
-                            .push(Text::new("Dimension"))
+                            .push(Text::new("Dimension:"))
                             .push(view_input_dimension)
-                            .spacing(10)
+                            .spacing(20)
                             .align_items(Align::Center);
 
                         let row_tolerance = Row::new()
-                            .push(Text::new("Tolerance"))
+                            .push(Text::new("Tolerance:"))
                             .push(view_input_tolerance)
-                            .spacing(10)
+                            .spacing(20)
                             .align_items(Align::Center);
 
                         let row_buttons = Row::new()
                             .push(view_button_delete)
                             .push(view_button_save)
-                            .spacing(10)
+                            .spacing(20)
                             .align_items(Align::Center);
         
                         let entry_contents = Column::new()
+                            .push(row_header)
+                            .push(Row::new().height(Length::Units(5)))
                             .push(row_description)
                             .push(row_dimension)
                             .push(row_tolerance)
+                            .push(Row::new().height(Length::Units(5)))
                             .push(row_buttons)
                             .spacing(10)
                             .padding(20);
@@ -827,34 +841,46 @@ impl ToleranceEntry {
                             .on_submit(MessageEntryTolerance::EntryFinishEditing)
                             .padding(10);
 
+                        let row_header = Row::new()
+                            .push(Text::new("Editing Float Tolerance")
+                                .size(24)
+                                .width(Length::Fill)
+                                .horizontal_alignment(HorizontalAlignment::Left)
+                            )
+                            .spacing(20)
+                            .align_items(Align::Center);
+                            
                         let row_description = Row::new()
-                            .push(Text::new("Description"))
+                            .push(Text::new("Description:"))
                             .push(view_input_description)
-                            .spacing(10)
+                            .spacing(20)
                             .align_items(Align::Center);
 
                         let row_dimension = Row::new()
-                            .push(Text::new("Hole Tolerance"))
+                            .push(Text::new("Hole Tolerance:"))
                             .push(view_input_tolerance_hole)
-                            .spacing(10)
+                            .spacing(20)
                             .align_items(Align::Center);
 
                         let row_tolerance = Row::new()
-                            .push(Text::new("Pin Tolerance"))
+                            .push(Text::new("Pin Tolerance:"))
                             .push(view_input_tolerance_pin)
-                            .spacing(10)
+                            .spacing(20)
                             .align_items(Align::Center);
 
                         let row_buttons = Row::new()
                             .push(view_button_delete)
                             .push(view_button_save)
-                            .spacing(10)
+                            .spacing(20)
                             .align_items(Align::Center);
         
                         let entry_contents = Column::new()
+                            .push(row_header)
+                            .push(Row::new().height(Length::Units(5)))
                             .push(row_description)
                             .push(row_dimension)
                             .push(row_tolerance)
+                            .push(Row::new().height(Length::Units(5)))
                             .push(row_buttons)
                             .spacing(10)
                             .padding(20);
@@ -929,10 +955,9 @@ impl ToleranceControls {
             compound_button,
         } = self;
 
-        let tolerance_label = Text::new("Add Tolerance:")
-                    .width(Length::Shrink)
+        let tolerance_label = Text::new("Add Tolerance")
+                    .width(Length::Fill)
                     .size(24)
-                    .color([0.0, 0.0, 0.0])
                     .horizontal_alignment(HorizontalAlignment::Left);
         let tolerance_text = TextInput::new(
             tolerance_text_state,
@@ -1226,10 +1251,10 @@ mod style {
                     if *selected {
                         button::Style {
                             background: Some(Background::Color(
-                                Color::from_rgb(0.5, 0.5, 0.5),
+                                Color::from_rgb(0.95, 0.95, 0.95),
                             )),
                             border_radius: 5,
-                            text_color: Color::WHITE,
+                            text_color: Color::BLACK,
                             ..button::Style::default()
                         }
                     } else {
