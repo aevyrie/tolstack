@@ -53,7 +53,7 @@ impl StateApplication {
                 if entry.active {
                     match &entry.backend_model_data {
                         Some(data) => {
-                            println!("ADDING TO MODEL: {:#?}", entry);
+                            println!("ADDING TO MODEL:\n{:#?}", entry);
                             self.simulation_state.add(data.clone());
                         },
                         None => {}, // TODO handle this case, could result in bad output
@@ -1574,48 +1574,3 @@ fn delete_icon() -> Text {
 fn check_icon() -> Text {
     icon('\u{2713}')
 }
-
-/*
-use num_format::{Locale, ToFormattedString};
-use model::*;
-use std::time::Instant;
-use std::error::Error;
-    let time_start = Instant::now();
-
-    // Load model data
-    let mut model = match deserialize_json("save") {
-        Ok(result) => {
-            println!("Loaded data from file");
-            result
-        },
-        Err(error) => {
-            println!("Error loading file:\n{}", error);
-            println!("Loading placeholder data.");
-            data()
-        },
-    };
-
-    model.serialize_yaml("save")?;
-    model.serialize_json("save")?;
-    println!("{:.3?} to load data.", time_start.elapsed());
-
-    let results = model::run(&model)?;
-
-    let duration = time_start.elapsed();
-
-    println!("Result: {:.3} +/- {:.3}; Stddev: {:.3};\nSamples: {}; Duration: {:.3?}", 
-        results.mean, 
-        results.tolerance, 
-        results.stddev, 
-        results.iterations.to_formatted_string(&Locale::en), 
-        duration,
-    );
-
-    println!("Rate: {:.2} iter/μs; Timing: {:.2} ns/iter", 
-        (results.iterations as f64)/(duration.as_micros() as f64),
-        (duration.as_nanos() as f64)/(results.iterations as f64),
-    );
-
-    Ok(())
-}
-*/
