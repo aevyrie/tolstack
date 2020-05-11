@@ -530,7 +530,7 @@ async fn compute(mut state: StateApplication) -> Option<ModelResults> {
     }
 
     let time_start = Instant::now();
-    let result = model::run(&state.simulation_state).unwrap();
+    let result = model::run(&state.simulation_state).await.unwrap();
     let duration = time_start.elapsed();
 
     println!("Result: {:.3} +/- {:.3}; Stddev: {:.3};\nSamples: {}; Duration: {:.3?}", 
@@ -542,8 +542,6 @@ async fn compute(mut state: StateApplication) -> Option<ModelResults> {
     );
 
     Some(result)
-
-
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

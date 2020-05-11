@@ -86,7 +86,7 @@ impl Default for SimulationState {
     }
 }
 
-pub fn run(state: &SimulationState) -> Result<ModelResults,Box<dyn Error>> {
+pub async fn run(state: &SimulationState) -> Result<ModelResults,Box<dyn Error>> {
     // Divide the desired number of iterations into chunks. This is done [1] to avoid floating point
     //  errors (as the divisor gets large when averaging you lose precision) and [2] to prevent huge 
     //  memory use for large numbers of iterations. This can also be used to tune performance.
