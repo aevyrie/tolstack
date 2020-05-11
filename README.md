@@ -32,16 +32,25 @@ Input/Output
 
 ## Todo
 
-* GUI for building tolerance model as well as saving/loading.
-* Generalize the Compound tolerance interface to instead allow any tolerance to be in parallel instead of serial only.
-* Add RSS tolerance analysis
-* Add worst case tolerance calculation
-* Generate plots in GUI
-* Tolerance stack visualization
-* Make threading more intelligent, detect num_cpus
-* Test coverage
-* Revisit optimization
-* Go 2D?
+#### Short Term
+
+- [x] GUI for building tolerance model as well as saving/loading.
+- [ ] Add RSS tolerance analysis
+- [ ] Add worst case tolerance calculation
+- [ ] Implement unequal bilateral tolerances in GUI
+- [ ] Implement save/load dialog
+
+#### Long Term
+
+- [ ] Implement concept of part joints - connection between parts
+  - [ ] Allow joints to be in parallel, e.g. a pair of holes/pins connecting two parts
+  - [ ] Parts can start and end a number of parallel joints
+  - [ ] Implement butt joints, pos/neg determine butt direction
+- [ ] Generate plots in GUI
+- [ ] Tolerance stack visualization
+- [ ] Make threading more intelligent, detect num_cpus
+- [ ] Test coverage
+- [ ] Go 2D?
 
 #### Parallel Tolerance Notes
 
