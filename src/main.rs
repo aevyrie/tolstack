@@ -181,7 +181,7 @@ impl Application for TolStack {
                                                 3.0,
                                             );
                                             let linear = Tolerance::Linear(LinearTL::new(linear));
-                                            println!("{:#?}", linear);
+                                            //println!("{:#?}", linear);
                                             entry.backend_model_data = Some(linear);
                                         } else { entry.active = false; }
                                     },
@@ -228,7 +228,7 @@ impl Application for TolStack {
                                             let data = Tolerance::Float(
                                                 FloatTL::new(hole, pin,3.0)
                                             );
-                                            println!("{:#?}",data);
+                                            //println!("{:#?}",data);
                                             entry.backend_model_data = Some(data);
                                         }
                                     },
@@ -262,12 +262,9 @@ impl Application for TolStack {
                         saved = true;
                     }
                     Message::Calculate => {
-                        println!("Calculation started");
                         return Command::perform(compute(state.clone()), Message::CalculateComplete)
-                        //state.compute();
                     }
                     Message::CalculateComplete(result) => {
-                        println!("Calculation complete");
                         match result {
                             Some(result) => state.simulation_result = result,
                             None => {}
@@ -572,7 +569,7 @@ async fn compute(mut state: StateApplication) -> Option<ModelResults> {
             if entry.active {
                 match &entry.backend_model_data {
                     Some(data) => {
-                        println!("ADDING TO MODEL:\n{:#?}", entry);
+                        //println!("ADDING TO MODEL:\n{:#?}", entry);
                         state.simulation_state.add(data.clone());
                     },
                     None => {}, // TODO handle this case, could result in bad output
@@ -585,13 +582,13 @@ async fn compute(mut state: StateApplication) -> Option<ModelResults> {
     let result = model::run(&state.simulation_state).await.unwrap();
     let duration = time_start.elapsed();
 
-    println!("Result: {:.3} +/- {:.3}; Stddev: {:.3};\nSamples: {}; Duration: {:.3?}", 
+    /*println!("Result: {:.3} +/- {:.3}; Stddev: {:.3};\nSamples: {}; Duration: {:.3?}", 
         state.simulation_result.mean, 
         state.simulation_result.tolerance, 
         state.simulation_result.stddev, 
         state.simulation_result.iterations,
         duration,
-    );
+    );*/
 
     Some(result)
 }
