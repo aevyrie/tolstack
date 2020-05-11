@@ -174,24 +174,6 @@ pub enum Tolerance{
     Compound(CompoundFloatTL),
 }
 impl Tolerance {
-    pub fn is_linear(&self) -> bool {
-        match self {
-            Tolerance::Linear(_) => true,
-            _ => false   
-        }
-    }
-    pub fn is_float(&self) -> bool {
-        match self {
-            Tolerance::Float(_) => true,
-            _ => false   
-        }
-    }
-    pub fn is_compound(&self) -> bool {
-        match self {
-            Tolerance::Compound(_) => true,
-            _ => false   
-        }
-    }
     fn compute_multiplier(&mut self) {
         match self {
             Tolerance::Linear(tol) => tol.compute_multiplier(),
@@ -341,54 +323,6 @@ pub fn deserialize_json(filename: &str) -> Result<SimulationState, Box<dyn Error
     let mut result: SimulationState = serde_json::from_reader(file)?;
     result.compute_multiplier();
     Ok(result)
-}
-
-/// Data for testing purposes
-pub fn dummy_data() -> SimulationState {
-
-    let parameters = SimulationParams{
-        assy_sigma: 4.0,
-        n_iterations: 10000000,
-    };
-
-    let mut model = SimulationState::new(parameters);
-
-    model.add(Tolerance::Linear(LinearTL::new(
-        DimTol::new(5.58, 0.03, 0.03, 3.0),
-    )));
-    model.add(Tolerance::Linear(LinearTL::new(
-        DimTol::new(-25.78, 0.07, 0.07, 3.0),
-    )));
-    model.add(Tolerance::Float(FloatTL::new(
-        DimTol::new(2.18, 0.03, 0.03, 3.0),
-        DimTol::new(2.13, 0.05, 0.05, 3.0),
-        3.0,
-    )));
-    model.add(Tolerance::Linear(LinearTL::new(
-        DimTol::new(14.58, 0.05, 0.05, 3.0),
-    )));
-    model.add(Tolerance::Compound(CompoundFloatTL::new(
-        DimTol::new(1.2, 0.03, 0.03, 3.0),
-        DimTol::new(1.0, 0.03, 0.03, 3.0),
-        OffsetFloat::new(
-            DimTol::new(0.972, 0.03, 0.03, 3.0),
-            DimTol::new(0.736, 0.03, 0.03, 3.0),
-            DimTol::new(2.5, 0.05, 0.05, 3.0),
-            DimTol::new(2.5, 0.3, 0.3, 3.0),
-        ),
-        3.0,
-    )));
-    model.add(Tolerance::Linear(LinearTL::new(
-        DimTol::new(2.5, 0.3, 0.3, 3.0),
-    )));
-    model.add(Tolerance::Linear(LinearTL::new(
-        DimTol::new(3.85, 0.25, 0.25, 3.0),
-    )));
-    model.add(Tolerance::Linear(LinearTL::new(
-        DimTol::new(-0.3, 0.15, 0.15, 3.0),
-    )));
-    
-    model
 }
 
 /// Data for testing purposes
