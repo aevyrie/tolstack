@@ -12,23 +12,23 @@ TolStack is a simple tolerance analysis application with a UI for building and a
 
 ## Features
 
-Mechanical Interfaces
+Tolerances
 
-* `Linear`: Linear dimensions (point A to B)
-* `Float`: Single hole/pin pair (a part with one pin located in another part with one hole)
-* ~~`Compound`: Double hole/pin pairs in parallel (a part with two pins located in another part with two holes)~~
+* `Linear`: Linear dimensions (point A to B with some tolerance)
+* `Float`: Single hole/pin pair (a part with one pin located in another part with one hole, with some tolerance on each dia)
+* ~~`Compound`: Double hole/pin pairs in parallel (a part with two pins located in another part with two holes)~~ Deprecated
 
 Tolerances
 
-* Unilateral tolerances (+0/-0.5)
+* ~~Unilateral tolerances (+0/-0.5)~~ Need UI support
 * Equal bilateral tolerances (+/-0.5)
-* Unequal bilateral tolerances (+0.2/-0.1)
+* ~~Unequal bilateral tolerances (+0.2/-0.1)~~ Need UI support
 
 Input/Output
 
-* Auto saving - no manual save/load yet
-* ~~Saving/loading JSON files~~
-* ~~Exports simulation output data to CSV for plotting~~
+* Auto saving
+* ~~Manually save/load JSON project files~~ Need UI support
+* ~~Export simulation output data to CSV for plotting~~ Need UI support
 
 ## Todo
 
