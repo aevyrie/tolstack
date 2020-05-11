@@ -9,10 +9,9 @@ use std::time::Instant;
 
 use iced::{
     button, scrollable, text_input, Align, Application, Button, Checkbox,
-    Color, Column, Command, Container, Element, Font, HorizontalAlignment, Length,
+    Column, Command, Container, Element, Font, HorizontalAlignment, Length,
     Row, Scrollable, Settings, Text, TextInput,
 };
-use serde::{Deserialize, Serialize};
 use serde_derive::*;
 
 
@@ -21,7 +20,7 @@ fn main() {
 }
 
 // The state of the application
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 struct StateApplication {
     project_name: EditableLabel,
     scroll_state: scrollable::State,
@@ -37,48 +36,6 @@ struct StateApplication {
     saving: bool,
     valid_stack: bool,
 }
-impl StateApplication {
-    fn compute(&mut self) {
-        //self.simulation_state = SimulationState::default();
-        self.simulation_state.clear();
-        // Make sure all active entries are valid
-        let mut valid = true;
-        for entry in &self.tol_entries {
-            if entry.active && !entry.valid { 
-                valid = false;
-            }
-        }
-        // Build the model
-        if valid {
-            for entry in &self.tol_entries {
-                if entry.active {
-                    match &entry.backend_model_data {
-                        Some(data) => {
-                            println!("ADDING TO MODEL:\n{:#?}", entry);
-                            self.simulation_state.add(data.clone());
-                        },
-                        None => {}, // TODO handle this case, could result in bad output
-                    }
-                }
-            }
-        }
-
-        let time_start = Instant::now();
-        self.simulation_result = model::run(&self.simulation_state).unwrap();
-        let duration = time_start.elapsed();
-
-        println!("Result: {:.3} +/- {:.3}; Stddev: {:.3};\nSamples: {}; Duration: {:.3?}", 
-            self.simulation_result.mean, 
-            self.simulation_result.tolerance, 
-            self.simulation_result.stddev, 
-            self.simulation_result.iterations,
-            duration,
-        );
-
-
-    }
-}
-
 // Messages - events for users to change the application state
 #[derive(Debug, Clone)]
 enum Message {
@@ -88,6 +45,7 @@ enum Message {
     TolTypeChanged(ToleranceTypes),
     CreateTol,
     Calculate,
+    CalculateComplete(Option<ModelResults>),
     FilterChanged(Filter),
     TolMessage(usize, MessageEntryTol),
     LabelMessage(LabelMessage),
@@ -300,8 +258,15 @@ impl Application for TolStack {
                         saved = true;
                     }
                     Message::Calculate => {
-                        // Check that all entries are valid
-                        state.compute();
+                        Command::perform(compute(state.clone()), Message::CalculateComplete);
+                        //state.compute();
+                    }
+                    Message::CalculateComplete(result) => {
+                        match result {
+                            Some(result) => state.simulation_result = result,
+                            None => {}
+                        }
+                        
                     }
                     Message::Loaded(_) => {}
                 }
@@ -535,6 +500,48 @@ impl Application for TolStack {
             }
         }
     }
+}
+
+async fn compute(mut state: StateApplication) -> Option<ModelResults> {
+    //self.simulation_state = SimulationState::default();
+    state.simulation_state.clear();
+    // Make sure all active entries are valid
+    let mut valid = true;
+    for entry in &state.tol_entries {
+        if entry.active && !entry.valid { 
+            valid = false;
+        }
+    }
+    // Build the model
+    if valid {
+        for entry in &state.tol_entries {
+            if entry.active {
+                match &entry.backend_model_data {
+                    Some(data) => {
+                        println!("ADDING TO MODEL:\n{:#?}", entry);
+                        state.simulation_state.add(data.clone());
+                    },
+                    None => {}, // TODO handle this case, could result in bad output
+                }
+            }
+        }
+    }
+
+    let time_start = Instant::now();
+    let result = model::run(&state.simulation_state).unwrap();
+    let duration = time_start.elapsed();
+
+    println!("Result: {:.3} +/- {:.3}; Stddev: {:.3};\nSamples: {}; Duration: {:.3?}", 
+        state.simulation_result.mean, 
+        state.simulation_result.tolerance, 
+        state.simulation_result.stddev, 
+        state.simulation_result.iterations,
+        duration,
+    );
+
+    Some(result)
+
+
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
