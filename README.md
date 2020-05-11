@@ -36,7 +36,7 @@ Input/Output
 
 - [x] GUI for building tolerance model
 - [X] Make computation function async
-- [ ] Add simulation parameter controls
+- [X] Add simulation parameter controls
 - [ ] Implement unequal bilateral tolerances in GUI
 - [ ] Show sigma on tolerance entries
 - [ ] Show hole/pin diameter on `Float` entries
