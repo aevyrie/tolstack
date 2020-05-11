@@ -258,10 +258,12 @@ impl Application for TolStack {
                         saved = true;
                     }
                     Message::Calculate => {
+                        println!("Calculation started");
                         Command::perform(compute(state.clone()), Message::CalculateComplete);
                         //state.compute();
                     }
                     Message::CalculateComplete(result) => {
+                        println!("Calculation complete");
                         match result {
                             Some(result) => state.simulation_result = result,
                             None => {}
