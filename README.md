@@ -34,7 +34,7 @@ Input/Output
 
 #### Short Term
 
-- [x] GUI for building tolerance model as well as saving/loading.
+- [x] GUI for building tolerance model
 - [ ] Add RSS tolerance analysis
 - [ ] Add worst case tolerance calculation
 - [ ] Implement unequal bilateral tolerances in GUI
