@@ -1273,12 +1273,12 @@ impl ToleranceControls {
                             ToleranceTypes::Float,
                             self.tolerance_type,
                         ))
-                        .push(button(
+                        /*.push(button(
                             compound_button,
                             "Compound",
                             ToleranceTypes::Compound,
                             self.tolerance_type,
-                        ))
+                        ))*/
                 )
             )
             .push(tolerance_text)
@@ -1338,12 +1338,12 @@ impl FilterControls {
                         Filter::Some(ToleranceTypes::Float),
                         current_filter,
                     ))
-                    .push(filter_button(
+                    /*.push(filter_button(
                         compound_button,
                         "Compound",
                         Filter::Some(ToleranceTypes::Compound),
                         current_filter,
-                    )),
+                    )),*/
             )
     }
 }
