@@ -26,6 +26,8 @@ struct StateApplication {
     scroll_state: scrollable::State,
     button_state: button::State,
     tolerance_controls: ToleranceControls,
+    iteration_state: text_input::State,
+    sigma_state: text_input::State,
     filter_value: Filter,
     tol_entries: Vec<ToleranceEntry>,
     simulation_state: SimulationState,
@@ -42,6 +44,8 @@ enum Message {
     Loaded(Result<SavedState, LoadError>),
     Saved(Result<(), SaveError>),
     TolNameChanged(String),
+    IterEdited(String),
+    SigmaEdited(String),
     TolTypeChanged(ToleranceTypes),
     CreateTol,
     Calculate,
@@ -271,6 +275,20 @@ impl Application for TolStack {
                     }
                     Message::Loaded(_) => {
                     }
+                    Message::IterEdited(input) => {
+                        if input.parse::<usize>().is_ok() {
+                            let mut number = input.parse::<usize>().unwrap();
+                            if number < 100000 { number = 100000 };
+                            state.simulation_state.parameters.n_iterations = number;
+                        }
+                    }
+                    Message::SigmaEdited(input) => {
+                        if input.parse::<f64>().is_ok() {
+                            let mut number = input.parse::<f64>().unwrap();
+                            if number <= 1.0 { number = 1.0 };
+                            state.simulation_state.parameters.assy_sigma = number;
+                        }
+                    }
                 }
 
                 if !saved {
@@ -309,6 +327,8 @@ impl Application for TolStack {
                 button_state,
                 tolerance_controls,
                 filter_value,
+                iteration_state,
+                sigma_state,
                 tol_entries,
                 simulation_state,
                 simulation_result,
@@ -412,24 +432,56 @@ impl Application for TolStack {
 
                 let results_header = Column::new()
                     .push(Row::new()
-                        .push(Text::new("Results")
+                        .push(Text::new("Simulation Parameters")
                             .size(24)
                             .width(Length::Fill))
+                        .align_items(Align::Center)
+                        .width(Length::Fill)
+                    )
+                    .push(Row::new()
+                        .push(Text::new("Iterations"))
+                        .push(
+                            TextInput::new(
+                                iteration_state,
+                                "Enter a value...",
+                                &simulation_state.parameters.n_iterations.to_string(),
+                                Message::IterEdited,
+                            )
+                            .padding(10)
+                        )
+                        .align_items(Align::Center)
+                        .spacing(20)
+                    )
+                    .push(Row::new()
+                        .push(Text::new("Assembly Sigma"))
+                        .push(
+                            TextInput::new(
+                                sigma_state,
+                                "Enter a value...",
+                                &simulation_state.parameters.assy_sigma.to_string(),
+                                Message::SigmaEdited,
+                            )
+                            .padding(10)
+                        )
+                        .align_items(Align::Center)
+                        .spacing(20)
+                    )
+                    .push(Row::new()
+                        .push(Column::new().width(Length::Fill))
                         .push(
                             Button::new( 
                                 button_state, 
                                 Row::new()
                                     .spacing(10)
                                     //.push(check_icon())
-                                    .push(Text::new("Calculate")),
+                                    .push(Text::new("Run Simulation")),
                             )
                             .style(style::Button::Constructive)
                             .padding(10)
                             .on_press(Message::Calculate)
                         )
-                        .align_items(Align::Center)
-                        .width(Length::Fill)
-                    );
+                    )
+                    .spacing(20);
 
                 let results_body = Column::new()
                     .push(Row::new()
@@ -1246,7 +1298,7 @@ impl ToleranceControls {
             tolerance_text_value,
             Message::TolNameChanged,
             )
-            .padding(15)
+            .padding(10)
             .on_submit(Message::CreateTol);
 
         let button = |state, label, tolerance: ToleranceTypes, current_tol: ToleranceTypes| {

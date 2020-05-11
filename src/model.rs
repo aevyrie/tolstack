@@ -18,8 +18,8 @@ use statistical::*;
 /// Structure used to hold simulation input parameters
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct SimulationParams{
-    assy_sigma: f64,
-    n_iterations: usize,
+    pub assy_sigma: f64,
+    pub n_iterations: usize,
 }
 
 /// Structure used to hold the output of a simulaion
@@ -45,7 +45,7 @@ impl ModelResults {
 /// Holds the working state of the simulation, including inputs and outputs
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SimulationState {
-    parameters: SimulationParams,
+    pub parameters: SimulationParams,
     pub tolerance_loop: Vec<Tolerance>,
     results: ModelResults,
 }
