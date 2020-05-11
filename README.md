@@ -50,6 +50,7 @@ Input/Output
 - [ ] Implement save/load dialog
 - [ ] Save out results as CSV
 - [ ] Simplify `fn view()` by making the 3 panes as seperate widgets
+- [ ] Consolidate/simplify ToleranceType matching
 - [ ] Calculation progress bar
 - [ ] Add RSS tolerance analysis
 - [ ] Add worst case tolerance calculation
