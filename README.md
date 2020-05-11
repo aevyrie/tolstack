@@ -35,16 +35,21 @@ Input/Output
 #### Short Term
 
 - [x] GUI for building tolerance model
-- [ ] Make computation function async
+- [X] Make computation function async
+- [ ] Add simulation parameter controls
+- [ ] Implement unequal bilateral tolerances in GUI
+- [ ] Show sigma on tolerance entries
+- [ ] Show tolerance summary on entries in idle state
+- [ ] Implement save/load dialog
+- [ ] Save out results as CSV
+- [ ] Calculation progress bar
 - [ ] Add RSS tolerance analysis
 - [ ] Add worst case tolerance calculation
-- [ ] Implement unequal bilateral tolerances in GUI
-- [ ] Implement save/load dialog
 
 #### Long Term
 
-- [ ] Implement concept of part joints - connection between parts
-  - [ ] Allow joints to be in parallel, e.g. a pair of holes/pins connecting two parts
+- [ ] Implement concept of parts and joints - connections between parts
+  - [ ] Allow joints to be in parallel, e.g. two or more pins connecting two parts
   - [ ] Parts can start and end a number of parallel joints
   - [ ] Implement butt joints, pos/neg determine butt direction
 - [ ] Generate plots in GUI
