@@ -39,9 +39,11 @@ Input/Output
 - [ ] Add simulation parameter controls
 - [ ] Implement unequal bilateral tolerances in GUI
 - [ ] Show sigma on tolerance entries
+- [ ] Show hole/pin diameter on `Float` entries
 - [ ] Show tolerance summary on entries in idle state
 - [ ] Implement save/load dialog
 - [ ] Save out results as CSV
+- [ ] Simplify `fn view()` by making the 3 panes as seperate widgets
 - [ ] Calculation progress bar
 - [ ] Add RSS tolerance analysis
 - [ ] Add worst case tolerance calculation
@@ -54,6 +56,6 @@ Input/Output
   - [ ] Implement butt joints, pos/neg determine butt direction
 - [ ] Generate plots in GUI
 - [ ] Tolerance stack visualization
-- [ ] Make threading more intelligent, detect num_cpus
+- [ ] Make threading more intelligent, detect num_cpus, revisit perf
 - [ ] Test coverage
 - [ ] Go 2D?
