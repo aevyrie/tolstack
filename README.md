@@ -1,6 +1,6 @@
 # TolStack
 
-TolStack is a cross platform tolerance analysis application with a UI for building and analyzing one-dimensional tolerance models. Works on Windows, MacOS, and Linux. **Breaking changes in master**
+TolStack is a cross platform tolerance analysis application made for building and analyzing one-dimensional tolerance models. Works on Windows, MacOS, and Linux. **Breaking changes in master**
 
 ![Screenshot](docs/screenshot.png)
 
