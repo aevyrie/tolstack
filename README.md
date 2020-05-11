@@ -41,6 +41,12 @@ Input/Output
 - [ ] Show sigma on tolerance entries
 - [ ] Show hole/pin diameter on `Float` entries
 - [ ] Show tolerance summary on entries in idle state
+- [ ] Implement ribbon or menu bar
+  - [ ] Autosave toggle
+  - [ ] Save/Open project
+  - [ ] Export to CSV
+  - [ ] Text size increment
+  - [ ] Dark/light mode
 - [ ] Implement save/load dialog
 - [ ] Save out results as CSV
 - [ ] Simplify `fn view()` by making the 3 panes as seperate widgets
