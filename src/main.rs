@@ -117,11 +117,9 @@ impl Application for TolStack {
                 match message {
                     Message::TolTypeChanged(value) => {
                         state.tolerance_controls.tolerance_type = value;
-                        Command::none()
                     }
                     Message::TolNameChanged(value) => {
                         state.tolerance_controls.tolerance_text_value = value;
-                        Command::none()
                     }
                     Message::CreateTol => {
                         let input_text = state.tolerance_controls.tolerance_text_value.clone();
@@ -135,11 +133,9 @@ impl Application for TolStack {
                                 ));
                             state.tolerance_controls.tolerance_text_value.clear();
                         }
-                        Command::none()
                     }
                     Message::TolMessage(i, MessageEntryTol::EntryDelete) => {
                         state.tol_entries.remove(i);
-                        Command::none()
                     }
                     Message::TolMessage(i, tol_message) => {
                         // Some message `tol_message`  from a tolerance entry at index `i`
@@ -250,24 +246,20 @@ impl Application for TolStack {
                         if let Some(tol) = state.tol_entries.get_mut(i) {
                             tol.update(tol_message);
                         }
-                        Command::none()
                     }
                     Message::LabelMessage(label_message) => {
                         state.project_name.update(label_message);
-                        Command::none()
                     }
                     Message::FilterChanged(filter) => {
                         state.filter_value = filter;
-                        Command::none()
                     }
                     Message::Saved(_) => {
                         state.saving = false;
                         saved = true;
-                        Command::none()
                     }
                     Message::Calculate => {
                         println!("Calculation started");
-                        Command::perform(compute(state.clone()), Message::CalculateComplete)
+                        return Command::perform(compute(state.clone()), Message::CalculateComplete)
                         //state.compute();
                     }
                     Message::CalculateComplete(result) => {
@@ -276,10 +268,8 @@ impl Application for TolStack {
                             Some(result) => state.simulation_result = result,
                             None => {}
                         }
-                        Command::none()
                     }
                     Message::Loaded(_) => {
-                        Command::none()
                     }
                 }
 
