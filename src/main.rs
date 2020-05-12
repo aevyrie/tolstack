@@ -10,13 +10,20 @@ use std::time::Instant;
 use iced::{
     button, scrollable, text_input, Align, Application, Button, Checkbox,
     Column, Command, Container, Element, Font, HorizontalAlignment, Length,
-    Row, Scrollable, Settings, Text, TextInput,
+    Row, Scrollable, Settings, Text, TextInput, window,
 };
 use serde_derive::*;
 
 
 fn main() {
-    TolStack::run(Settings::default())
+    let mut settings = Settings::default();
+    settings.window = window::Settings{
+        size: (1024, 768),
+        resizable: true,
+        decorations: true,
+    };
+    settings.antialiasing = false;
+    TolStack::run(settings);
 }
 
 // The state of the application
