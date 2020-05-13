@@ -1,4 +1,4 @@
-use crate::tolerances::*;
+use super::structures::*;
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -17,23 +17,23 @@ use statistical::*;
 
 /// Structure used to hold simulation input parameters
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
-pub struct SimulationParams{
+pub struct Parameters{
     pub assy_sigma: f64,
     pub n_iterations: usize,
 }
 
 /// Structure used to hold the output of a simulaion
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
-pub struct ModelResults {
+pub struct Results {
     pub mean: f64,
     pub tolerance: f64,
     pub stddev: f64,
     pub iterations: usize,
 }
-impl ModelResults {
+impl Results {
     pub fn new() -> Self {
         // TODO: change this to use the Defaults derive
-        ModelResults {
+        Results {
             mean: 0.0,
             tolerance: 0.0,
             stddev: 0.0,
@@ -44,17 +44,17 @@ impl ModelResults {
 
 /// Holds the working state of the simulation, including inputs and outputs
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct SimulationState {
-    pub parameters: SimulationParams,
+pub struct State {
+    pub parameters: Parameters,
     pub tolerance_loop: Vec<Tolerance>,
-    results: ModelResults,
+    pub results: Results,
 }
-impl SimulationState {
-    pub fn new(parameters: SimulationParams) -> Self {
-        SimulationState {
+impl State {
+    pub fn new(parameters: Parameters) -> Self {
+        State {
             parameters,
             tolerance_loop: Vec::new(),
-            results: ModelResults::new(),
+            results: Results::new(),
         }
     }
     pub fn serialize_json(&self, filename: &str)-> Result<(), Box<dyn Error>> {
@@ -76,17 +76,17 @@ impl SimulationState {
         }
     }
 }
-impl Default for SimulationState {
+impl Default for State {
     fn default() -> Self {
-        let parameters = SimulationParams{
+        let parameters = Parameters{
             assy_sigma: 4.0,
             n_iterations: 1000000,
         };
-        SimulationState::new(parameters)
+        State::new(parameters)
     }
 }
 
-pub async fn run(state: &SimulationState) -> Result<ModelResults,Box<dyn Error>> {
+pub async fn run(state: &State) -> Result<Results,Box<dyn Error>> {
     // Divide the desired number of iterations into chunks. This is done [1] to avoid floating point
     //  errors (as the divisor gets large when averaging you lose precision) and [2] to prevent huge 
     //  memory use for large numbers of iterations. This can also be used to tune performance.
@@ -109,7 +109,7 @@ pub async fn run(state: &SimulationState) -> Result<ModelResults,Box<dyn Error>>
     }
     let result_tol = result_stddev * state.parameters.assy_sigma;
 
-    Ok(ModelResults{
+    Ok(Results{
         mean: result_mean,
         tolerance: result_tol,
         stddev: result_stddev,
@@ -167,12 +167,6 @@ pub fn compute_stackup(tol_collection: Vec<Tolerance>, n_iterations: usize) -> V
     result
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
-pub enum Tolerance{
-    Linear(LinearTL),
-    Float(FloatTL),
-    Compound(CompoundFloatTL),
-}
 impl Tolerance {
     fn compute_multiplier(&mut self) {
         match self {
@@ -316,24 +310,24 @@ pub fn file_write(path: &Path, data: String)-> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn deserialize_json(filename: &str) -> Result<SimulationState, Box<dyn Error>> {
+pub fn deserialize_json(filename: &str) -> Result<State, Box<dyn Error>> {
     let filename_full = &[filename, ".json"].concat();
     let path = Path::new(filename_full);
     let file = File::open(path)?;
-    let mut result: SimulationState = serde_json::from_reader(file)?;
+    let mut result: State = serde_json::from_reader(file)?;
     result.compute_multiplier();
     Ok(result)
 }
 
 /// Data for testing purposes
-pub fn data() -> SimulationState {
+pub fn data() -> State {
 
-    let parameters = SimulationParams{
+    let parameters = Parameters{
         assy_sigma: 4.0,
         n_iterations: 10000000,
     };
 
-    let mut model = SimulationState::new(parameters);
+    let mut model = State::new(parameters);
 
     model.add(Tolerance::Linear(LinearTL::new(
         DimTol::new(65.88, 0.17, 0.17, 3.0),

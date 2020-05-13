@@ -1,12 +1,11 @@
 /// Contains structures used to define tolerances in a tolerance loop.
 use serde_derive::*;
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[derive(Copy, Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
 pub struct DimTol{
     pub dim: f64,
     pub tol_pos: f64,
     pub tol_neg: f64,
-    //#[serde(skip)]
     pub tol_multiplier: f64,
     pub sigma: f64,
 }
@@ -23,7 +22,19 @@ impl DimTol{
     }
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub enum Tolerance{
+    Linear(LinearTL),
+    Float(FloatTL),
+    Compound(CompoundFloatTL),
+}
+impl Default for Tolerance {
+    fn default() -> Self {
+        Tolerance::Linear(LinearTL::default())
+    }
+}
+
+#[derive(Copy, Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
 pub struct LinearTL {
     pub distance: DimTol,
 }
@@ -36,7 +47,7 @@ impl  LinearTL {
 }
 
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[derive(Copy, Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
 pub struct FloatTL {
     pub hole: DimTol,
     pub pin: DimTol,
@@ -52,7 +63,7 @@ impl  FloatTL {
     }
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[derive(Copy, Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
 pub struct CompoundFloatTL {
     pub datum_start: DimTol,
     pub datum_end: DimTol,
@@ -70,7 +81,7 @@ impl  CompoundFloatTL {
     }
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[derive(Copy, Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
 pub struct OffsetFloat {
     pub hole: DimTol,
     pub pin: DimTol,
