@@ -45,6 +45,8 @@ Input/Output
 - [ ] Add sigma input on tolerance entries
 - [ ] Add hole/pin diameter input on `Float` entries
 - [ ] Show tolerance summary on entries in idle state
+- [ ] Implement standardized styling
+  - [ ] Investigate hot-reload via serde monitoring json file, enable during debug
 - [ ] Implement ribbon or menu bar
   - [ ] Autosave toggle
   - [ ] Save/Open project
