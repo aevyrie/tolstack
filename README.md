@@ -37,13 +37,13 @@ Input/Output
 - [x] GUI for building tolerance model
 - [X] Make computation function async
 - [X] Add simulation parameter controls
-- [X] Refactor code structure to make extension easier **WIP**
+- [X] Refactor code structure to make extension easier
   - [X] Break out UI widgets into using own internal structure to greatly simplify the top `view()` function
   - [X] Consolidate/simplify ToleranceType matching
   - [X] Remove redundant SimulationResult, use result in the SimulationState
 - [ ] Implement unequal bilateral tolerances in GUI
-- [ ] Show sigma on tolerance entries
-- [ ] Show hole/pin diameter on `Float` entries
+- [ ] Add sigma input on tolerance entries
+- [ ] Add hole/pin diameter input on `Float` entries
 - [ ] Show tolerance summary on entries in idle state
 - [ ] Implement ribbon or menu bar
   - [ ] Autosave toggle
@@ -52,12 +52,12 @@ Input/Output
   - [ ] Text size increment
   - [ ] Dark/light mode
 - [ ] Implement save/load dialog
-- [ ] Save out results as CSV
-- [ ] Calculation result scrollable area showing results in progress
-  - [ ] Use these entries to export results
-- [ ] Calculation progress bar
-- [ ] Add RSS tolerance analysis
-- [ ] Add worst case tolerance calculation
+- [ ] Calculation result scrollable area showing results in progress and completed
+  - [ ] Add export results button on these result entries
+  - [ ] Save out results as CSV
+  - [ ] Calculation progress bar
+- [ ] Implement RSS tolerance analysis
+- [ ] Implement worst case tolerance calculation
 
 #### Long Term
 
