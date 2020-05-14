@@ -16,18 +16,18 @@ pub enum Message {
 }
 
 #[derive(Debug, Default, Clone)]
-pub struct ToleranceEntryList {
+pub struct StackEditor {
     entry_form: NewToleranceEntry,
     filter: ToleranceFilter,
     pub tolerances: Vec<ToleranceEntry>,
     scroll_state: scrollable::State,
 }
-impl ToleranceEntryList {
+impl StackEditor {
     pub fn new() -> Self{
-        ToleranceEntryList::default()
+        StackEditor::default()
     }
     pub fn update(&mut self, message: Message) {
-        let ToleranceEntryList {
+        let StackEditor {
             entry_form,
             filter,
             tolerances,
@@ -176,8 +176,8 @@ impl ToleranceEntryList {
             }
         }
     }
-    pub fn  view(&mut self) -> Element<Message> {
-        let ToleranceEntryList {
+    pub fn view(&mut self) -> Element<Message> {
+        let StackEditor {
             entry_form,
             filter,
             tolerances,
@@ -258,6 +258,10 @@ impl ToleranceEntryList {
             .width(Length::FillPortion(3));
             
         tol_chain_input.into()
+    }
+    pub fn tolerances(&mut self, tolerances: Vec<ToleranceEntry>) -> Self {
+        self.tolerances = tolerances;
+        self.clone()
     }
 }
 

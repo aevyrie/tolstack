@@ -70,4 +70,8 @@ impl Header {
 
         header.into()
     }
+    pub fn title(&mut self, title: String) -> Self {
+        self.title.text = title;
+        self.clone()
+    }
 }
