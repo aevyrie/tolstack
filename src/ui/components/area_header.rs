@@ -5,7 +5,7 @@ use crate::ui::{ components::* };
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    LabelMessage(editable_label::Message),
+    LabelMessage(sub_editable_label::Message),
 }
 
 #[derive(Debug, Default, Clone)]

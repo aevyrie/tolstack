@@ -1,14 +1,12 @@
 use iced::{
-    button, text_input, Align, Button, HorizontalAlignment, Length, Element,
+    button, text_input, Align, Button, Length, Element,
     Row, Column, Text, TextInput, Command,
 };
 use crate::ui::{ style };
-use crate::analysis::{
-    structures::*,
-};
+use crate::analysis::*;
 
 #[derive(Debug, Clone)]
-enum Message {
+pub enum Message {
     IterEdited(String),
     SigmaEdited(String),
     Calculate,
@@ -17,14 +15,14 @@ enum Message {
 
 #[derive(Debug, Default, Clone)]
 pub struct NewMonteCarloAnalysis {
-    n_iteration: usize,
-    assy_sigma: f64,
+    pub n_iteration: usize,
+    pub assy_sigma: f64,
     state_calculate_button: button::State,
     state_input_assy_sigma: text_input::State,
     state_input_iterations: text_input::State,
 }
 impl NewMonteCarloAnalysis {
-    pub fn update(&mut self, message: Message) -> Command<Message> {
+    pub fn update(&mut self, message: Message) {
         match message {
             Message::IterEdited(input) => {
                 if input.parse::<usize>().is_ok() {
@@ -43,9 +41,15 @@ impl NewMonteCarloAnalysis {
             Message::Calculate => {}
             Message::CalculateComplete(_) => {}
         }
-        Command::none()
     }
     pub fn view(&mut self) -> Element<Message> {
+        let NewMonteCarloAnalysis {
+            n_iteration,
+            assy_sigma,
+            state_calculate_button,
+            state_input_assy_sigma,
+            state_input_iterations,
+        } = self;
         let results_header = Column::new()
             .push(Row::new()
                 .push(Text::new("Simulation Parameters")
@@ -58,9 +62,9 @@ impl NewMonteCarloAnalysis {
                 .push(Text::new("Iterations"))
                 .push(
                     TextInput::new(
-                        iteration_state,
+                        state_input_iterations,
                         "Enter a value...",
-                        &simulation_state.parameters.n_iterations.to_string(),
+                        &n_iteration.to_string(),
                         Message::IterEdited,
                     )
                     .padding(10)
@@ -72,9 +76,9 @@ impl NewMonteCarloAnalysis {
                 .push(Text::new("Assembly Sigma"))
                 .push(
                     TextInput::new(
-                        sigma_state,
+                        state_input_assy_sigma,
                         "Enter a value...",
-                        &simulation_state.parameters.assy_sigma.to_string(),
+                        &assy_sigma.to_string(),
                         Message::SigmaEdited,
                     )
                     .padding(10)
@@ -86,7 +90,7 @@ impl NewMonteCarloAnalysis {
                 .push(Column::new().width(Length::Fill))
                 .push(
                     Button::new( 
-                        button_state, 
+                        state_calculate_button, 
                         Row::new()
                             .spacing(10)
                             //.push(icons::check())

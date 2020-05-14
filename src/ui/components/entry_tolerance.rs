@@ -278,10 +278,16 @@ impl ToleranceEntry {
                     .align_items(Align::Center)
                     .push( checkbox )
                     .push(
-                        Button::new(button_edit, icons::edit())
-                            .on_press(Message::EntryEdit)
-                            .padding(10)
-                            .style(style::Button::Icon),
+                        Button::new(
+                            button_edit, 
+                            Row::new()
+                                .push(Text::new("Edit"))
+                                .push(icons::edit())
+                                .spacing(10)
+                        )
+                        .on_press(Message::EntryEdit)
+                        .padding(10)
+                        .style(style::Button::Icon)
                     );
 
                 Container::new(row_contents)

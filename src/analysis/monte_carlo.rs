@@ -67,7 +67,7 @@ impl State {
     pub fn add(&mut self, tolerance: Tolerance) {
         self.tolerance_loop.push(tolerance);
     }
-    pub fn clear(&mut self) {
+    pub fn clear_inputs(&mut self) {
         self.tolerance_loop = Vec::new();
     }
     pub fn compute_multiplier (&mut self) {
@@ -95,6 +95,9 @@ pub async fn run(state: &State) -> Result<Results,Box<dyn Error>> {
     let real_iters = chunks * chunk_size;
     let mut result_mean = 0f64;
     let mut result_stddev = 0f64;
+
+    println!("{:#?}", state);
+
     for n in 0..chunks {
         // TODO: validate n_iterations is nicely divisible by chunk_size and n_threads.
         // Gather samples into a stack that is `chunk_size` long for each Tolerance

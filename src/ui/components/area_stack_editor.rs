@@ -10,9 +10,9 @@ use crate::ui::components::*;
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    EntryMessage(usize, tolerance_entry::Message),
-    FilterMessage(tolerance_filter::Message),
-    NewEntryMessage(new_tolerance_entry::Message),
+    EntryMessage(usize, entry_tolerance::Message),
+    FilterMessage(filter_tolerance::Message),
+    NewEntryMessage(form_new_tolerance::Message),
 }
 
 #[derive(Debug, Default, Clone)]
@@ -36,7 +36,7 @@ impl StackEditor {
         match message {
             Message::NewEntryMessage(message) => {
                 match &message {
-                    new_tolerance_entry::Message::CreateTol(input_text, input_type) => {
+                    form_new_tolerance::Message::CreateTol(input_text, input_type) => {
                         if !input_text.is_empty() {
                             tolerances.push(ToleranceEntry::new(
                                 input_text.clone(),
@@ -44,15 +44,15 @@ impl StackEditor {
                             ));
                         }
                     }
-                    new_tolerance_entry::Message::TolNameChanged(_) => {}
-                    new_tolerance_entry::Message::TolTypeChanged(_) => {}
+                    form_new_tolerance::Message::TolNameChanged(_) => {}
+                    form_new_tolerance::Message::TolTypeChanged(_) => {}
                 }
                 entry_form.update(message);
             }
 
             Message::FilterMessage(message) => {
                 match &message {
-                    tolerance_filter::Message::FilterChanged(_) => {}
+                    filter_tolerance::Message::FilterChanged(_) => {}
                 };
                 // Once we've processed the filter message in the parent component, pass the
                 //  message into the filter to be processed.
@@ -62,10 +62,10 @@ impl StackEditor {
             Message::EntryMessage(i, message) => {
                 // Some message `tol_message`  from a tolerance entry at index `i`
                 match &message {
-                    tolerance_entry::Message::EntryDelete => {
+                    entry_tolerance::Message::EntryDelete => {
                         tolerances.remove(i);
                     }
-                    tolerance_entry::Message::EntryFinishEditing => match tolerances.get_mut(i) {
+                    entry_tolerance::Message::EntryFinishEditing => match tolerances.get_mut(i) {
                         Some(entry) => match  &entry.input {
                             FormValues::Linear {
                                 description,
