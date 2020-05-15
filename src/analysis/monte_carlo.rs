@@ -146,7 +146,6 @@ pub fn compute_stackup(tol_collection: Vec<Tolerance>, n_iterations: usize) -> V
                             // I thought this would result in branching, but it didn't impact perf.
                             Tolerance::Linear(val) => val.mc_tolerance(),
                             Tolerance::Float(val) => val.mc_tolerance(),
-                            Tolerance::Compound(val) => val.mc_tolerance(),
                         }
                     );
                 }
@@ -175,7 +174,6 @@ impl Tolerance {
         match self {
             Tolerance::Linear(tol) => tol.compute_multiplier(),
             Tolerance::Float(tol) => tol.compute_multiplier(),
-            Tolerance::Compound(tol) => tol.compute_multiplier(),
         }
     }
 }

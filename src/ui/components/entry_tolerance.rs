@@ -32,14 +32,19 @@ pub enum FormState {
         button_delete: button::State,
         description: text_input::State,
         dimension: text_input::State,
-        tolerance: text_input::State,
+        tolerance_pos: text_input::State,
+        tolerance_neg: text_input::State,
+        sigma: text_input::State,
     },
     Float {
         button_save: button::State,
         button_delete: button::State,
         description: text_input::State,
-        tolerance_hole: text_input::State,
-        tolerance_pin: text_input::State,
+        tolerance_hole_pos: text_input::State,
+        tolerance_hole_neg: text_input::State,
+        tolerance_pin_pos: text_input::State,
+        tolerance_pin_neg: text_input::State,
+        sigma: text_input::State,
     },
     Compound {},
 }
@@ -55,10 +60,15 @@ pub enum Message {
     EditedDescription(String),
     // Linear entry messages
     EditedLinearDimension(String),
-    EditedLinearTolerance(String),
+    EditedLinearTolerancePos(String),
+    EditedLinearToleranceNeg(String),
+    EditedLinearSigma(String),
     // Float entry messages
-    EditedFloatTolHole(String),
-    EditedFloatTolPin(String),
+    EditedFloatTolHolePos(String),
+    EditedFloatTolHoleNeg(String),
+    EditedFloatTolPinPos(String),
+    EditedFloatTolPinNeg(String),
+    EditedFloatSigma(String),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -66,19 +76,17 @@ pub enum FormValues {
     Linear { 
         description: String,
         dimension: String,
-        tolerance: String,
+        tolerance_pos: String,
+        tolerance_neg: String,
+        sigma: String,
     },
     Float {
         description: String,
-        tolerance_hole: String,
-        tolerance_pin: String,
-    },
-    Compound {
-        description: String,
-        tolerance_hole_1: String,
-        tolerance_pin_1: String,
-        tolerance_hole_2: String,
-        tolerance_pin_2: String,
+        tolerance_hole_pos: String,
+        tolerance_hole_neg: String,
+        tolerance_pin_pos: String,
+        tolerance_pin_neg: String,
+        sigma: String,
     },
 }
 
@@ -100,23 +108,19 @@ impl ToleranceEntry {
                     FormValues::Linear{
                         description: description,
                         dimension: String::from(""),
-                        tolerance: String::from(""),
+                        tolerance_pos: String::from(""),
+                        tolerance_neg: String::from(""),
+                        sigma: String::from(""),
                     }
                 }
                 Tolerance::Float(_) => {
                     FormValues::Float{
                         description: description,
-                        tolerance_hole: String::from(""),
-                        tolerance_pin: String::from(""),
-                    }
-                }
-                Tolerance::Compound(_) => {
-                    FormValues::Compound{
-                        description: description,
-                        tolerance_hole_1: String::from(""),
-                        tolerance_pin_1: String::from(""),
-                        tolerance_hole_2: String::from(""),
-                        tolerance_pin_2: String::from(""),
+                        tolerance_hole_pos: String::from(""),
+                        tolerance_hole_neg: String::from(""),
+                        tolerance_pin_pos: String::from(""),
+                        tolerance_pin_neg: String::from(""),
+                        sigma: String::from(""),
                     }
                 }
             },
@@ -147,7 +151,9 @@ impl ToleranceEntry {
                                 button_delete: button::State::new(),
                                 description: text_input::State::focused(),
                                 dimension: text_input::State::new(),
-                                tolerance: text_input::State::new(),
+                                tolerance_pos: text_input::State::new(),
+                                tolerance_neg: text_input::State::new(),
+                                sigma: text_input::State::new(),
                             }
                         }
                     }
@@ -157,14 +163,11 @@ impl ToleranceEntry {
                                 button_save: button::State::new(),
                                 button_delete: button::State::new(),
                                 description: text_input::State::focused(),
-                                tolerance_hole: text_input::State::new(),
-                                tolerance_pin: text_input::State::new(),
-                            }
-                        }
-                    }
-                    Tolerance::Compound(_) => {
-                        State::Editing {
-                            form_tolentry: FormState::Compound {
+                                tolerance_hole_pos: text_input::State::new(),
+                                tolerance_hole_neg: text_input::State::new(),
+                                tolerance_pin_pos: text_input::State::new(),
+                                tolerance_pin_neg: text_input::State::new(),
+                                sigma: text_input::State::new(),
                             }
                         }
                     }
@@ -176,9 +179,6 @@ impl ToleranceEntry {
                         !description.is_empty()
                     },
                     FormValues::Float{description,..} => {
-                        !description.is_empty()
-                    },
-                    FormValues::Compound{description,..} => {
                         !description.is_empty()
                     },
                 } {
@@ -196,9 +196,6 @@ impl ToleranceEntry {
                     FormValues::Float{description,..} => {
                         *description = input
                     },
-                    FormValues::Compound{description,..} => {
-                        *description = input
-                    },
                 };
             }
             Message::EditedLinearDimension(input) => {
@@ -213,11 +210,11 @@ impl ToleranceEntry {
                     _ => {}
                 };
             }
-            Message::EditedLinearTolerance(input) => {
+            Message::EditedLinearTolerancePos(input) => {
                 match &mut self.input {
-                    FormValues::Linear{tolerance,..} => {
-                        *tolerance = NumericString::eval(
-                            tolerance,
+                    FormValues::Linear{tolerance_pos,..} => {
+                        *tolerance_pos = NumericString::eval(
+                            tolerance_pos,
                             &input,
                             NumericString::Positive
                         )
@@ -225,11 +222,11 @@ impl ToleranceEntry {
                     _ => {}
                 };
             }
-            Message::EditedFloatTolHole(input) => {
+            Message::EditedLinearToleranceNeg(input) => {
                 match &mut self.input {
-                    FormValues::Float{tolerance_hole,..} => {
-                        *tolerance_hole = NumericString::eval(
-                            tolerance_hole,
+                    FormValues::Linear{tolerance_neg,..} => {
+                        *tolerance_neg = NumericString::eval(
+                            tolerance_neg,
                             &input,
                             NumericString::Positive
                         )
@@ -237,11 +234,71 @@ impl ToleranceEntry {
                     _ => {}
                 };
             }
-            Message::EditedFloatTolPin(input) => {
+            Message::EditedLinearSigma(input) => {
                 match &mut self.input {
-                    FormValues::Float{tolerance_pin,..} => {
-                        *tolerance_pin = NumericString::eval(
-                            tolerance_pin,
+                    FormValues::Linear{sigma,..} => {
+                        *sigma = NumericString::eval(
+                            sigma,
+                            &input,
+                            NumericString::Positive
+                        )
+                    },
+                    _ => {}
+                };
+            }
+            Message::EditedFloatTolHolePos(input) => {
+                match &mut self.input {
+                    FormValues::Float{tolerance_hole_pos,..} => {
+                        *tolerance_hole_pos = NumericString::eval(
+                            tolerance_hole_pos,
+                            &input,
+                            NumericString::Positive
+                        )
+                    },
+                    _ => {}
+                };
+            }
+            Message::EditedFloatTolHoleNeg(input) => {
+                match &mut self.input {
+                    FormValues::Float{tolerance_hole_neg,..} => {
+                        *tolerance_hole_neg = NumericString::eval(
+                            tolerance_hole_neg,
+                            &input,
+                            NumericString::Positive
+                        )
+                    },
+                    _ => {}
+                };
+            }
+            Message::EditedFloatTolPinPos(input) => {
+                match &mut self.input {
+                    FormValues::Float{tolerance_pin_pos,..} => {
+                        *tolerance_pin_pos = NumericString::eval(
+                            tolerance_pin_pos,
+                            &input,
+                            NumericString::Positive
+                        )
+                    },
+                    _ => {}
+                };
+            }
+            Message::EditedFloatTolPinNeg(input) => {
+                match &mut self.input {
+                    FormValues::Float{tolerance_pin_neg,..} => {
+                        *tolerance_pin_neg = NumericString::eval(
+                            tolerance_pin_neg,
+                            &input,
+                            NumericString::Positive
+                        )
+                    },
+                    _ => {}
+                };
+            }
+            Message::EditedFloatSigma(input) => {
+                match &mut self.input {
+                    FormValues::Float{sigma,..} => {
+                        *sigma = NumericString::eval(
+                            sigma,
                             &input,
                             NumericString::Positive
                         )
@@ -262,9 +319,6 @@ impl ToleranceEntry {
                             description
                         },
                         FormValues::Float{description,..} => {
-                            description
-                        },
-                        FormValues::Compound{description,..} => {
                             description
                         },
                     },
@@ -301,7 +355,9 @@ impl ToleranceEntry {
                         button_delete,
                         description,
                         dimension,
-                        tolerance,
+                        tolerance_pos,
+                        tolerance_neg,
+                        sigma,
                     } => {
                         
                         let view_button_save =
@@ -358,20 +414,51 @@ impl ToleranceEntry {
                             .on_submit(Message::EntryFinishEditing)
                             .padding(10);
                         
-                        let view_tolerance = 
+                        let view_tolerance_pos = 
                             TextInput::new(
-                                tolerance,
+                                tolerance_pos,
                                 "Enter a value",
                                 match &self.input {
-                                    FormValues::Linear{tolerance,..} => {
-                                        tolerance
+                                    FormValues::Linear{tolerance_pos,..} => {
+                                        tolerance_pos
                                     },
                                     _ => {"Error: tolerance type mismatch"}
                                 },
-                                Message::EditedLinearTolerance,
+                                Message::EditedLinearTolerancePos,
                             )
                             .on_submit(Message::EntryFinishEditing)
                             .padding(10);
+
+                        let view_tolerance_neg = 
+                            TextInput::new(
+                                tolerance_neg,
+                                "Enter a value",
+                                match &self.input {
+                                    FormValues::Linear{tolerance_neg,..} => {
+                                        tolerance_neg
+                                    },
+                                    _ => {"Error: tolerance type mismatch"}
+                                },
+                                Message::EditedLinearToleranceNeg,
+                            )
+                            .on_submit(Message::EntryFinishEditing)
+                            .padding(10);
+
+                        let view_sigma = 
+                            TextInput::new(
+                                sigma,
+                                "Enter a value",
+                                match &self.input {
+                                    FormValues::Linear{sigma,..} => {
+                                        sigma
+                                    },
+                                    _ => {"Error: tolerance type mismatch"}
+                                },
+                                Message::EditedLinearSigma,
+                            )
+                            .on_submit(Message::EntryFinishEditing)
+                            .padding(10);
+
 
                         let row_header = Row::new()
                             .push(Text::new("Editing Linear Tolerance")
@@ -394,9 +481,21 @@ impl ToleranceEntry {
                             .spacing(20)
                             .align_items(Align::Center);
 
-                        let row_tolerance = Row::new()
-                            .push(Text::new("Tolerance:"))
-                            .push(view_tolerance)
+                        let row_tolerance_pos = Row::new()
+                            .push(Text::new("+ Tolerance:"))
+                            .push(view_tolerance_pos)
+                            .spacing(20)
+                            .align_items(Align::Center);
+
+                        let row_tolerance_neg = Row::new()
+                            .push(Text::new("- Tolerance:"))
+                            .push(view_tolerance_neg)
+                            .spacing(20)
+                            .align_items(Align::Center);
+
+                        let row_sigma = Row::new()
+                            .push(Text::new("Sigma:"))
+                            .push(view_sigma)
                             .spacing(20)
                             .align_items(Align::Center);
 
@@ -411,7 +510,9 @@ impl ToleranceEntry {
                             .push(Row::new().height(Length::Units(5)))
                             .push(row_description)
                             .push(row_dimension)
-                            .push(row_tolerance)
+                            .push(row_tolerance_pos)
+                            .push(row_tolerance_neg)
+                            .push(row_sigma)
                             .push(Row::new().height(Length::Units(5)))
                             .push(row_buttons)
                             .spacing(10)
@@ -425,8 +526,11 @@ impl ToleranceEntry {
                         button_save,
                         button_delete,
                         description,
-                        tolerance_hole,
-                        tolerance_pin,
+                        tolerance_hole_pos,
+                        tolerance_hole_neg,
+                        tolerance_pin_pos,
+                        tolerance_pin_neg,
+                        sigma,
                     } => {
                         
                         let view_button_save =
@@ -468,32 +572,77 @@ impl ToleranceEntry {
                             .on_submit(Message::EntryFinishEditing)
                             .padding(10);
                         
-                        let view_tolerance_hole = 
+                        let view_tolerance_hole_pos = 
                             TextInput::new(
-                                tolerance_hole,
+                                tolerance_hole_pos,
                                 "Enter a value",
                                 match &self.input {
-                                    FormValues::Float{tolerance_hole,..} => {
-                                        tolerance_hole
+                                    FormValues::Float{tolerance_hole_pos,..} => {
+                                        tolerance_hole_pos
                                     },
                                     _ => {"Error: tolerance type mismatch"}
                                 },
-                                Message::EditedFloatTolHole,
+                                Message::EditedFloatTolHolePos,
                             )
                             .on_submit(Message::EntryFinishEditing)
                             .padding(10);
                         
-                        let view_tolerance_pin = 
+                        let view_tolerance_hole_neg = 
                             TextInput::new(
-                                tolerance_pin,
+                                tolerance_hole_neg,
                                 "Enter a value",
                                 match &self.input {
-                                    FormValues::Float{tolerance_pin,..} => {
-                                        tolerance_pin
+                                    FormValues::Float{tolerance_hole_neg,..} => {
+                                        tolerance_hole_neg
                                     },
                                     _ => {"Error: tolerance type mismatch"}
                                 },
-                                Message::EditedFloatTolPin,
+                                Message::EditedFloatTolHoleNeg,
+                            )
+                            .on_submit(Message::EntryFinishEditing)
+                            .padding(10);
+
+                        let view_tolerance_pin_pos = 
+                            TextInput::new(
+                                tolerance_pin_pos,
+                                "Enter a value",
+                                match &self.input {
+                                    FormValues::Float{tolerance_pin_pos,..} => {
+                                        tolerance_pin_pos
+                                    },
+                                    _ => {"Error: tolerance type mismatch"}
+                                },
+                                Message::EditedFloatTolPinPos,
+                            )
+                            .on_submit(Message::EntryFinishEditing)
+                            .padding(10);
+                        
+                        let view_tolerance_pin_neg = 
+                            TextInput::new(
+                                tolerance_pin_neg,
+                                "Enter a value",
+                                match &self.input {
+                                    FormValues::Float{tolerance_pin_neg,..} => {
+                                        tolerance_pin_neg
+                                    },
+                                    _ => {"Error: tolerance type mismatch"}
+                                },
+                                Message::EditedFloatTolPinNeg,
+                            )
+                            .on_submit(Message::EntryFinishEditing)
+                            .padding(10);
+                        
+                        let view_sigma = 
+                            TextInput::new(
+                                sigma,
+                                "Enter a value",
+                                match &self.input {
+                                    FormValues::Float{sigma,..} => {
+                                        sigma
+                                    },
+                                    _ => {"Error: tolerance type mismatch"}
+                                },
+                                Message::EditedFloatSigma,
                             )
                             .on_submit(Message::EntryFinishEditing)
                             .padding(10);
@@ -513,15 +662,33 @@ impl ToleranceEntry {
                             .spacing(20)
                             .align_items(Align::Center);
 
-                        let row_dimension = Row::new()
-                            .push(Text::new("Hole Tolerance:"))
-                            .push(view_tolerance_hole)
+                        let row_tolerance_hole_pos = Row::new()
+                            .push(Text::new("+ Hole Tolerance:"))
+                            .push(view_tolerance_hole_pos)
                             .spacing(20)
                             .align_items(Align::Center);
 
-                        let row_tolerance = Row::new()
-                            .push(Text::new("Pin Tolerance:"))
-                            .push(view_tolerance_pin)
+                        let row_tolerance_hole_neg = Row::new()
+                            .push(Text::new("- Hole Tolerance:"))
+                            .push(view_tolerance_hole_neg)
+                            .spacing(20)
+                            .align_items(Align::Center);
+
+                        let row_tolerance_pin_pos = Row::new()
+                            .push(Text::new("+ Pin Tolerance:"))
+                            .push(view_tolerance_pin_pos)
+                            .spacing(20)
+                            .align_items(Align::Center);
+
+                        let row_tolerance_pin_neg = Row::new()
+                            .push(Text::new("- Pin Tolerance:"))
+                            .push(view_tolerance_pin_neg)
+                            .spacing(20)
+                            .align_items(Align::Center);
+
+                        let row_sigma = Row::new()
+                            .push(Text::new("Sigma:"))
+                            .push(view_sigma)
                             .spacing(20)
                             .align_items(Align::Center);
 
@@ -535,8 +702,11 @@ impl ToleranceEntry {
                             .push(row_header)
                             .push(Row::new().height(Length::Units(5)))
                             .push(row_description)
-                            .push(row_dimension)
-                            .push(row_tolerance)
+                            .push(row_tolerance_hole_pos)
+                            .push(row_tolerance_hole_neg)
+                            .push(row_tolerance_pin_pos)
+                            .push(row_tolerance_pin_neg)
+                            .push(row_sigma)
                             .push(Row::new().height(Length::Units(5)))
                             .push(row_buttons)
                             .spacing(10)

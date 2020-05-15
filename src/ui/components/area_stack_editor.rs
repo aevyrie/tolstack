@@ -70,10 +70,14 @@ impl StackEditor {
                             FormValues::Linear {
                                 description,
                                 dimension,
-                                tolerance,
+                                tolerance_pos,
+                                tolerance_neg,
+                                sigma,
                             } => {
                                 let mut sanitized_dimension = 0.0;
-                                let mut sanitized_tolerance = 0.0;
+                                let mut sanitized_tolerance_pos = 0.0;
+                                let mut sanitized_tolerance_neg = 0.0;
+                                let mut sanitized_sigma = 0.0;
 
                                 entry.valid = true;
 
@@ -85,9 +89,25 @@ impl StackEditor {
                                         entry.valid = false;
                                     }
                                 }
-                                match tolerance.parse::<f64>() {
+                                match tolerance_pos.parse::<f64>() {
                                     Ok(value) => {
-                                        sanitized_tolerance = value;
+                                        sanitized_tolerance_pos = value;
+                                    }
+                                    Err(e) => {
+                                        entry.valid = false;
+                                    }
+                                }
+                                match tolerance_neg.parse::<f64>() {
+                                    Ok(value) => {
+                                        sanitized_tolerance_neg = value;
+                                    }
+                                    Err(e) => {
+                                        entry.valid = false;
+                                    }
+                                }
+                                match sigma.parse::<f64>() {
+                                    Ok(value) => {
+                                        sanitized_sigma = value;
                                     }
                                     Err(e) => {
                                         entry.valid = false;
@@ -97,9 +117,9 @@ impl StackEditor {
                                     entry.active = true;
                                     let linear = DimTol::new(
                                         sanitized_dimension, 
-                                        sanitized_tolerance, 
-                                        sanitized_tolerance, 
-                                        3.0,
+                                        sanitized_tolerance_pos, 
+                                        sanitized_tolerance_neg, 
+                                        sanitized_sigma,
                                     );
                                     let linear = Tolerance::Linear(LinearTL::new(linear));
                                     entry.analysis_model = linear;
@@ -107,25 +127,55 @@ impl StackEditor {
                             },
                             FormValues::Float {
                                 description,
-                                tolerance_hole,
-                                tolerance_pin,
+                                tolerance_hole_pos,
+                                tolerance_hole_neg,
+                                tolerance_pin_pos,
+                                tolerance_pin_neg,
+                                sigma,
                             } => {
-                                let mut sanitized_tolerance_hole = 0.0;
-                                let mut sanitized_tolerance_pin = 0.0;
+                                let mut sanitized_tolerance_hole_pos = 0.0;
+                                let mut sanitized_tolerance_hole_neg = 0.0;
+                                let mut sanitized_tolerance_pin_pos = 0.0;
+                                let mut sanitized_tolerance_pin_neg = 0.0;
+                                let mut sanitized_sigma = 0.0;
 
                                 entry.valid = true;
 
-                                match tolerance_hole.parse::<f64>() {
+                                match tolerance_hole_pos.parse::<f64>() {
                                     Ok(value) => {
-                                        sanitized_tolerance_hole = value;
+                                        sanitized_tolerance_hole_pos = value;
                                     }
                                     Err(e) => {
                                         entry.valid = false;
                                     }
                                 }
-                                match tolerance_pin.parse::<f64>() {
+                                match tolerance_hole_neg.parse::<f64>() {
                                     Ok(value) => {
-                                        sanitized_tolerance_pin = value;
+                                        sanitized_tolerance_hole_neg = value;
+                                    }
+                                    Err(e) => {
+                                        entry.valid = false;
+                                    }
+                                }
+                                match tolerance_pin_pos.parse::<f64>() {
+                                    Ok(value) => {
+                                        sanitized_tolerance_pin_pos = value;
+                                    }
+                                    Err(e) => {
+                                        entry.valid = false;
+                                    }
+                                }
+                                match tolerance_pin_neg.parse::<f64>() {
+                                    Ok(value) => {
+                                        sanitized_tolerance_pin_neg = value;
+                                    }
+                                    Err(e) => {
+                                        entry.valid = false;
+                                    }
+                                }
+                                match sigma.parse::<f64>() {
+                                    Ok(value) => {
+                                        sanitized_sigma = value;
                                     }
                                     Err(e) => {
                                         entry.valid = false;
@@ -135,15 +185,15 @@ impl StackEditor {
                                     entry.active = true;
                                     let hole = DimTol::new(
                                         0.0, 
-                                        sanitized_tolerance_hole, 
-                                        sanitized_tolerance_hole, 
-                                        3.0,
+                                        sanitized_tolerance_hole_pos, 
+                                        sanitized_tolerance_hole_neg, 
+                                        sanitized_sigma,
                                     );
                                     let pin = DimTol::new(
                                         0.0, 
-                                        sanitized_tolerance_pin, 
-                                        sanitized_tolerance_pin, 
-                                        3.0,
+                                        sanitized_tolerance_pin_pos, 
+                                        sanitized_tolerance_pin_neg, 
+                                        sanitized_sigma,
                                     );
                                     let data = Tolerance::Float(
                                         FloatTL::new(hole, pin,3.0)
@@ -151,15 +201,6 @@ impl StackEditor {
                                     //println!("{:#?}",data);
                                     entry.analysis_model = data;
                                 }
-                            },
-                            FormValues::Compound {
-                                description,
-                                tolerance_hole_1,
-                                tolerance_pin_1,
-                                tolerance_hole_2,
-                                tolerance_pin_2,
-                            } => {
-
                             },
                         }
                         ,
@@ -203,7 +244,6 @@ impl StackEditor {
                 Filter::Some(tol) => match tol {
                     Tolerance::Linear(_) => "No linear tolerances in the stack.",
                     Tolerance::Float(_) => "No float tolerances in the stack.",
-                    Tolerance::Compound(_) => "No compound tolerances in the stack.",
                 }
             })
         };

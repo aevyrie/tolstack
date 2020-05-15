@@ -26,7 +26,7 @@ impl DimTol{
 pub enum Tolerance{
     Linear(LinearTL),
     Float(FloatTL),
-    Compound(CompoundFloatTL),
+    //Compound(CompoundFloatTL),
 }
 impl Default for Tolerance {
     fn default() -> Self {
