@@ -1,6 +1,8 @@
 # TolStack
 
-TolStack is a cross platform tolerance analysis application made for building and analyzing one-dimensional geometric tolerance models. Works on Windows, MacOS, and Linux. **Breaking changes in master**
+This is a cross platform tolerance analysis application made for building and analyzing one-dimensional geometric tolerance models. Works on Windows, MacOS, and Linux.
+
+**Breaking changes in master**
 
 ![Screenshot](docs/screenshot.png)
 
@@ -45,6 +47,8 @@ Input/Output
 - [ ] Add sigma input on tolerance entries
 - [ ] Add hole/pin diameter input on `Float` entries
 - [ ] Show tolerance summary on entries in idle state
+- [ ] Implement standardized styling
+  - [ ] Investigate hot-reload via serde monitoring json file, enable during debug
 - [ ] Implement ribbon or menu bar
   - [ ] Autosave toggle
   - [ ] Save/Open project
