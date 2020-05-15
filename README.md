@@ -18,19 +18,15 @@ Tolerances
 
 * `Linear`: Linear dimensions (point A to B with some tolerance)
 * `Float`: Single hole/pin pair (a part with one pin located in another part with one hole, with some tolerance on each dia)
-* ~~`Compound`: Double hole/pin pairs in parallel (a part with two pins located in another part with two holes)~~ Deprecated
-
-Tolerances
-
-* ~~Unilateral tolerances (+0/-0.5)~~ Need UI support
+* Unilateral tolerances (+0/-0.5)
 * Equal bilateral tolerances (+/-0.5)
-* ~~Unequal bilateral tolerances (+0.2/-0.1)~~ Need UI support
+* Unequal bilateral tolerances (+0.2/-0.1)
 
 Input/Output
 
 * Auto saving
-* ~~Manually save/load JSON project files~~ Need UI support
-* ~~Export simulation output data to CSV for plotting~~ Need UI support
+* ~~Manually save/load JSON project files~~ WIP UI support
+* ~~Export simulation output data to CSV for plotting~~ WIP UI support
 
 ## Todo
 
