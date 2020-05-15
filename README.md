@@ -18,9 +18,7 @@ Tolerances
 
 * `Linear`: Linear dimensions (point A to B with some tolerance)
 * `Float`: Single hole/pin pair (a part with one pin located in another part with one hole, with some tolerance on each dia)
-* Unilateral tolerances (+0/-0.5)
-* Equal bilateral tolerances (+/-0.5)
-* Unequal bilateral tolerances (+0.2/-0.1)
+* Supports unequal bilateral tolerances (+0.2/-0.1)
 
 Input/Output
 
@@ -41,7 +39,7 @@ Input/Output
   - [X] Remove redundant SimulationResult, use result in the SimulationState
 - [X] Implement unequal bilateral tolerances in GUI
 - [X] Add sigma input on tolerance entries
-- [ ] Add hole/pin diameter input on `Float` entries
+- [X] Add hole/pin diameter input on `Float` entries
 - [ ] Show tolerance summary on entries in idle state
 - [ ] Implement standardized styling
   - [ ] Investigate hot-reload via serde monitoring json file, enable during debug
