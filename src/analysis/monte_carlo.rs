@@ -142,7 +142,6 @@ pub fn compute_stackup(tol_collection: Vec<Tolerance>, n_iterations: usize) -> V
                 for _i in 0..n_iterations/n_threads {
                     result.push(
                         match tol_struct {
-                            
                             // I thought this would result in branching, but it didn't impact perf.
                             Tolerance::Linear(val) => val.mc_tolerance(),
                             Tolerance::Float(val) => val.mc_tolerance(),

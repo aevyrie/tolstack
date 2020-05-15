@@ -127,12 +127,16 @@ impl StackEditor {
                             },
                             FormValues::Float {
                                 description,
+                                diameter_hole,
+                                diameter_pin,
                                 tolerance_hole_pos,
                                 tolerance_hole_neg,
                                 tolerance_pin_pos,
                                 tolerance_pin_neg,
                                 sigma,
                             } => {
+                                let mut sanitized_diameter_hole = 0.0;
+                                let mut sanitized_diameter_pin = 0.0;
                                 let mut sanitized_tolerance_hole_pos = 0.0;
                                 let mut sanitized_tolerance_hole_neg = 0.0;
                                 let mut sanitized_tolerance_pin_pos = 0.0;
@@ -140,7 +144,22 @@ impl StackEditor {
                                 let mut sanitized_sigma = 0.0;
 
                                 entry.valid = true;
-
+                                match diameter_hole.parse::<f64>() {
+                                    Ok(value) => {
+                                        sanitized_diameter_hole = value;
+                                    }
+                                    Err(e) => {
+                                        entry.valid = false;
+                                    }
+                                }
+                                match diameter_pin.parse::<f64>() {
+                                    Ok(value) => {
+                                        sanitized_diameter_pin = value;
+                                    }
+                                    Err(e) => {
+                                        entry.valid = false;
+                                    }
+                                }
                                 match tolerance_hole_pos.parse::<f64>() {
                                     Ok(value) => {
                                         sanitized_tolerance_hole_pos = value;
@@ -184,13 +203,13 @@ impl StackEditor {
                                 if entry.valid {
                                     entry.active = true;
                                     let hole = DimTol::new(
-                                        0.0, 
+                                        sanitized_diameter_hole, 
                                         sanitized_tolerance_hole_pos, 
                                         sanitized_tolerance_hole_neg, 
                                         sanitized_sigma,
                                     );
                                     let pin = DimTol::new(
-                                        0.0, 
+                                        sanitized_diameter_pin, 
                                         sanitized_tolerance_pin_pos, 
                                         sanitized_tolerance_pin_neg, 
                                         sanitized_sigma,

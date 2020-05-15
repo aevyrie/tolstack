@@ -40,6 +40,8 @@ pub enum FormState {
         button_save: button::State,
         button_delete: button::State,
         description: text_input::State,
+        diameter_hole: text_input::State,
+        diameter_pin: text_input::State,
         tolerance_hole_pos: text_input::State,
         tolerance_hole_neg: text_input::State,
         tolerance_pin_pos: text_input::State,
@@ -64,6 +66,8 @@ pub enum Message {
     EditedLinearToleranceNeg(String),
     EditedLinearSigma(String),
     // Float entry messages
+    EditedFloatDiameterHole(String),
+    EditedFloatDiameterPin(String),
     EditedFloatTolHolePos(String),
     EditedFloatTolHoleNeg(String),
     EditedFloatTolPinPos(String),
@@ -82,6 +86,8 @@ pub enum FormValues {
     },
     Float {
         description: String,
+        diameter_hole: String,
+        diameter_pin: String,
         tolerance_hole_pos: String,
         tolerance_hole_neg: String,
         tolerance_pin_pos: String,
@@ -116,6 +122,8 @@ impl ToleranceEntry {
                 Tolerance::Float(_) => {
                     FormValues::Float{
                         description: description,
+                        diameter_hole: String::from(""),
+                        diameter_pin: String::from(""),
                         tolerance_hole_pos: String::from(""),
                         tolerance_hole_neg: String::from(""),
                         tolerance_pin_pos: String::from(""),
@@ -163,6 +171,8 @@ impl ToleranceEntry {
                                 button_save: button::State::new(),
                                 button_delete: button::State::new(),
                                 description: text_input::State::focused(),
+                                diameter_hole: text_input::State::new(),
+                                diameter_pin: text_input::State::new(),
                                 tolerance_hole_pos: text_input::State::new(),
                                 tolerance_hole_neg: text_input::State::new(),
                                 tolerance_pin_pos: text_input::State::new(),
@@ -239,6 +249,30 @@ impl ToleranceEntry {
                     FormValues::Linear{sigma,..} => {
                         *sigma = NumericString::eval(
                             sigma,
+                            &input,
+                            NumericString::Positive
+                        )
+                    },
+                    _ => {}
+                };
+            }
+            Message::EditedFloatDiameterHole(input) => {
+                match &mut self.input {
+                    FormValues::Float{diameter_hole,..} => {
+                        *diameter_hole = NumericString::eval(
+                            diameter_hole,
+                            &input,
+                            NumericString::Positive
+                        )
+                    },
+                    _ => {}
+                };
+            }
+            Message::EditedFloatDiameterPin(input) => {
+                match &mut self.input {
+                    FormValues::Float{diameter_pin,..} => {
+                        *diameter_pin = NumericString::eval(
+                            diameter_pin,
                             &input,
                             NumericString::Positive
                         )
@@ -526,6 +560,8 @@ impl ToleranceEntry {
                         button_save,
                         button_delete,
                         description,
+                        diameter_hole,
+                        diameter_pin,
                         tolerance_hole_pos,
                         tolerance_hole_neg,
                         tolerance_pin_pos,
@@ -568,6 +604,36 @@ impl ToleranceEntry {
                                     _ => {"Error: tolerance type mismatch"}
                                 },
                                 Message::EditedDescription,
+                            )
+                            .on_submit(Message::EntryFinishEditing)
+                            .padding(10);
+
+                        let view_diameter_hole = 
+                            TextInput::new(
+                                diameter_hole,
+                                "Enter a value",
+                                match &self.input {
+                                    FormValues::Float{diameter_hole,..} => {
+                                        diameter_hole
+                                    },
+                                    _ => {"Error: tolerance type mismatch"}
+                                },
+                                Message::EditedFloatDiameterHole,
+                            )
+                            .on_submit(Message::EntryFinishEditing)
+                            .padding(10);
+
+                        let view_diameter_pin = 
+                            TextInput::new(
+                                diameter_pin,
+                                "Enter a value",
+                                match &self.input {
+                                    FormValues::Float{diameter_pin,..} => {
+                                        diameter_pin
+                                    },
+                                    _ => {"Error: tolerance type mismatch"}
+                                },
+                                Message::EditedFloatDiameterPin,
                             )
                             .on_submit(Message::EntryFinishEditing)
                             .padding(10);
@@ -662,6 +728,18 @@ impl ToleranceEntry {
                             .spacing(20)
                             .align_items(Align::Center);
 
+                        let row_diameter_hole = Row::new()
+                            .push(Text::new("Hole Diameter:"))
+                            .push(view_diameter_hole)
+                            .spacing(20)
+                            .align_items(Align::Center);
+
+                        let row_diameter_pin = Row::new()
+                            .push(Text::new("Pin Diameter:"))
+                            .push(view_diameter_pin)
+                            .spacing(20)
+                            .align_items(Align::Center);
+
                         let row_tolerance_hole_pos = Row::new()
                             .push(Text::new("+ Hole Tolerance:"))
                             .push(view_tolerance_hole_pos)
@@ -702,6 +780,8 @@ impl ToleranceEntry {
                             .push(row_header)
                             .push(Row::new().height(Length::Units(5)))
                             .push(row_description)
+                            .push(row_diameter_hole)
+                            .push(row_diameter_pin)
                             .push(row_tolerance_hole_pos)
                             .push(row_tolerance_hole_neg)
                             .push(row_tolerance_pin_pos)
