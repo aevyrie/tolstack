@@ -43,8 +43,8 @@ Input/Output
   - [X] Break out UI widgets into using own internal structure to greatly simplify the top `view()` function
   - [X] Consolidate/simplify ToleranceType matching
   - [X] Remove redundant SimulationResult, use result in the SimulationState
-- [ ] Implement unequal bilateral tolerances in GUI
-- [ ] Add sigma input on tolerance entries
+- [X] Implement unequal bilateral tolerances in GUI
+- [X] Add sigma input on tolerance entries
 - [ ] Add hole/pin diameter input on `Float` entries
 - [ ] Show tolerance summary on entries in idle state
 - [ ] Implement standardized styling
