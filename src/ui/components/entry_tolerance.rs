@@ -864,9 +864,9 @@ impl NumericString {
             }
             false => {
                 if match criteria {
-                    NumericString::Number => input == "" || input == "-",
-                    NumericString::Negative => input == "" || input == "-",
-                    NumericString::Positive => input == "",
+                    NumericString::Number => input == "" || input == "-" || input == ".",
+                    NumericString::Negative => input == "" || input == "-" || input == ".",
+                    NumericString::Positive => input == "" || input == ".",
                 } {
                     input.to_string()
                 } else {
