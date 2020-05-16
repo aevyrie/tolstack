@@ -381,7 +381,7 @@ impl ToleranceEntry {
                                     } else {
                                         format!("{} +{}/-{}", dim.pin.dim, dim.pin.tol_pos, dim.pin.tol_neg)
                                     };
-                                format!("Hole: {}/nPin: {}", hole, pin)
+                                format!("Hole: {}\nPin: {}", hole, pin)
                             }
                         }
                     }
@@ -855,14 +855,18 @@ impl NumericString {
                 } {
                     input.to_string()
                 } else {
-                    old.to_string()
+                    if input == "" || input == "." {
+                        input.to_string()
+                    } else {
+                        old.to_string()
+                    }
                 }
             }
             false => {
                 if match criteria {
                     NumericString::Number => input == "" || input == "-",
                     NumericString::Negative => input == "" || input == "-",
-                    NumericString::Positive => false,
+                    NumericString::Positive => input == "",
                 } {
                     input.to_string()
                 } else {
