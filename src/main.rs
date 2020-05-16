@@ -261,23 +261,18 @@ impl SavedState {
 
     async fn save(self) -> Result<(), SaveError> {
         use async_std::prelude::*;
-
         let json = serde_json::to_string_pretty(&self)
             .map_err(|_| SaveError::FormatError)?;
-
         let path = Self::path();
-
         if let Some(dir) = path.parent() {
             async_std::fs::create_dir_all(dir)
                 .await
                 .map_err(|_| SaveError::DirectoryError)?;
         }
-
         {
             let mut file = async_std::fs::File::create(path)
                 .await
                 .map_err(|_| SaveError::FileError)?;
-
             file.write_all(json.as_bytes())
                 .await
                 .map_err(|_| SaveError::WriteError)?;

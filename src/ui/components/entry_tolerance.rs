@@ -360,11 +360,42 @@ impl ToleranceEntry {
                 )
                 .width(Length::Fill);
 
+                let summary = Text::new( match self.valid {
+                    true => {
+                        match self.analysis_model {
+                            Tolerance::Linear(dim) => {
+                                if dim.distance.tol_neg == dim.distance.tol_pos {
+                                    format!("{} +/- {}", dim.distance.dim, dim.distance.tol_pos)
+                                } else {
+                                    format!("{} +{}/-{}", dim.distance.dim, dim.distance.tol_pos, dim.distance.tol_neg)
+                                }
+                            }
+                            Tolerance::Float(dim) => {
+                                let hole = if dim.hole.tol_neg == dim.hole.tol_pos {
+                                        format!("{} +/- {}", dim.hole.dim, dim.hole.tol_pos)
+                                    } else {
+                                        format!("{} +{}/-{}", dim.hole.dim, dim.hole.tol_pos, dim.hole.tol_neg)
+                                    };
+                                let pin = if dim.pin.tol_neg == dim.pin.tol_pos {
+                                        format!("{} +/- {}", dim.pin.dim, dim.pin.tol_pos)
+                                    } else {
+                                        format!("{} +{}/-{}", dim.pin.dim, dim.pin.tol_pos, dim.pin.tol_neg)
+                                    };
+                                format!("Hole: {}/nPin: {}", hole, pin)
+                            }
+                        }
+                    }
+                    false => {
+                        format!("Incomplete entry")
+                    }
+                });
+
                 let row_contents = Row::new()
                     .padding(10)    
                     .spacing(20)
                     .align_items(Align::Center)
-                    .push( checkbox )
+                    .push(checkbox)
+                    .push(summary)
                     .push(
                         Button::new(
                             button_edit, 
