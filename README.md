@@ -40,15 +40,15 @@ Input/Output
 - [X] Implement unequal bilateral tolerances in GUI
 - [X] Add sigma input on tolerance entries
 - [X] Add hole/pin diameter input on `Float` entries
-- [ ] Show tolerance summary on entries in idle state
-- [ ] Implement standardized styling
-  - [ ] Investigate hot-reload via serde monitoring json file, enable during debug
+- [X] Show tolerance summary on entries in idle state
 - [ ] Implement ribbon or menu bar
   - [ ] Autosave toggle
   - [ ] Save/Open project
   - [ ] Export to CSV
   - [ ] Text size increment
   - [ ] Dark/light mode
+- [ ] Implement standardized styling
+  - [ ] Investigate hot-reload via serde monitoring json file, enable during debug
 - [ ] Implement save/load dialog
 - [ ] Calculation result scrollable area showing results in progress and completed
   - [ ] Add export results button on these result entries
