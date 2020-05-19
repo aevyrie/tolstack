@@ -6,7 +6,7 @@ pub mod entry_tolerance;
 pub mod filter_tolerance;
 pub mod form_new_mc_analysis;
 pub mod form_new_tolerance;
-pub mod sub_editable_label;
+pub mod editable_label;
 
 // Re-export components for easier use in main.rs
 pub use area_mc_analysis::*;
@@ -16,4 +16,4 @@ pub use entry_tolerance::*;
 pub use filter_tolerance::*;
 pub use form_new_mc_analysis::*;
 pub use form_new_tolerance::*;
-pub use sub_editable_label::*;
+pub use editable_label::*;

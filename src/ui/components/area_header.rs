@@ -1,37 +1,43 @@
 use iced::{
-    Align, Container, Element, HorizontalAlignment, Length, Row, Text, Column,
+    Align, Container, Element, HorizontalAlignment, Length, Row, Text, Column, Button, button
 };
 use crate::ui::{ components::* };
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    LabelMessage(sub_editable_label::Message),
+    LabelMessage(editable_label::Message),
+    OpenFile
 }
 
 #[derive(Debug, Default, Clone)]
 pub struct Header {
     pub title: EditableLabel,
+    button_open: button::State,
 }
 impl Header {
     pub fn new() -> Self {
         Header {
-            title: EditableLabel::new("New Project", "Add a project name..." ), 
+            title: EditableLabel::new("New Project", "Add a project name..." ),
+            button_open: button::State::new(), 
         }
     }
     pub fn update(&mut self, message: Message) {
         let Header {
             title,
+            button_open,
         } = self;
         match message {
             Message::LabelMessage(label_message) => {
                 // Pass the message into the title
                 title.update(label_message);
             }
+            Message::OpenFile => {}
         }
     }
     pub fn  view(&mut self) -> Element<Message> {
         let Header {
             title,
+            button_open,
         } = self;
         let project_label = Text::new("Project: ")
             .width(Length::Shrink)
@@ -63,6 +69,15 @@ impl Header {
                 .max_width(800)
                 .spacing(20)
                 .push(project_title_container)
+                .push(Button::new(
+                    button_open, 
+                    Row::new()
+                        .push(Text::new("Save"))
+                        //.push(icons::edit())
+                        .spacing(10)
+                    )
+                    .on_press(Message::OpenFile)
+                )
             )
             .width(Length::Fill)
             .padding(10)

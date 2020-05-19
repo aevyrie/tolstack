@@ -1,18 +1,30 @@
 //#![windows_subsystem = "windows"] // Tells windows compiler not to show console window
-mod ui;
-mod analysis;
 
-use ui::{ style, components::* };
-use analysis::{
-    monte_carlo,
-};
+mod ui {
+    pub mod components;
+    pub mod icons;
+    pub mod style;
+}
+
+mod analysis {
+    pub mod monte_carlo;
+    pub mod structures;
+}
+
+mod io {
+    pub mod dialogs;
+    pub mod saved_state;
+}
+
+use ui::components::*;
+use io::saved_state::*;
 
 use iced::{
     button, text_input, Align, Application, Button,
     Column, Command, Container, Element, HorizontalAlignment, Length,
     Row, Settings, Text, TextInput, window,
 };
-use serde_derive::*;
+
 
 
 fn main() {
@@ -112,12 +124,19 @@ impl Application for TolStack {
                 let mut saved = false;
 
                 match message {
+
+                    Message::HeaderMessage(area_header::Message::OpenFile) => {
+                        return Command::perform(SavedState::load(), Message::Loaded)
+                    }
+
                     Message::HeaderMessage(message) => {
                         state.header.update(message)
                     }
+
                     Message::StackEditorMessage(message) => {
                         state.stack_editor.update(message)
                     }
+                    
                     Message::MonteCarloAnalysisMessage(
                         area_mc_analysis::Message::NewMcAnalysisMessage(
                             form_new_mc_analysis::Message::Calculate
@@ -133,15 +152,18 @@ impl Application for TolStack {
                         return state.monte_carlo_analysis.update(calculate_message)
                             .map( move |message| { Message::MonteCarloAnalysisMessage(message) })
                     }
+
                     Message::MonteCarloAnalysisMessage(message) => {
                         // TODO collect commands and run at end instead of breaking at match arm.
                         return state.monte_carlo_analysis.update(message)
                             .map( move |message| { Message::MonteCarloAnalysisMessage(message) })
                     }
+
                     Message::Saved(_) => {
                         state.saving = false;
                         saved = true;
                     }
+
                     Message::Loaded(_) => {}
                 }
 
@@ -202,86 +224,6 @@ impl Application for TolStack {
                 gui.into()
             }
         }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct SavedState {
-    name: String,
-    tolerances: Vec<ToleranceEntry>,
-    n_iteration: usize,
-    assy_sigma: f64,
-}
-
-#[derive(Debug, Clone)]
-enum LoadError {
-    FileError,
-    FormatError,
-}
-
-#[derive(Debug, Clone)]
-enum SaveError {
-    DirectoryError,
-    FileError,
-    WriteError,
-    FormatError,
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-impl SavedState {
-    fn path() -> std::path::PathBuf {
-        let mut path = if let Some(project_dirs) =
-            directories::ProjectDirs::from("rs", "", "TolStack")
-        {
-            project_dirs.data_dir().into()
-        } else {
-            std::env::current_dir().unwrap_or(std::path::PathBuf::new())
-        };
-
-        path.push("tolstack.json");
-
-        path
-    }
-
-    async fn load() -> Result<SavedState, LoadError> {
-        use async_std::prelude::*;
-
-        let mut contents = String::new();
-
-        let mut file = async_std::fs::File::open(Self::path())
-            .await
-            .map_err(|_| LoadError::FileError)?;
-
-        file.read_to_string(&mut contents)
-            .await
-            .map_err(|_| LoadError::FileError)?;
-
-        serde_json::from_str(&contents).map_err(|_| LoadError::FormatError)
-    }
-
-    async fn save(self) -> Result<(), SaveError> {
-        use async_std::prelude::*;
-        let json = serde_json::to_string_pretty(&self)
-            .map_err(|_| SaveError::FormatError)?;
-        let path = Self::path();
-        if let Some(dir) = path.parent() {
-            async_std::fs::create_dir_all(dir)
-                .await
-                .map_err(|_| SaveError::DirectoryError)?;
-        }
-        {
-            let mut file = async_std::fs::File::create(path)
-                .await
-                .map_err(|_| SaveError::FileError)?;
-            file.write_all(json.as_bytes())
-                .await
-                .map_err(|_| SaveError::WriteError)?;
-        }
-
-        // This is a simple way to save at most once every couple seconds
-        async_std::task::sleep(std::time::Duration::from_secs(2)).await;
-
-        Ok(())
     }
 }
 
