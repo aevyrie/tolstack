@@ -20,9 +20,8 @@ use ui::components::*;
 use io::saved_state::*;
 
 use iced::{
-    button, text_input, Align, Application, Button,
-    Column, Command, Container, Element, HorizontalAlignment, Length,
-    Row, Settings, Text, TextInput, window,
+    Application, Column, Command, Container, Element, HorizontalAlignment, Length, Row, Settings, 
+    Text, TextInput, window,
 };
 
 
