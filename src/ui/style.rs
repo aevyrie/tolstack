@@ -6,6 +6,7 @@ pub enum Button {
     Icon,
     Destructive,
     Constructive,
+    Neutral,
 }
 impl button::StyleSheet for Button {
 fn active(&self) -> button::Style {
@@ -54,6 +55,15 @@ fn active(&self) -> button::Style {
         Button::Constructive => button::Style {
             background: Some(Background::Color(Color::from_rgb(
                 0.2, 0.8, 0.2,
+            ))),
+            border_radius: 5,
+            text_color: Color::WHITE,
+            shadow_offset: Vector::new(1.0, 1.0),
+            ..button::Style::default()
+        },
+        Button::Neutral => button::Style {
+            background: Some(Background::Color(Color::from_rgb(
+                0.8, 0.8, 0.8,
             ))),
             border_radius: 5,
             text_color: Color::WHITE,

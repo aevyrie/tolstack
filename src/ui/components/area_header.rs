@@ -1,7 +1,7 @@
 use iced::{
     Align, Container, Element, HorizontalAlignment, Length, Row, Text, Column, Button, button
 };
-use crate::ui::{ components::* };
+use crate::ui::{components::*, style};
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -72,11 +72,12 @@ impl Header {
                 .push(Button::new(
                     button_open, 
                     Row::new()
-                        .push(Text::new("Save"))
+                        .push(Text::new("Open"))
                         //.push(icons::edit())
                         .spacing(10)
                     )
                     .on_press(Message::OpenFile)
+                    .style(style::Button::Neutral)
                 )
             )
             .width(Length::Fill)
