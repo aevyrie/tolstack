@@ -126,7 +126,7 @@ impl Application for TolStack {
                 match message {
 
                     Message::HeaderMessage(area_header::Message::OpenFile) => {
-                        return Command::perform(SavedState::load(), Message::Loaded)
+                        return Command::perform(SavedState::open(), Message::Loaded)
                     }
 
                     Message::HeaderMessage(message) => {
@@ -164,7 +164,19 @@ impl Application for TolStack {
                         saved = true;
                     }
 
-                    Message::Loaded(_) => {}
+                    Message::Loaded(Ok(save_state)) => {
+                        *state = State {
+                            stack_editor: StackEditor::new().tolerances(save_state.tolerances),
+                            header: Header::new().title(save_state.name),
+                            monte_carlo_analysis: MonteCarloAnalysis::new()
+                                .set_inputs(save_state.n_iteration, save_state.assy_sigma),
+                            ..State::default()
+                        };
+                    }
+
+                    Message::Loaded(Err(_)) => {
+                        // Do nothing, don't override the current state
+                    }
                 }
 
                 if !saved { state.dirty = true }
