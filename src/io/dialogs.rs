@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 pub async fn open() -> Result<PathBuf, io::Error> {
   
   let result:nfd::Response = match async {
-    return nfd::open_file_dialog(None, None)
+    return nfd::open_file_dialog(Some("json"), None)
   }.await {
     Ok(result) => result,
     Err(e) => return Err(io::Error::new(
@@ -52,7 +52,7 @@ pub async fn open() -> Result<PathBuf, io::Error> {
 pub async fn save() -> Result<PathBuf, io::Error> {
 
   let result:nfd::Response = match async {
-    return nfd::open_save_dialog(None, None)
+    return nfd::open_save_dialog(Some("json"), None)
   }.await {
     Ok(result) => result,
     Err(e) => return Err(io::Error::new(
