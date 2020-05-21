@@ -1,4 +1,37 @@
 use iced::{button, container, Background, Color, Vector};
+use std::collections::HashMap;
+use serde_derive::*;
+
+#[derive(Serialize, Deserialize)]
+struct HexColor(String);
+
+impl From<HexColor> for Color {
+    fn from(item: HexColor) -> Self {
+        if item.0.len() == 6 {
+            let mut rgb: [f32;3] = [1.0, 0.0, 1.0];
+            for i in rgb.iter_mut().enumerate() {
+                let hex_u8:u8 = u8::from_str_radix(&item.0[i.0*2..i.0*2+2], 16).unwrap_or(255);
+                *i.1 = f32::from(hex_u8)/255.0;
+            }
+            Color::from_rgb(rgb[0], rgb[1], rgb[2])
+        } else {
+            Color::from_rgb(1.0, 0.0, 1.0)
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+struct ApplicationStyleSheet {
+    colors: HashMap<String, HexColor>
+}
+
+enum StyleClass {
+
+}
+
+trait Appearance {
+    fn appearance(self, stylesheet: ApplicationStyleSheet, class: StyleClass) -> Self;
+}
 
 pub enum Button {
     Filter { selected: bool },
