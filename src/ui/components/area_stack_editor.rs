@@ -85,7 +85,7 @@ impl StackEditor {
                                     Ok(value) => {
                                         sanitized_dimension = value;
                                     }
-                                    Err(e) => {
+                                    Err(_) => {
                                         entry.valid = false;
                                     }
                                 }
@@ -93,7 +93,7 @@ impl StackEditor {
                                     Ok(value) => {
                                         sanitized_tolerance_pos = value;
                                     }
-                                    Err(e) => {
+                                    Err(_) => {
                                         entry.valid = false;
                                     }
                                 }
@@ -101,7 +101,7 @@ impl StackEditor {
                                     Ok(value) => {
                                         sanitized_tolerance_neg = value;
                                     }
-                                    Err(e) => {
+                                    Err(_) => {
                                         entry.valid = false;
                                     }
                                 }
@@ -109,7 +109,7 @@ impl StackEditor {
                                     Ok(value) => {
                                         sanitized_sigma = value;
                                     }
-                                    Err(e) => {
+                                    Err(_) => {
                                         entry.valid = false;
                                     }
                                 }
@@ -148,7 +148,7 @@ impl StackEditor {
                                     Ok(value) => {
                                         sanitized_diameter_hole = value;
                                     }
-                                    Err(e) => {
+                                    Err(_) => {
                                         entry.valid = false;
                                     }
                                 }
@@ -156,7 +156,7 @@ impl StackEditor {
                                     Ok(value) => {
                                         sanitized_diameter_pin = value;
                                     }
-                                    Err(e) => {
+                                    Err(_) => {
                                         entry.valid = false;
                                     }
                                 }
@@ -164,7 +164,7 @@ impl StackEditor {
                                     Ok(value) => {
                                         sanitized_tolerance_hole_pos = value;
                                     }
-                                    Err(e) => {
+                                    Err(_) => {
                                         entry.valid = false;
                                     }
                                 }
@@ -172,7 +172,7 @@ impl StackEditor {
                                     Ok(value) => {
                                         sanitized_tolerance_hole_neg = value;
                                     }
-                                    Err(e) => {
+                                    Err(_) => {
                                         entry.valid = false;
                                     }
                                 }
@@ -180,7 +180,7 @@ impl StackEditor {
                                     Ok(value) => {
                                         sanitized_tolerance_pin_pos = value;
                                     }
-                                    Err(e) => {
+                                    Err(_) => {
                                         entry.valid = false;
                                     }
                                 }
@@ -188,7 +188,7 @@ impl StackEditor {
                                     Ok(value) => {
                                         sanitized_tolerance_pin_neg = value;
                                     }
-                                    Err(e) => {
+                                    Err(_) => {
                                         entry.valid = false;
                                     }
                                 }
@@ -196,7 +196,7 @@ impl StackEditor {
                                     Ok(value) => {
                                         sanitized_sigma = value;
                                     }
-                                    Err(e) => {
+                                    Err(_) => {
                                         entry.valid = false;
                                     }
                                 }
