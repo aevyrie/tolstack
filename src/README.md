@@ -1,4 +1,4 @@
-# Program Structure
+# Program Structure - NOTE: Out of date since refactor
 
 * `main.rs` is the entry point of the program, and contians the GUI code.
 * `model.rs` contains all the simulation model logic.
