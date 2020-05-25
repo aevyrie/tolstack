@@ -23,7 +23,7 @@ Tolerances
 Input/Output
 
 * Auto saving
-* ~~Manually save/load JSON project files~~ WIP UI support
+* Manually save/load JSON project files - WIP UI support partially complete
 * ~~Export simulation output data to CSV for plotting~~ WIP UI support
 
 ## Todo
