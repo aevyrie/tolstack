@@ -1,6 +1,6 @@
 # TolStack
 
-This is a cross platform tolerance analysis application made for building and analyzing one-dimensional geometric tolerance models. Works on Windows, MacOS, and Linux.
+A cross-platform tolerance analysis application for building and analyzing one-dimensional geometric tolerance models. Works on Windows, MacOS, and Linux. Written in Rust, UI built with [iced](https://github.com/hecrj/iced). This is a learning project.
 
 **Breaking changes in master**
 
@@ -14,13 +14,18 @@ This is a cross platform tolerance analysis application made for building and an
 
 ## Features
 
-Tolerances
+Tolerance Stack Model
 
 * `Linear`: Linear dimensions (point A to B with some tolerance)
 * `Float`: Single hole/pin pair (a part with one pin located in another part with one hole, with some tolerance on each dia)
 * Supports unequal bilateral tolerances (+0.2/-0.1)
 
-Input/Output
+Analysis
+
+* Monte Carlo simulation
+* ~~RSS, worst case~~
+
+Output
 
 * Auto saving
 * Manually save/load JSON project files - WIP UI support partially complete
