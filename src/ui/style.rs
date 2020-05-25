@@ -1,77 +1,25 @@
-use iced::{button, container, Background, Color, Vector};
+use iced::{button, container, Column, Row, Background, Color, Vector};
 use std::collections::HashMap;
+use std::sync::RwLock;
+use std::time::Instant;
 use serde_derive::*;
-use NamedColors::*;
-use StyleSheetColor::*;
-use StyleClass::*;
 
-#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone)]
-enum StyleClass {
-    SubmitButton,
-    CancelButton,
-    CenterX,
-    CenterY,
+#[derive(Debug, Clone)]
+pub struct StyleSheet {
+    last_update: Instant,
+    color_primary: Color,
+    padding_large: u16,
+    radius_small: u16,
 }
-
-#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone)]
-enum NamedColors {
-    BackgroundLight,
-    BackgroundDark,
-}
-
-#[derive(Serialize, Deserialize)]
-struct ApplicationStyleSheet {
-    colors: HashMap<NamedColors, StyleSheetColor>
-}
-impl Default for ApplicationStyleSheet {
+impl Default for StyleSheet{
     fn default() -> Self {
-        let colors: HashMap<NamedColors, StyleSheetColor> = [
-            (BackgroundLight, Hex(String::from("FAFAFA"))),
-        ].iter().cloned().collect();
-
-        ApplicationStyleSheet {
-            colors,
+        StyleSheet{
+            last_update: Instant::now(),
+            color_primary: Color::from_rgb(0.95, 0.95, 0.95),
+            padding_large: 10,
+            radius_small: 5,
         }
     }
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-enum StyleSheetColor {
-    Hex(String),
-    RGB(f32, f32, f32),
-}
-
-impl From<StyleSheetColor> for Color {
-    fn from(item: StyleSheetColor) -> Self {
-        match item {
-            StyleSheetColor::Hex(hex) => {
-                if hex.len() == 6 {
-                    let mut rgb: [f32;3] = [1.0, 0.0, 1.0];
-                    for i in rgb.iter_mut().enumerate() {
-                        let hex_u8:u8 = match u8::from_str_radix(&hex[i.0*2..i.0*2+2], 16) {
-                            Ok(result) => result,
-                            Err(_) => {
-                                println!("Unable to parse hex string as u8");
-                                255
-                            }
-                        };
-                        *i.1 = f32::from(hex_u8)/255.0;
-                    }
-                    Color::from_rgb(rgb[0], rgb[1], rgb[2])
-                } else {
-                    println!("Invalid hex color string length");
-                    Color::from_rgb(1.0, 0.0, 1.0)
-                }
-            }
-            StyleSheetColor::RGB(r, g, b) => {
-                Color::from_rgb(r, g, b)
-            }
-        }
-    }
-}
-
-trait Appear {
-    fn appear(self, stylesheet: &ApplicationStyleSheet, classes: &[StyleClass]) -> Self;
 }
 
 pub enum Button {
