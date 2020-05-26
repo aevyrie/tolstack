@@ -48,7 +48,7 @@ impl MonteCarloAnalysis {
         }
         Command::none()
     }
-    pub fn  view(&mut self) -> Element<Message> {
+    pub fn  view(&mut self, stylesheet: &style::StyleSheet) -> Element<Message> {
         let MonteCarloAnalysis {
             entry_form,
             simulation,

@@ -18,6 +18,7 @@ mod io {
 
 use ui::components::*;
 use io::saved_state::*;
+use ui::style;
 
 use iced::{
     Application, Column, Command, Container, Element, HorizontalAlignment, Length, Row, Settings, 
@@ -40,6 +41,7 @@ fn main() {
 // The state of the application
 #[derive(Debug, Default, Clone)]
 struct State {
+    stylesheet: style::StyleSheet,
     header: Header,
     stack_editor: StackEditor,
     monte_carlo_analysis: MonteCarloAnalysis,
@@ -206,19 +208,20 @@ impl Application for TolStack {
         match self {
             TolStack::Loading => loading_message(),
             TolStack::Loaded(State {
+                stylesheet,
                 header,
                 stack_editor,
                 monte_carlo_analysis,
                 dirty: _,
                 saving: _,
             }) => {
-                let header = header.view()
+                let header = header.view(&stylesheet)
                     .map( move |message| { Message::HeaderMessage(message) });
                 
-                let stack_editor = stack_editor.view()
+                let stack_editor = stack_editor.view(&stylesheet)
                     .map( move |message| { Message::StackEditorMessage(message) });
                 
-                let monte_carlo_analysis = monte_carlo_analysis.view()
+                let monte_carlo_analysis = monte_carlo_analysis.view(&stylesheet)
                     .map( move |message| { Message::MonteCarloAnalysisMessage(message) });
                 
                 let gui = Column::new()

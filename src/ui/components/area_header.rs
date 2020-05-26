@@ -13,21 +13,18 @@ pub enum Message {
 pub struct Header {
     pub title: EditableLabel,
     button_open: button::State,
-    stylesheet: style::StyleSheet,
 }
 impl Header {
     pub fn new() -> Self {
         Header {
             title: EditableLabel::new("New Project", "Add a project name..." ),
             button_open: button::State::new(), 
-            stylesheet: style::StyleSheet::default(),
         }
     }
     pub fn update(&mut self, message: Message) {
         let Header {
             title,
             button_open,
-            stylesheet,
         } = self;
         match message {
             Message::LabelMessage(label_message) => {
@@ -37,11 +34,10 @@ impl Header {
             Message::OpenFile => {}
         }
     }
-    pub fn  view(&mut self) -> Element<Message> {
+    pub fn  view(&mut self, stylesheet: &style::StyleSheet) -> Element<Message> {
         let Header {
             title,
             button_open,
-            stylesheet,
         } = self;
         let project_label = Text::new("Project: ")
             .width(Length::Shrink)

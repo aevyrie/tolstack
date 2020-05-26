@@ -1,6 +1,5 @@
 use iced::{button, container, Column, Row, Background, Color, Vector};
 use std::collections::HashMap;
-use std::sync::RwLock;
 use std::time::Instant;
 use serde_derive::*;
 
@@ -9,15 +8,37 @@ pub struct StyleSheet {
     last_update: Instant,
     color_primary: Color,
     padding_large: u16,
-    radius_small: u16,
+    radius_item: u16,
+    radius_panel: u16,
+    text_size_h1: u16,
+    text_color_h1: Color,
+    text_size_h2: u16,
 }
-impl Default for StyleSheet{
+struct ColorSheet {
+    primary: Color,
+    secondary: Color,
+    text: Color,
+    background: Color,
+}
+
+impl Default for StyleSheet {
     fn default() -> Self {
+        let colors = ColorSheet{
+            primary: Color::from_rgb(0.95, 0.95, 0.95),
+            secondary: Color::from_rgb(0.95, 0.95, 0.95),
+            text: Color::from_rgb(0.95, 0.95, 0.95),
+            background: Color::from_rgb(0.95, 0.95, 0.95),
+        };
+
         StyleSheet{
             last_update: Instant::now(),
-            color_primary: Color::from_rgb(0.95, 0.95, 0.95),
+            color_primary: colors.primary,
             padding_large: 10,
-            radius_small: 5,
+            radius_item: 5,
+            radius_panel: 0,
+            text_size_h1: 32,
+            text_color_h1: colors.text,
+            text_size_h2: 24,
         }
     }
 }

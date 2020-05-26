@@ -236,7 +236,7 @@ impl StackEditor {
             }
         }
     }
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&mut self, stylesheet: &style::StyleSheet) -> Element<Message> {
         let StackEditor {
             entry_form,
             filter,
