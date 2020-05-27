@@ -5,6 +5,7 @@ use serde_derive::*;
 
 #[derive(Debug, Clone)]
 pub struct StyleSheet {
+    colors: ColorSheet,
     last_update: Instant,
     color_primary: Color,
     padding_large: u16,
@@ -14,6 +15,7 @@ pub struct StyleSheet {
     text_color_h1: Color,
     text_size_h2: u16,
 }
+#[derive(Debug, Clone, Copy)]
 struct ColorSheet {
     primary: Color,
     secondary: Color,
@@ -31,6 +33,7 @@ impl Default for StyleSheet {
         };
 
         StyleSheet{
+            colors,
             last_update: Instant::now(),
             color_primary: colors.primary,
             padding_large: 10,
