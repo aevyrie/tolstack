@@ -1,7 +1,8 @@
-use iced::{button, container, Column, Row, Background, Color, Vector};
-use std::collections::HashMap;
+use iced::{button, container, Background, Color, Vector, Subscription, futures};
 use std::time::Instant;
+use std::path::{Path, PathBuf};
 use serde_derive::*;
+use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 
 #[derive(Debug, Clone)]
 pub struct StyleSheet {
@@ -11,6 +12,7 @@ pub struct StyleSheet {
     padding_large: u16,
     radius_item: u16,
     radius_panel: u16,
+    spacing_outer: u16,
     text_size_h1: u16,
     text_color_h1: Color,
     text_size_h2: u16,
@@ -39,12 +41,79 @@ impl Default for StyleSheet {
             padding_large: 10,
             radius_item: 5,
             radius_panel: 0,
+            spacing_outer: 20,
             text_size_h1: 32,
             text_color_h1: colors.text,
             text_size_h2: 24,
         }
     }
 }
+
+struct StyleSheetSerialize {
+
+}
+
+enum FileState {
+    Updated(StyleSheet),
+    Stale,
+}
+
+
+fn watch(path: PathBuf) -> Result<notify::event::Event, Box<dyn std::error::Error>> {
+    let (tx, rx) = std::sync::mpsc::channel();
+    let mut watcher: RecommendedWatcher = Watcher::new_immediate(move |res| tx.send(res).unwrap())?;
+    watcher.watch(path, RecursiveMode::NonRecursive)?;
+
+    for result in rx {
+        match result {
+            Ok(result) => return Ok(result),
+            Err(e) => return Err(Box::from(e)),
+        }
+    }
+
+    Err(Box::from(std::io::Error::new(std::io::ErrorKind::Other, "No event returned from fn watch")))
+}
+
+pub fn check_style_file(path: PathBuf) -> iced::Subscription<Option<StyleSheet>> {
+    iced::Subscription::from_recipe(StyleFile{file: path})
+}
+
+fn readfile() -> Option<StyleSheet> {
+    //placeholder
+    Some(StyleSheet::default())
+}
+
+struct StyleFile {
+    pub file: PathBuf,
+}
+
+impl<H, I> iced_native::subscription::Recipe<H, I> for StyleFile
+where
+    H: std::hash::Hasher,
+{
+    type Output = Option<StyleSheet>;
+
+    fn hash(&self, state: &mut H) {
+        use std::hash::Hash;
+
+        std::any::TypeId::of::<Self>().hash(state);
+        self.file.hash(state);
+    }
+
+    fn stream(self: Box<Self>,_input: futures::stream::BoxStream<'static, I>,) -> futures::stream::BoxStream<'static, Self::Output> {
+        use futures::stream::StreamExt;
+
+        async_std::stream::repeat_with(move || {
+            match watch(self.file.clone()) {
+                Ok(_) => readfile(),
+                Err(_) => None,
+            }
+        }).boxed()
+    }
+}
+
+
+
 
 pub enum Button {
     Filter { selected: bool },
