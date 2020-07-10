@@ -22,10 +22,11 @@ use ui::style;
 
 use iced::{
     Application, Column, Command, Container, Element, HorizontalAlignment, Length, Row, Settings, 
-    Text, TextInput, window,
+    Text, Subscription, window,
 };
+use colored::*;
 
-
+use std::path::{Path, PathBuf};
 
 fn main() {
     let mut settings = Settings::default();
@@ -58,6 +59,10 @@ enum Message {
     // 
     Loaded(Result<SavedState, LoadError>),
     Saved(Result<(), SaveError>),
+    //
+    StyleUpdateAvailable(bool),
+    LoadedStyle(Result<style::StyleSheet, style::LoadError>),
+    StyleSaved(Result<(), style::SaveError>),
 }
 
 // Loading state wrapper
@@ -96,7 +101,7 @@ impl Application for TolStack {
 
     // Update logic - how to react to messages sent through the application
     fn update(&mut self, message: Message) -> Command<Message> {
-        println!("\n\nMESSAGE RECEIVED:\n\n{:#?}", message);
+        println!("\n\n{}{}\n{:#?}", chrono::offset::Local::now(), " MESSAGE RECEIVED:".yellow(), message);
         match self {
             TolStack::Loading => {
                 match message {
@@ -109,7 +114,9 @@ impl Application for TolStack {
                                 .set_inputs(state.n_iteration, state.assy_sigma),
                             ..State::default()
                         });
+                        return Command::perform(style::StyleSheet::load(), Message::LoadedStyle)
                     }
+
                     Message::Loaded(Err(_)) => {
                         *self = TolStack::Loaded(State {
                             ..State::default()
@@ -160,6 +167,26 @@ impl Application for TolStack {
                             .map( move |message| { Message::MonteCarloAnalysisMessage(message) })
                     }
 
+                    Message::StyleUpdateAvailable(_) => {
+                        return Command::perform(style::StyleSheet::load(), Message::LoadedStyle)
+                    }
+
+                    Message::LoadedStyle(Ok(stylesheet)) => {
+                        state.stylesheet = stylesheet;
+                    }
+
+                    Message::LoadedStyle(Err(style::LoadError::FormatError)) => {
+                        println!("\n\n{}{}", chrono::offset::Local::now(), " Error loading style file".red())
+                    }
+
+                    Message::LoadedStyle(Err(style::LoadError::FileError)) => {
+                        return Command::perform(style::StyleSheet::save(state.stylesheet.clone()), Message::StyleSaved)
+                    }
+
+                    Message::StyleSaved(_) => {
+
+                    }
+
                     Message::Saved(_) => {
                         state.saving = false;
                         saved = true;
@@ -176,7 +203,7 @@ impl Application for TolStack {
                     }
 
                     Message::Loaded(Err(_)) => {
-                        // Do nothing, don't override the current state
+                        println!("\n\n{}{}", chrono::offset::Local::now(), " Error loading save file".red())
                     }
                 }
 
@@ -199,6 +226,22 @@ impl Application for TolStack {
                 } else {
                     Command::none()
                 }
+            }
+        }
+    }
+
+    fn subscription(&self) -> Subscription<Self::Message> {
+        match self {
+            TolStack::Loading => Subscription::none(),
+            TolStack::Loaded(State {
+                stylesheet,
+                header: _,
+                stack_editor: _,
+                monte_carlo_analysis: _,
+                dirty: _,
+                saving: _,
+            }) => {
+                stylesheet.check_style_file().map(Message::StyleUpdateAvailable)
             }
         }
     }

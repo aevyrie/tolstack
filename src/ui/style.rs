@@ -1,63 +1,169 @@
 use iced::{button, container, Background, Color, Vector, Subscription, futures};
 use std::time::Instant;
 use std::path::{Path, PathBuf};
+use std::collections::HashMap;
 use serde_derive::*;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
+use colored::*;
+use chrono;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct SerializableColor { r: f32, g: f32, b: f32 }
+
+impl SerializableColor {
+    fn from_rgb(r: f32, g: f32, b: f32) -> Self {
+        SerializableColor{r, b, g}
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ColorSheet { map: HashMap<String, SerializableColor> }
+
+impl ColorSheet {
+    fn new() -> Self {
+        ColorSheet{ map: HashMap::new() }
+    }
+
+    fn get(&self, lookup: &ValidatedNamedColor) -> Color {
+        match self.map.get(&lookup.0) {
+            Some(color) => Color::from_rgb(color.r, color.g, color.b),
+            None => Color::from_rgb(1.0,0.0,1.0),
+        }
+    }
+
+    fn is_valid_color_name(&self, lookup: ValidatedNamedColor) -> bool {
+        self.map.contains_key(&lookup.0)
+    }
+
+    fn add(&mut self, name: &str, r: f32, g: f32, b: f32) -> Self {
+        self.map.insert(name.to_string(), SerializableColor::from_rgb(r, g, b));
+        self.clone()
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ValidatedNamedColor(String);
+impl ValidatedNamedColor {
+    pub fn new(name: &str, color_sheet: &ColorSheet) -> Self {
+        let unvalidated_color = ValidatedNamedColor(name.to_string());
+        if color_sheet.is_valid_color_name(unvalidated_color) {
+            return ValidatedNamedColor(name.to_string())
+        } else {
+            panic!()
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StyleSheet {
     colors: ColorSheet,
-    last_update: Instant,
-    color_primary: Color,
-    padding_large: u16,
-    radius_item: u16,
-    radius_panel: u16,
-    spacing_outer: u16,
-    text_size_h1: u16,
-    text_color_h1: Color,
-    text_size_h2: u16,
-}
-#[derive(Debug, Clone, Copy)]
-struct ColorSheet {
-    primary: Color,
-    secondary: Color,
-    text: Color,
-    background: Color,
+    pub color_primary: ValidatedNamedColor,
+    pub padding_large: u16,
+    pub radius_item: u16,
+    pub radius_panel: u16,
+    pub spacing_outer: u16,
+    pub text_size_h1: u16,
+    pub text_color_h1: ValidatedNamedColor,
+    pub text_size_h2: u16,
 }
 
 impl Default for StyleSheet {
     fn default() -> Self {
-        let colors = ColorSheet{
-            primary: Color::from_rgb(0.95, 0.95, 0.95),
-            secondary: Color::from_rgb(0.95, 0.95, 0.95),
-            text: Color::from_rgb(0.95, 0.95, 0.95),
-            background: Color::from_rgb(0.95, 0.95, 0.95),
-        };
+        let colors = ColorSheet::new()
+            .add("primary", 0.95, 0.95, 0.95)
+            .add("secondary", 0.95, 0.95, 0.95)
+            .add("background", 0.95, 0.95, 0.95)
+            .add("text", 0.95, 0.95, 0.95);
 
         StyleSheet{
-            colors,
-            last_update: Instant::now(),
-            color_primary: colors.primary,
+            colors: colors.clone(),
+            color_primary: ValidatedNamedColor::new("primary", &colors),
             padding_large: 10,
             radius_item: 5,
             radius_panel: 0,
             spacing_outer: 20,
             text_size_h1: 32,
-            text_color_h1: colors.text,
+            text_color_h1: ValidatedNamedColor::new("text", &colors),
             text_size_h2: 24,
         }
     }
 }
 
-struct StyleSheetSerialize {
 
+#[derive(Debug, Clone)]
+pub enum LoadError {
+    FileError,
+    FormatError,
 }
 
-enum FileState {
-    Updated(StyleSheet),
-    Stale,
+#[derive(Debug, Clone)]
+pub enum SaveError {
+    DirectoryError,
+    FileError,
+    WriteError,
+    FormatError,
 }
 
+impl StyleSheet {
+    pub fn color(&self, name: &ValidatedNamedColor) -> iced_native::Color {
+        self.colors.get(name)
+    }
+
+    fn path() -> std::path::PathBuf {
+        let mut path = if let Some(project_dirs) =
+            directories::ProjectDirs::from("rs", "", "TolStack")
+        {
+            project_dirs.data_dir().into()
+        } else {
+            std::env::current_dir().unwrap_or(std::path::PathBuf::new())
+        };
+
+        path.push("style.json");
+
+        path
+    }
+
+    pub async fn load() -> Result<StyleSheet, LoadError> {
+        use async_std::prelude::*;
+
+        let mut contents = String::new();
+
+        let mut file = async_std::fs::File::open(Self::path())
+            .await
+            .map_err(|_| LoadError::FileError)?;
+
+        file.read_to_string(&mut contents)
+            .await
+            .map_err(|_| LoadError::FileError)?;
+
+        serde_json::from_str(&contents).map_err(|_| LoadError::FormatError)
+    }
+
+    pub async fn save(self) -> Result<(), SaveError> {
+        use async_std::prelude::*;
+        let json = serde_json::to_string_pretty(&self)
+            .map_err(|_| SaveError::FormatError)?;
+        let path = Self::path();
+        if let Some(dir) = path.parent() {
+            async_std::fs::create_dir_all(dir)
+                .await
+                .map_err(|_| SaveError::DirectoryError)?;
+        }
+        {
+            let mut file = async_std::fs::File::create(path)
+                .await
+                .map_err(|_| SaveError::FileError)?;
+            file.write_all(json.as_bytes())
+                .await
+                .map_err(|_| SaveError::WriteError)?;
+        }
+        Ok(())
+    }
+
+    pub fn check_style_file(&self) -> iced::Subscription<bool> {
+        iced::Subscription::from_recipe(self.clone())
+    }
+}
 
 fn watch(path: PathBuf) -> Result<notify::event::Event, Box<dyn std::error::Error>> {
     let (tx, rx) = std::sync::mpsc::channel();
@@ -74,39 +180,37 @@ fn watch(path: PathBuf) -> Result<notify::event::Event, Box<dyn std::error::Erro
     Err(Box::from(std::io::Error::new(std::io::ErrorKind::Other, "No event returned from fn watch")))
 }
 
-pub fn check_style_file(path: PathBuf) -> iced::Subscription<Option<StyleSheet>> {
-    iced::Subscription::from_recipe(StyleFile{file: path})
-}
-
-fn readfile() -> Option<StyleSheet> {
+//fn readfile() -> Result<StyleSheet, LoadError> {
     //placeholder
-    Some(StyleSheet::default())
-}
+//    println!("{}: {}", chrono::offset::Local::now(), "Style file update detected".green());
+//}
 
 struct StyleFile {
     pub file: PathBuf,
 }
 
-impl<H, I> iced_native::subscription::Recipe<H, I> for StyleFile
+impl<H, I> iced_native::subscription::Recipe<H, I> for StyleSheet
 where
     H: std::hash::Hasher,
 {
-    type Output = Option<StyleSheet>;
+    type Output = bool;
 
     fn hash(&self, state: &mut H) {
         use std::hash::Hash;
 
         std::any::TypeId::of::<Self>().hash(state);
-        self.file.hash(state);
     }
 
     fn stream(self: Box<Self>,_input: futures::stream::BoxStream<'static, I>,) -> futures::stream::BoxStream<'static, Self::Output> {
         use futures::stream::StreamExt;
 
         async_std::stream::repeat_with(move || {
-            match watch(self.file.clone()) {
-                Ok(_) => readfile(),
-                Err(_) => None,
+            let mut edit_found = false;
+            loop {
+                match watch(StyleSheet::path()) {
+                    Ok(_) =>  return true,
+                    Err(_) => {},
+                }
             }
         }).boxed()
     }
@@ -213,23 +317,22 @@ Entry,
 Background,
 }
 impl container::StyleSheet for Container {
-fn style(&self) -> container::Style {
-    match self {
-        Container::Entry => container::Style {
-            text_color: Some(Color::from_rgb(0.5, 0.5, 0.5)),
-            background: Some(Background::Color(Color::from_rgb(0.95, 0.95, 0.95))),
-            border_radius: 5,
-            border_width: 1,
-            border_color: Color::from_rgb(0.9, 0.9, 0.9),
-        },
-        Container::Background => container::Style {
-            text_color: Some(Color::from_rgb(0.5, 0.5, 0.5)),
-            background: Some(Background::Color(Color::from_rgb(0.98, 0.98, 0.98))),
-            border_radius: 5,
-            border_width: 1,
-            border_color: Color::from_rgb(0.9, 0.9, 0.9),
-        },
+    fn style(&self) -> container::Style {
+        match self {
+            Container::Entry => container::Style {
+                text_color: Some(Color::from_rgb(0.5, 0.5, 0.5)),
+                background: Some(Background::Color(Color::from_rgb(0.95, 0.95, 0.95))),
+                border_radius: 5,
+                border_width: 1,
+                border_color: Color::from_rgb(0.9, 0.9, 0.9),
+            },
+            Container::Background => container::Style {
+                text_color: Some(Color::from_rgb(0.5, 0.5, 0.5)),
+                background: Some(Background::Color(Color::from_rgb(0.98, 0.98, 0.98))),
+                border_radius: 5,
+                border_width: 1,
+                border_color: Color::from_rgb(0.9, 0.9, 0.9),
+            },
+        }
     }
 }
-}
-

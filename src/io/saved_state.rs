@@ -81,6 +81,8 @@ impl SavedState {
         Ok(())
     }
 
+    
+
     pub async fn open() -> Result<SavedState, LoadError> {
         let path = match dialogs::open().await {
             Ok(path) => path,
