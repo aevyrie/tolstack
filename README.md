@@ -1,6 +1,6 @@
 # tolstack
 
-A cross-platform tolerance analysis application for building and analyzing one-dimensional geometric tolerance models. Works on Windows, MacOS, and Linux. Written in Rust, UI built with [iced](https://github.com/hecrj/iced). This is a learning project.
+A cross-platform tolerance analysis application for building and analyzing one-dimensional geometric tolerance models. Targets Windows, MacOS, and Linux. Written in Rust, UI built with [iced](https://github.com/hecrj/iced). This is a learning project.
 
 **Breaking changes in master**
 
