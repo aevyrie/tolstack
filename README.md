@@ -53,7 +53,7 @@ Output
   - [ ] Text size increment
   - [ ] Dark/light mode
 - [ ] Implement standardized styling
-  - [ ] Investigate hot-reload via serde monitoring json file, enable during debug
+  - [X] Hot-reload via serde monitoring json file
 - [ ] Implement save/load dialog
 - [ ] Calculation result scrollable area showing results in progress and completed
   - [ ] Add export results button on these result entries
