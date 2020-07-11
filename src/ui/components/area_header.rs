@@ -47,7 +47,7 @@ impl Header {
 
         let project_title: Row<_> = Row::new()
             .push(project_label)
-            .push(title.view().map( move |message| {
+            .push(title.view(&stylesheet).map( move |message| {
                 Message::LabelMessage(message)
             }))
             .align_items(Align::Center)

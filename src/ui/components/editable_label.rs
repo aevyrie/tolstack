@@ -67,13 +67,13 @@ impl EditableLabel {
         }
     }
 
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&mut self, stylesheet: &style::StyleSheet) -> Element<Message> {
         match &mut self.state {
             State::Idle { edit_button } => {
                 let label = Text::new(self.text.clone())
                     .width(Length::Shrink)
                     .size(32)
-                    .color([0.5, 0.5, 0.5])
+                    .color(stylesheet.color(&stylesheet.text_color_h1))
                     .horizontal_alignment(HorizontalAlignment::Left);
 
                 let row_contents = Row::new()
