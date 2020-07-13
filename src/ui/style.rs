@@ -137,7 +137,7 @@ impl NamedColor {
         if colors.is_valid_name(unvalidated) {
             return NamedColor(name.to_string())
         } else {
-            panic!("NamedColor '{}' failed validation", name);
+            panic!("NamedColor {} failed validation", name);
         }
     }
 }
@@ -151,7 +151,7 @@ impl NamedRadius {
         if radii.is_valid_name(unvalidated) {
             return NamedRadius(name.to_string())
         } else {
-            panic!("NamedRadius '{}' failed validation", name);
+            panic!("NamedRadius {} failed validation", name);
         }
     }
 }
@@ -165,7 +165,7 @@ impl NamedWidth {
         if widths.is_valid_name(unvalidated) {
             return NamedWidth(name.to_string())
         } else {
-            panic!("NamedWidth '{}' failed validation", name);
+            panic!("NamedWidth {} failed validation", name);
         }
     }
 }
@@ -179,7 +179,7 @@ impl NamedTextSize {
         if text_sizes.is_valid_name(unvalidated) {
             return NamedTextSize(name.to_string())
         } else {
-            panic!("NamedTextSize '{}' failed validation", name);
+            panic!("NamedTextSize {} failed validation", name);
         }
     }
 }
@@ -225,20 +225,19 @@ impl ContainerStyle {
     }
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StyleSheet {
     
     //Project Label
-    pub color_project_label: NamedColor,
-    pub text_size_project_label: NamedTextSize,
+    pub project_label_color: NamedColor,
+    pub project_label_text_size: NamedTextSize,
 
     //Editable Label
-    pub color_editable_label_label: NamedColor,
-    pub text_size_editable_label_label: NamedTextSize,
+    pub editablelabel_label_color: NamedColor,
+    pub editablelabel_label_text_size: NamedTextSize,
 
     //Background Container
-    pub container_background: DynamicContainer,
+    pub background_container: DynamicContainer,
 
     color_classes: ColorList,
     radius_classes: RadiusList,
@@ -274,17 +273,20 @@ impl Default for StyleSheet {
         ;
         // Construct a stylesheet, note that `Named___` objects use a class list for validatation
         StyleSheet{
-            //Colors
-            color_project_label: NamedColor::new("text_h1", &color_classes),
-            color_editable_label_label: NamedColor::new("text_h1", &color_classes),
+            //Project Labal
+            project_label_color: NamedColor::new("text_h1", &color_classes),
+            project_label_text_size: NamedTextSize::new("h1", &text_size_classes),
+
+            //Editable Label Label
+            editablelabel_label_color: NamedColor::new("text_h1", &color_classes),
+            editablelabel_label_text_size: NamedTextSize::new("h1", &text_size_classes),
+
             //Text Sizes
-            text_size_project_label: NamedTextSize::new("h1", &text_size_classes),
-            text_size_editable_label_label: NamedTextSize::new("h1", &text_size_classes),
             // Containers
-            container_background: DynamicContainer {
-                text_color: NamedColor::new("text_p", &color_classes),
+            background_container: DynamicContainer {
+                text_color: NamedColor::new("text", &color_classes),
                 background: NamedColor::new("background", &color_classes),
-                border_color: NamedColor::new("background", &color_classes),
+                border_color: NamedColor::new("none", &color_classes),
                 border_radius: NamedRadius::new("none", &radius_classes),
                 border_width: NamedWidth::new("none", &width_classes),
             },
@@ -315,7 +317,7 @@ impl StyleSheet {
             std::env::current_dir().unwrap_or(std::path::PathBuf::new())
         };
 
-        path.push("style.json");
+        path.push("style.toml");
 
         path
     }
@@ -333,12 +335,33 @@ impl StyleSheet {
             .await
             .map_err(|_| LoadError::FileError)?;
 
-        serde_json::from_str(&contents).map_err(|_| LoadError::FormatError)
+        toml::from_str(&contents).map_err(|_| LoadError::FormatError)
     }
 
     pub async fn save(self) -> Result<(), SaveError> {
         use async_std::prelude::*;
-        let json = serde_json::to_string_pretty(&self)
+        let toml = toml::to_string(&self)
+            .map_err(|_| SaveError::FormatError)?;
+        let path = Self::path();
+        if let Some(dir) = path.parent() {
+            async_std::fs::create_dir_all(dir)
+                .await
+                .map_err(|_| SaveError::DirectoryError)?;
+        }
+        {
+            let mut file = async_std::fs::File::create(path)
+                .await
+                .map_err(|_| SaveError::FileError)?;
+            file.write_all(toml.as_bytes())
+                .await
+                .map_err(|_| SaveError::WriteError)?;
+        }
+        Ok(())
+    }
+
+    /*pub async fn save(self) -> Result<(), SaveError> {
+        use async_std::prelude::*;
+        let json = json::to_string_pretty(&self)
             .map_err(|_| SaveError::FormatError)?;
         let path = Self::path();
         if let Some(dir) = path.parent() {
@@ -355,7 +378,7 @@ impl StyleSheet {
                 .map_err(|_| SaveError::WriteError)?;
         }
         Ok(())
-    }
+    }*/
 
     pub fn check_style_file(&self) -> iced::Subscription<bool> {
         iced::Subscription::from_recipe(self.clone())

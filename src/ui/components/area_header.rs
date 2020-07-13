@@ -41,8 +41,8 @@ impl Header {
         } = self;
         let project_label = Text::new("Project: ")
             .width(Length::Shrink)
-            .size(stylesheet.text_size(&stylesheet.text_size_project_label))
-            .color(stylesheet.color(&stylesheet.color_project_label))
+            .size(stylesheet.text_size(&stylesheet.project_label_text_size))
+            .color(stylesheet.color(&stylesheet.project_label_color))
             .horizontal_alignment(HorizontalAlignment::Left);
 
         let project_title: Row<_> = Row::new()
