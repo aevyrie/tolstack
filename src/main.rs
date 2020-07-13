@@ -35,7 +35,7 @@ fn main() {
         resizable: true,
         decorations: true,
     };
-    settings.antialiasing = false;
+    settings.antialiasing = true;
     TolStack::run(settings);
 }
 

@@ -137,7 +137,7 @@ impl NamedColor {
         if colors.is_valid_name(unvalidated) {
             return NamedColor(name.to_string())
         } else {
-            panic!("NamedColor {} failed validation", name);
+            panic!("NamedColor '{}' failed validation", name);
         }
     }
 }
@@ -151,7 +151,7 @@ impl NamedRadius {
         if radii.is_valid_name(unvalidated) {
             return NamedRadius(name.to_string())
         } else {
-            panic!("NamedRadius {} failed validation", name);
+            panic!("NamedRadius '{}' failed validation", name);
         }
     }
 }
@@ -165,7 +165,7 @@ impl NamedWidth {
         if widths.is_valid_name(unvalidated) {
             return NamedWidth(name.to_string())
         } else {
-            panic!("NamedWidth {} failed validation", name);
+            panic!("NamedWidth '{}' failed validation", name);
         }
     }
 }
@@ -179,7 +179,7 @@ impl NamedTextSize {
         if text_sizes.is_valid_name(unvalidated) {
             return NamedTextSize(name.to_string())
         } else {
-            panic!("NamedTextSize {} failed validation", name);
+            panic!("NamedTextSize '{}' failed validation", name);
         }
     }
 }
@@ -282,9 +282,9 @@ impl Default for StyleSheet {
             text_size_editable_label_label: NamedTextSize::new("h1", &text_size_classes),
             // Containers
             container_background: DynamicContainer {
-                text_color: NamedColor::new("text", &color_classes),
+                text_color: NamedColor::new("text_p", &color_classes),
                 background: NamedColor::new("background", &color_classes),
-                border_color: NamedColor::new("none", &color_classes),
+                border_color: NamedColor::new("background", &color_classes),
                 border_radius: NamedRadius::new("none", &radius_classes),
                 border_width: NamedWidth::new("none", &width_classes),
             },
