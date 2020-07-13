@@ -22,7 +22,7 @@ pub enum SaveError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct SerializableColor { r: u8, g: u8, b: u8, a: f32 }
+pub struct SerializableColor { r: u8, g: u8, b: u8, a: f32 }
 
 impl SerializableColor {
     fn from_rgba(r: u8, g: u8, b: u8, a: f32) -> Self {
@@ -31,156 +31,251 @@ impl SerializableColor {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NamedColor(String);
+impl Named for NamedColor {
+    type List = ColorList;
+    type NamedItem = NamedColor;
+    fn new_unvalidated(name: &str) -> Self { NamedColor(name.to_string()) }
+    fn name(&self) -> &str { &self.0 }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NamedRadius(String);
+impl Named for NamedRadius {
+    type List = RadiusList;
+    type NamedItem = NamedRadius;
+    fn new_unvalidated(name: &str) -> Self { NamedRadius(name.to_string()) }
+    fn name(&self) -> &str { &self.0 }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NamedWidth(String);
+impl Named for NamedWidth {
+    type List = WidthList;
+    type NamedItem = NamedWidth;
+    fn new_unvalidated(name: &str) -> Self { NamedWidth(name.to_string()) }
+    fn name(&self) -> &str { &self.0 }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NamedTextSize(String);
+impl Named for NamedTextSize {
+    type List = TextSizeList;
+    type NamedItem = NamedTextSize;
+    fn new_unvalidated(name: &str) -> Self { NamedTextSize(name.to_string()) }
+    fn name(&self) -> &str { &self.0 }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NamedPadding(String);
+impl Named for NamedPadding {
+    type List = PaddingList;
+    type NamedItem = NamedPadding;
+    fn new_unvalidated(name: &str) -> Self { NamedPadding(name.to_string()) }
+    fn name(&self) -> &str { &self.0 }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NamedSpacing(String);
+impl Named for NamedSpacing {
+    type List = SpacingList;
+    type NamedItem = NamedSpacing;
+    fn new_unvalidated(name: &str) -> Self { NamedSpacing(name.to_string()) }
+    fn name(&self) -> &str { &self.0 }
+}
+
+pub trait Named {
+    type List: NamedList;
+    type NamedItem: Named;
+
+    fn new(name: &str, list: &Self::List) -> Self::NamedItem {
+        let unvalidated = Self::NamedItem::new_unvalidated(name);
+        if list.is_valid_name(&unvalidated) {
+            return unvalidated;
+        } else {
+            panic!("{:?} '{}' failed validation", std::any::type_name::<Self>(), name);
+        }
+    }
+    fn new_unvalidated(name: &str) -> Self;
+    fn name(&self) -> &str;
+}
+
+pub trait NamedList {
+    type NamedItem: Named;
+    type Value;
+    type Stored;
+    fn new() -> Self;
+    fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value;
+    fn is_valid_name<T: Named>(&self, lookup: &T) -> bool;
+    fn add(&mut self, name: &str, value: Self::Stored) -> Self;
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ColorList { map: HashMap<String, SerializableColor> }
-impl ColorList {
+impl NamedList for ColorList {
+    type NamedItem = NamedColor;
+    type Value = Color;
+    type Stored = SerializableColor;
+
     fn new() -> Self {
         ColorList{ map: HashMap::new() }
     }
 
-    fn get(&self, lookup: &NamedColor) -> Color {
+    fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
         match self.map.get(&lookup.0) {
             Some(color) => Color::from_rgba8(color.r, color.g, color.b, color.a),
             None => Color::from_rgb(1.0,0.0,1.0),
         }
     }
 
-    fn is_valid_name(&self, lookup: NamedColor) -> bool {
-        self.map.contains_key(&lookup.0)
+    fn is_valid_name<T:Named>(&self, lookup: &T) -> bool {
+        self.map.contains_key(lookup.name())
     }
 
-    fn add(&mut self, name: &str, r: u8, g: u8, b: u8, a: f32) -> Self {
-        self.map.insert(name.to_string(), SerializableColor::from_rgba(r, g, b, a));
+    fn add(&mut self, name: &str, value: Self::Stored) -> Self {
+        self.map.insert(name.to_string(), value);
         self.clone()
+
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RadiusList { map: HashMap<String, u16> }
-impl RadiusList {
+impl NamedList for RadiusList {
+    type NamedItem = NamedRadius;
+    type Value = u16;
+    type Stored = u16;
+
     fn new() -> Self {
         RadiusList{ map: HashMap::new() }
     }
 
-    fn get(&self, lookup: &NamedRadius) -> u16 {
+    fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
         match self.map.get(&lookup.0) {
             Some(radius) => *radius,
             None => 0,
         }
     }
 
-    fn is_valid_name(&self, lookup: NamedRadius) -> bool {
-        self.map.contains_key(&lookup.0)
+    fn is_valid_name<T:Named>(&self, lookup: &T) -> bool {
+        self.map.contains_key(lookup.name())
     }
 
-    fn add(&mut self, name: &str, radius: u16) -> Self {
-        self.map.insert(name.to_string(), radius);
+    fn add(&mut self, name: &str, value: Self::Stored) -> Self {
+        self.map.insert(name.to_string(), value);
         self.clone()
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WidthList { map: HashMap<String, u16> }
+impl NamedList for WidthList {
+    type NamedItem = NamedWidth;
+    type Value = u16;
+    type Stored = u16;
 
-impl WidthList {
     fn new() -> Self {
         WidthList{ map: HashMap::new() }
     }
 
-    fn get(&self, lookup: &NamedWidth) -> u16 {
+    fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
         match self.map.get(&lookup.0) {
             Some(width) => *width,
             None => 0,
         }
     }
 
-    fn is_valid_name(&self, lookup: NamedWidth) -> bool {
-        self.map.contains_key(&lookup.0)
+    fn is_valid_name<T:Named>(&self, lookup: &T) -> bool {
+        self.map.contains_key(lookup.name())
     }
 
-    fn add(&mut self, name: &str, width: u16) -> Self {
-        self.map.insert(name.to_string(), width);
+    fn add(&mut self, name: &str, value: Self::Stored) -> Self {
+        self.map.insert(name.to_string(), value);
         self.clone()
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TextSizeList { map: HashMap<String, u16> }
+impl NamedList for TextSizeList {
+    type NamedItem = NamedTextSize;
+    type Value = u16;
+    type Stored = u16;
 
-impl TextSizeList {
     fn new() -> Self {
         TextSizeList{ map: HashMap::new() }
     }
 
-    fn get(&self, lookup: &NamedTextSize) -> u16 {
+    fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
         match self.map.get(&lookup.0) {
             Some(text_size) => *text_size,
             None => 0,
         }
     }
 
-    fn is_valid_name(&self, lookup: NamedTextSize) -> bool {
-        self.map.contains_key(&lookup.0)
+    fn is_valid_name<T:Named>(&self, lookup: &T) -> bool {
+        self.map.contains_key(lookup.name())
     }
 
-    fn add(&mut self, name: &str, text_size: u16) -> Self {
-        self.map.insert(name.to_string(), text_size);
+    fn add(&mut self, name: &str, value: Self::Stored) -> Self {
+        self.map.insert(name.to_string(), value);
         self.clone()
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NamedColor(String);
+pub struct PaddingList { map: HashMap<String, u16> }
+impl NamedList for PaddingList {
+    type NamedItem = NamedPadding;
+    type Value = u16;
+    type Stored = u16;
 
-impl NamedColor {
-    pub fn new(name: &str, colors: &ColorList) -> Self {
-        let unvalidated = NamedColor(name.to_string());
-        if colors.is_valid_name(unvalidated) {
-            return NamedColor(name.to_string())
-        } else {
-            panic!("NamedColor {} failed validation", name);
+    fn new() -> Self {
+        Self{ map: HashMap::new() }
+    }
+
+    fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
+        match self.map.get(&lookup.0) {
+            Some(lookup) => *lookup,
+            None => 0,
         }
+    }
+
+    fn is_valid_name<T:Named>(&self, lookup: &T) -> bool {
+        self.map.contains_key(lookup.name())
+    }
+
+    fn add(&mut self, name: &str, value: Self::Stored) -> Self {
+        self.map.insert(name.to_string(), value);
+        self.clone()
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NamedRadius(String);
+pub struct SpacingList { map: HashMap<String, u16> }
+impl NamedList for SpacingList {
+    type NamedItem = NamedSpacing;
+    type Value = u16;
+    type Stored = u16;
 
-impl NamedRadius {
-    pub fn new(name: &str, radii: &RadiusList) -> Self {
-        let unvalidated = NamedRadius(name.to_string());
-        if radii.is_valid_name(unvalidated) {
-            return NamedRadius(name.to_string())
-        } else {
-            panic!("NamedRadius {} failed validation", name);
+    fn new() -> Self {
+        Self{ map: HashMap::new() }
+    }
+
+    fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
+        match self.map.get(&lookup.0) {
+            Some(lookup) => *lookup,
+            None => 0,
         }
     }
-}
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NamedWidth(String);
-
-impl NamedWidth {
-    pub fn new(name: &str, widths: &WidthList) -> Self {
-        let unvalidated = NamedWidth(name.to_string());
-        if widths.is_valid_name(unvalidated) {
-            return NamedWidth(name.to_string())
-        } else {
-            panic!("NamedWidth {} failed validation", name);
-        }
+    fn is_valid_name<T:Named>(&self, lookup: &T) -> bool {
+        self.map.contains_key(lookup.name())
     }
-}
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NamedTextSize(String);
-
-impl NamedTextSize {
-    pub fn new(name: &str, text_sizes: &TextSizeList) -> Self {
-        let unvalidated = NamedTextSize(name.to_string());
-        if text_sizes.is_valid_name(unvalidated) {
-            return NamedTextSize(name.to_string())
-        } else {
-            panic!("NamedTextSize {} failed validation", name);
-        }
+    fn add(&mut self, name: &str, value: Self::Stored) -> Self {
+        self.map.insert(name.to_string(), value);
+        self.clone()
     }
 }
 
@@ -216,11 +311,11 @@ impl container::StyleSheet for ContainerStyle {
 impl ContainerStyle {
     pub fn new(container: &DynamicContainer, stylesheet: &StyleSheet) -> Self {
         ContainerStyle{
-            text_color: Some(stylesheet.color_classes.get(&container.text_color)),
-            background: Some(Background::Color(stylesheet.color_classes.get(&container.background))),
-            border_color: stylesheet.color_classes.get(&container.border_color),
-            border_radius: stylesheet.radius_classes.get(&container.border_radius),
-            border_width: stylesheet.width_classes.get(&container.border_width),
+            text_color: Some(stylesheet.color.resolve(&container.text_color)),
+            background: Some(Background::Color(stylesheet.color.resolve(&container.background))),
+            border_color: stylesheet.color.resolve(&container.border_color),
+            border_radius: stylesheet.radius.resolve(&container.border_radius),
+            border_width: stylesheet.width.resolve(&container.border_width),
         }
     }
 }
@@ -231,81 +326,125 @@ pub struct StyleSheet {
     //Project Label
     pub project_label_color: NamedColor,
     pub project_label_text_size: NamedTextSize,
+    pub project_label_spacing: NamedSpacing,
 
     //Editable Label
     pub editablelabel_label_color: NamedColor,
     pub editablelabel_label_text_size: NamedTextSize,
 
-    //Background Container
-    pub background_container: DynamicContainer,
+    //Header
+    pub header_spacing: NamedSpacing,
+    pub header_button_spacing: NamedSpacing,
 
-    color_classes: ColorList,
-    radius_classes: RadiusList,
-    width_classes: WidthList,
-    text_size_classes: TextSizeList,
+    //Background Container
+    pub home_container: DynamicContainer,
+    pub home_padding: NamedPadding,   
+
+    pub color: ColorList,
+    pub radius: RadiusList,
+    pub width: WidthList,
+    pub text_size: TextSizeList,
+    pub padding: PaddingList,
+    pub spacing: SpacingList
 }
 
 impl Default for StyleSheet {
     fn default() -> Self {
         // Define classes first so they can be referenced in the StyleSheet construction
-        let color_classes = ColorList::new()
-            .add("primary", 245, 245, 245, 1.0)
-            .add("secondary", 245, 245, 245, 1.0)
-            .add("background", 245, 245, 245, 1.0)
-            .add("text_h1", 245, 245, 245, 1.0)
-            .add("text_h2", 245, 245, 245, 1.0)
-            .add("text_p", 245, 245, 245, 1.0)
+        let color = ColorList::new()
+            .add("primary", SerializableColor{r: 245, g: 245, b: 245, a: 1.0})
+            .add("secondary", SerializableColor{r: 245, g: 245, b: 245, a: 1.0})
+            .add("background", SerializableColor{r: 245, g: 245, b: 245, a: 1.0})
+            .add("text_h1", SerializableColor{r: 100, g: 100, b: 100, a: 1.0})
+            .add("text_h2", SerializableColor{r: 100, g: 100, b: 100, a: 1.0})
+            .add("text_p", SerializableColor{r: 100, g: 100, b: 100, a: 1.0})
         ;
-        let radius_classes = RadiusList::new()
+        let radius = RadiusList::new()
             .add("none", 0)
             .add("small", 2)
             .add("large", 5)
         ;
-        let width_classes = WidthList::new()
+        let width = WidthList::new()
             .add("none", 0)
             .add("thin", 1)
             .add("bold", 3)
         ;
-        let text_size_classes = TextSizeList::new()
+        let text_size = TextSizeList::new()
             .add("h1", 32)
             .add("h2", 24)
             .add("p", 12)
         ;
+        let padding = PaddingList::new()
+            .add("narrow", 10)
+            .add("wide", 20)
+        ;
+        let spacing = SpacingList::new()
+            .add("near", 10)
+            .add("far", 20)
+        ;
         // Construct a stylesheet, note that `Named___` objects use a class list for validatation
         StyleSheet{
             //Project Labal
-            project_label_color: NamedColor::new("text_h1", &color_classes),
-            project_label_text_size: NamedTextSize::new("h1", &text_size_classes),
+            project_label_color: NamedColor::new("text_h1", &color),
+            project_label_text_size: NamedTextSize::new("h1", &text_size),
+            project_label_spacing: NamedSpacing::new("near", &spacing),
 
             //Editable Label Label
-            editablelabel_label_color: NamedColor::new("text_h1", &color_classes),
-            editablelabel_label_text_size: NamedTextSize::new("h1", &text_size_classes),
+            editablelabel_label_color: NamedColor::new("text_h1", &color),
+            editablelabel_label_text_size: NamedTextSize::new("h1", &text_size),
 
-            //Text Sizes
-            // Containers
-            background_container: DynamicContainer {
-                text_color: NamedColor::new("text", &color_classes),
-                background: NamedColor::new("background", &color_classes),
-                border_color: NamedColor::new("none", &color_classes),
-                border_radius: NamedRadius::new("none", &radius_classes),
-                border_width: NamedWidth::new("none", &width_classes),
+            //Header
+            header_spacing: NamedSpacing::new("far", &spacing),
+            header_button_spacing: NamedSpacing::new("near", &spacing),
+
+            //Home
+            home_container: DynamicContainer {
+                text_color: NamedColor::new("text_p", &color),
+                background: NamedColor::new("background", &color),
+                border_color: NamedColor::new("background", &color),
+                border_radius: NamedRadius::new("none", &radius),
+                border_width: NamedWidth::new("none", &width),
             },
+            home_padding: NamedPadding::new("narrow", &padding),
+            
             // Classes placed at end to avoid needing a .clone()
-            color_classes,
-            radius_classes,
-            width_classes,
-            text_size_classes,
+            color,
+            radius,
+            width,
+            text_size,
+            padding,
+            spacing,
         }
     }
 }
 
 impl StyleSheet {
     pub fn color(&self, name: &NamedColor) -> iced_native::Color {
-        self.color_classes.get(name)
+        self.color.resolve(name)
+    }
+    
+    pub fn radius(&self, name: &NamedRadius) -> u16 {
+        self.radius.resolve(name)
+    }
+
+    pub fn width(&self, name: &NamedWidth) -> u16 {
+        self.width.resolve(name)
     }
 
     pub fn text_size(&self, name: &NamedTextSize) -> u16 {
-        self.text_size_classes.get(name)
+        self.text_size.resolve(name)
+    }
+
+    pub fn padding(&self, name: &NamedPadding) -> u16 {
+        self.padding.resolve(name)
+    }
+
+    pub fn spacing(&self, name: &NamedSpacing) -> u16 {
+        self.spacing.resolve(name)
+    }
+
+    pub fn container(&self, container: &DynamicContainer) -> ContainerStyle {
+        ContainerStyle::new(container, self)
     }
 
     fn path() -> std::path::PathBuf {

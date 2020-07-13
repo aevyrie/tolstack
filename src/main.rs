@@ -18,7 +18,7 @@ mod io {
 
 use ui::components::*;
 use io::saved_state::*;
-use ui::style;
+use ui::{style, style::*};
 
 use iced::{
     Application, Column, Command, Container, Element, HorizontalAlignment, Length, Row, Settings, 
@@ -57,8 +57,8 @@ enum Message {
     StackEditorMessage(area_stack_editor::Message),
     MonteCarloAnalysisMessage(area_mc_analysis::Message),
     // 
-    Loaded(Result<SavedState, LoadError>),
-    Saved(Result<(), SaveError>),
+    Loaded(Result<SavedState, io::saved_state::LoadError>),
+    Saved(Result<(), io::saved_state::SaveError>),
     //
     StyleUpdateAvailable(bool),
     LoadedStyle(Result<style::StyleSheet, style::LoadError>),
@@ -274,11 +274,10 @@ impl Application for TolStack {
                             .push(stack_editor)
                             .push(monte_carlo_analysis)
                         )
-                        .padding(20)
+                        .padding(stylesheet.padding(&stylesheet.home_padding))
                     )
-                    .style(style::ContainerStyle::new(&stylesheet.background_container, &stylesheet));
+                    .style(stylesheet.container(&stylesheet.home_container));
                     
-                
                 //debug:
                 //let gui = gui.explain(Color::BLACK);
 

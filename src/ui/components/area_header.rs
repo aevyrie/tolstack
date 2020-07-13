@@ -51,7 +51,7 @@ impl Header {
                 Message::LabelMessage(message)
             }))
             .align_items(Align::Center)
-            .spacing(10)
+            .spacing(stylesheet.spacing(&stylesheet.project_label_spacing))
             .into();
                         
         let project_title_container = 
@@ -67,14 +67,14 @@ impl Header {
         let header = Container::new(
             Column::new()
                 .max_width(800)
-                .spacing(20)
+                .spacing(stylesheet.spacing(&stylesheet.header_spacing))
                 .push(project_title_container)
                 .push(Button::new(
                     button_open, 
                     Row::new()
                         .push(Text::new("Open"))
                         //.push(icons::edit())
-                        .spacing(10)
+                        .spacing(stylesheet.spacing(&stylesheet.header_button_spacing))
                     )
                     .on_press(Message::OpenFile)
                     .style(style::Button::Neutral)
