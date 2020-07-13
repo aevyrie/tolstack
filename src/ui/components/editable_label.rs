@@ -72,8 +72,8 @@ impl EditableLabel {
             State::Idle { edit_button } => {
                 let label = Text::new(self.text.clone())
                     .width(Length::Shrink)
-                    .size(32)
-                    .color(stylesheet.color(&stylesheet.text_color_h1))
+                    .size(stylesheet.text_size(&stylesheet.text_size_editable_label_label))
+                    .color(stylesheet.color(&stylesheet.color_editable_label_label))
                     .horizontal_alignment(HorizontalAlignment::Left);
 
                 let row_contents = Row::new()

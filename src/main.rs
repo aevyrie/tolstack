@@ -247,7 +247,7 @@ impl Application for TolStack {
     }
 
     // View logic - a way to display the state of the application as widgets that can produce messages
-    fn view(&mut self) -> Element<Message> {
+    fn view<'a>(&'a mut self) -> Element<Message> {
         match self {
             TolStack::Loading => loading_message(),
             TolStack::Loaded(State {
@@ -267,13 +267,17 @@ impl Application for TolStack {
                 let monte_carlo_analysis = monte_carlo_analysis.view(&stylesheet)
                     .map( move |message| { Message::MonteCarloAnalysisMessage(message) });
                 
-                let gui = Column::new()
-                    .push(header)
-                    .push(Row::new()
-                        .push(stack_editor)
-                        .push(monte_carlo_analysis)
+                let gui = Container::new(
+                    Column::new()
+                        .push(header)
+                        .push(Row::new()
+                            .push(stack_editor)
+                            .push(monte_carlo_analysis)
+                        )
+                        .padding(20)
                     )
-                    .padding(20);
+                    .style(style::ContainerStyle::new(&stylesheet.container_background, &stylesheet));
+                    
                 
                 //debug:
                 //let gui = gui.explain(Color::BLACK);

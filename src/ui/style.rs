@@ -7,89 +7,6 @@ use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use colored::*;
 use chrono;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct SerializableColor { r: f32, g: f32, b: f32 }
-
-impl SerializableColor {
-    fn from_rgb(r: f32, g: f32, b: f32) -> Self {
-        SerializableColor{r, b, g}
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ColorSheet { map: HashMap<String, SerializableColor> }
-
-impl ColorSheet {
-    fn new() -> Self {
-        ColorSheet{ map: HashMap::new() }
-    }
-
-    fn get(&self, lookup: &ValidatedNamedColor) -> Color {
-        match self.map.get(&lookup.0) {
-            Some(color) => Color::from_rgb(color.r, color.g, color.b),
-            None => Color::from_rgb(1.0,0.0,1.0),
-        }
-    }
-
-    fn is_valid_color_name(&self, lookup: ValidatedNamedColor) -> bool {
-        self.map.contains_key(&lookup.0)
-    }
-
-    fn add(&mut self, name: &str, r: f32, g: f32, b: f32) -> Self {
-        self.map.insert(name.to_string(), SerializableColor::from_rgb(r, g, b));
-        self.clone()
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ValidatedNamedColor(String);
-impl ValidatedNamedColor {
-    pub fn new(name: &str, color_sheet: &ColorSheet) -> Self {
-        let unvalidated_color = ValidatedNamedColor(name.to_string());
-        if color_sheet.is_valid_color_name(unvalidated_color) {
-            return ValidatedNamedColor(name.to_string())
-        } else {
-            panic!()
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct StyleSheet {
-    colors: ColorSheet,
-    pub color_primary: ValidatedNamedColor,
-    pub padding_large: u16,
-    pub radius_item: u16,
-    pub radius_panel: u16,
-    pub spacing_outer: u16,
-    pub text_size_h1: u16,
-    pub text_color_h1: ValidatedNamedColor,
-    pub text_size_h2: u16,
-}
-
-impl Default for StyleSheet {
-    fn default() -> Self {
-        let colors = ColorSheet::new()
-            .add("primary", 0.95, 0.95, 0.95)
-            .add("secondary", 0.95, 0.95, 0.95)
-            .add("background", 0.95, 0.95, 0.95)
-            .add("text", 0.95, 0.95, 0.95);
-
-        StyleSheet{
-            colors: colors.clone(),
-            color_primary: ValidatedNamedColor::new("primary", &colors),
-            padding_large: 10,
-            radius_item: 5,
-            radius_panel: 0,
-            spacing_outer: 20,
-            text_size_h1: 32,
-            text_color_h1: ValidatedNamedColor::new("text", &colors),
-            text_size_h2: 24,
-        }
-    }
-}
-
-
 #[derive(Debug, Clone)]
 pub enum LoadError {
     FileError,
@@ -104,9 +21,289 @@ pub enum SaveError {
     FormatError,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct SerializableColor { r: u8, g: u8, b: u8, a: f32 }
+
+impl SerializableColor {
+    fn from_rgba(r: u8, g: u8, b: u8, a: f32) -> Self {
+        SerializableColor{r, b, g, a}
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ColorList { map: HashMap<String, SerializableColor> }
+impl ColorList {
+    fn new() -> Self {
+        ColorList{ map: HashMap::new() }
+    }
+
+    fn get(&self, lookup: &NamedColor) -> Color {
+        match self.map.get(&lookup.0) {
+            Some(color) => Color::from_rgba8(color.r, color.g, color.b, color.a),
+            None => Color::from_rgb(1.0,0.0,1.0),
+        }
+    }
+
+    fn is_valid_name(&self, lookup: NamedColor) -> bool {
+        self.map.contains_key(&lookup.0)
+    }
+
+    fn add(&mut self, name: &str, r: u8, g: u8, b: u8, a: f32) -> Self {
+        self.map.insert(name.to_string(), SerializableColor::from_rgba(r, g, b, a));
+        self.clone()
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RadiusList { map: HashMap<String, u16> }
+impl RadiusList {
+    fn new() -> Self {
+        RadiusList{ map: HashMap::new() }
+    }
+
+    fn get(&self, lookup: &NamedRadius) -> u16 {
+        match self.map.get(&lookup.0) {
+            Some(radius) => *radius,
+            None => 0,
+        }
+    }
+
+    fn is_valid_name(&self, lookup: NamedRadius) -> bool {
+        self.map.contains_key(&lookup.0)
+    }
+
+    fn add(&mut self, name: &str, radius: u16) -> Self {
+        self.map.insert(name.to_string(), radius);
+        self.clone()
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WidthList { map: HashMap<String, u16> }
+
+impl WidthList {
+    fn new() -> Self {
+        WidthList{ map: HashMap::new() }
+    }
+
+    fn get(&self, lookup: &NamedWidth) -> u16 {
+        match self.map.get(&lookup.0) {
+            Some(width) => *width,
+            None => 0,
+        }
+    }
+
+    fn is_valid_name(&self, lookup: NamedWidth) -> bool {
+        self.map.contains_key(&lookup.0)
+    }
+
+    fn add(&mut self, name: &str, width: u16) -> Self {
+        self.map.insert(name.to_string(), width);
+        self.clone()
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextSizeList { map: HashMap<String, u16> }
+
+impl TextSizeList {
+    fn new() -> Self {
+        TextSizeList{ map: HashMap::new() }
+    }
+
+    fn get(&self, lookup: &NamedTextSize) -> u16 {
+        match self.map.get(&lookup.0) {
+            Some(text_size) => *text_size,
+            None => 0,
+        }
+    }
+
+    fn is_valid_name(&self, lookup: NamedTextSize) -> bool {
+        self.map.contains_key(&lookup.0)
+    }
+
+    fn add(&mut self, name: &str, text_size: u16) -> Self {
+        self.map.insert(name.to_string(), text_size);
+        self.clone()
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NamedColor(String);
+
+impl NamedColor {
+    pub fn new(name: &str, colors: &ColorList) -> Self {
+        let unvalidated = NamedColor(name.to_string());
+        if colors.is_valid_name(unvalidated) {
+            return NamedColor(name.to_string())
+        } else {
+            panic!("NamedColor {} failed validation", name);
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NamedRadius(String);
+
+impl NamedRadius {
+    pub fn new(name: &str, radii: &RadiusList) -> Self {
+        let unvalidated = NamedRadius(name.to_string());
+        if radii.is_valid_name(unvalidated) {
+            return NamedRadius(name.to_string())
+        } else {
+            panic!("NamedRadius {} failed validation", name);
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NamedWidth(String);
+
+impl NamedWidth {
+    pub fn new(name: &str, widths: &WidthList) -> Self {
+        let unvalidated = NamedWidth(name.to_string());
+        if widths.is_valid_name(unvalidated) {
+            return NamedWidth(name.to_string())
+        } else {
+            panic!("NamedWidth {} failed validation", name);
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NamedTextSize(String);
+
+impl NamedTextSize {
+    pub fn new(name: &str, text_sizes: &TextSizeList) -> Self {
+        let unvalidated = NamedTextSize(name.to_string());
+        if text_sizes.is_valid_name(unvalidated) {
+            return NamedTextSize(name.to_string())
+        } else {
+            panic!("NamedTextSize {} failed validation", name);
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DynamicContainer {
+    text_color: NamedColor,
+    background: NamedColor,
+    border_color: NamedColor,
+    border_radius: NamedRadius,
+    border_width: NamedWidth
+}
+
+pub struct ContainerStyle {
+    text_color: Option<Color>,
+    background: Option<Background>,
+    border_color: Color,
+    border_radius: u16,
+    border_width: u16,
+}
+
+impl container::StyleSheet for ContainerStyle {
+    fn style(&self) -> container::Style {
+        iced::container::Style{
+            text_color: self.text_color,
+            background: self.background,
+            border_color: self.border_color,
+            border_radius: self.border_radius,
+            border_width: self.border_width,
+        }
+    }
+}
+
+impl ContainerStyle {
+    pub fn new(container: &DynamicContainer, stylesheet: &StyleSheet) -> Self {
+        ContainerStyle{
+            text_color: Some(stylesheet.color_classes.get(&container.text_color)),
+            background: Some(Background::Color(stylesheet.color_classes.get(&container.background))),
+            border_color: stylesheet.color_classes.get(&container.border_color),
+            border_radius: stylesheet.radius_classes.get(&container.border_radius),
+            border_width: stylesheet.width_classes.get(&container.border_width),
+        }
+    }
+}
+
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StyleSheet {
+    
+    //Project Label
+    pub color_project_label: NamedColor,
+    pub text_size_project_label: NamedTextSize,
+
+    //Editable Label
+    pub color_editable_label_label: NamedColor,
+    pub text_size_editable_label_label: NamedTextSize,
+
+    //Background Container
+    pub container_background: DynamicContainer,
+
+    color_classes: ColorList,
+    radius_classes: RadiusList,
+    width_classes: WidthList,
+    text_size_classes: TextSizeList,
+}
+
+impl Default for StyleSheet {
+    fn default() -> Self {
+        // Define classes first so they can be referenced in the StyleSheet construction
+        let color_classes = ColorList::new()
+            .add("primary", 245, 245, 245, 1.0)
+            .add("secondary", 245, 245, 245, 1.0)
+            .add("background", 245, 245, 245, 1.0)
+            .add("text_h1", 245, 245, 245, 1.0)
+            .add("text_h2", 245, 245, 245, 1.0)
+            .add("text_p", 245, 245, 245, 1.0)
+        ;
+        let radius_classes = RadiusList::new()
+            .add("none", 0)
+            .add("small", 2)
+            .add("large", 5)
+        ;
+        let width_classes = WidthList::new()
+            .add("none", 0)
+            .add("thin", 1)
+            .add("bold", 3)
+        ;
+        let text_size_classes = TextSizeList::new()
+            .add("h1", 32)
+            .add("h2", 24)
+            .add("p", 12)
+        ;
+        // Construct a stylesheet, note that `Named___` objects use a class list for validatation
+        StyleSheet{
+            //Colors
+            color_project_label: NamedColor::new("text_h1", &color_classes),
+            color_editable_label_label: NamedColor::new("text_h1", &color_classes),
+            //Text Sizes
+            text_size_project_label: NamedTextSize::new("h1", &text_size_classes),
+            text_size_editable_label_label: NamedTextSize::new("h1", &text_size_classes),
+            // Containers
+            container_background: DynamicContainer {
+                text_color: NamedColor::new("text", &color_classes),
+                background: NamedColor::new("background", &color_classes),
+                border_color: NamedColor::new("none", &color_classes),
+                border_radius: NamedRadius::new("none", &radius_classes),
+                border_width: NamedWidth::new("none", &width_classes),
+            },
+            // Classes placed at end to avoid needing a .clone()
+            color_classes,
+            radius_classes,
+            width_classes,
+            text_size_classes,
+        }
+    }
+}
+
 impl StyleSheet {
-    pub fn color(&self, name: &ValidatedNamedColor) -> iced_native::Color {
-        self.colors.get(name)
+    pub fn color(&self, name: &NamedColor) -> iced_native::Color {
+        self.color_classes.get(name)
+    }
+
+    pub fn text_size(&self, name: &NamedTextSize) -> u16 {
+        self.text_size_classes.get(name)
     }
 
     fn path() -> std::path::PathBuf {
@@ -180,15 +377,6 @@ fn watch(path: PathBuf) -> Result<notify::event::Event, Box<dyn std::error::Erro
     Err(Box::from(std::io::Error::new(std::io::ErrorKind::Other, "No event returned from fn watch")))
 }
 
-//fn readfile() -> Result<StyleSheet, LoadError> {
-    //placeholder
-//    println!("{}: {}", chrono::offset::Local::now(), "Style file update detected".green());
-//}
-
-struct StyleFile {
-    pub file: PathBuf,
-}
-
 impl<H, I> iced_native::subscription::Recipe<H, I> for StyleSheet
 where
     H: std::hash::Hasher,
@@ -205,7 +393,6 @@ where
         use futures::stream::StreamExt;
 
         async_std::stream::repeat_with(move || {
-            let mut edit_found = false;
             loop {
                 match watch(StyleSheet::path()) {
                     Ok(_) =>  return true,
