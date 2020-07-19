@@ -280,7 +280,7 @@ impl NamedList for SpacingList {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DynamicContainer {
+pub struct StyledContainer {
     text_color: NamedColor,
     background: NamedColor,
     border_color: NamedColor,
@@ -288,15 +288,14 @@ pub struct DynamicContainer {
     border_width: NamedWidth
 }
 
-pub struct ContainerStyle {
+pub struct IcedContainerStyle {
     text_color: Option<Color>,
     background: Option<Background>,
     border_color: Color,
     border_radius: u16,
     border_width: u16,
 }
-
-impl container::StyleSheet for ContainerStyle {
+impl container::StyleSheet for IcedContainerStyle {
     fn style(&self) -> container::Style {
         iced::container::Style{
             text_color: self.text_color,
@@ -307,21 +306,20 @@ impl container::StyleSheet for ContainerStyle {
         }
     }
 }
-
-impl ContainerStyle {
-    pub fn new(container: &DynamicContainer, stylesheet: &StyleSheet) -> Self {
-        ContainerStyle{
-            text_color: Some(stylesheet.color.resolve(&container.text_color)),
-            background: Some(Background::Color(stylesheet.color.resolve(&container.background))),
-            border_color: stylesheet.color.resolve(&container.border_color),
-            border_radius: stylesheet.radius.resolve(&container.border_radius),
-            border_width: stylesheet.width.resolve(&container.border_width),
+impl IcedContainerStyle {
+    pub fn new(container: &StyledContainer, iss: &IcedStyleSheet) -> Self {
+        IcedContainerStyle{
+            text_color: Some(iss.color.resolve(&container.text_color)),
+            background: Some(Background::Color(iss.color.resolve(&container.background))),
+            border_color: iss.color.resolve(&container.border_color),
+            border_radius: iss.radius.resolve(&container.border_radius),
+            border_width: iss.width.resolve(&container.border_width),
         }
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct StyleSheet {
+pub struct IcedStyleSheet {
     
     //Project Label
     pub project_label_color: NamedColor,
@@ -337,8 +335,25 @@ pub struct StyleSheet {
     pub header_button_spacing: NamedSpacing,
 
     //Background Container
-    pub home_container: DynamicContainer,
+    pub home_container: StyledContainer,
     pub home_padding: NamedPadding,   
+
+    //area_mc_analysis
+    pub mc_results_row_spacing: NamedSpacing,
+    pub mc_results_col_spacing: NamedSpacing,
+
+    //area_stack_editor
+    pub editor_tol_spacing: NamedSpacing,
+    pub editor_content_spacing: NamedSpacing,
+    pub editor_title_text_size: NamedTextSize,
+    pub editor_scroll_area_padding: NamedPadding,
+    pub editor_header_padding: NamedPadding,
+    pub editor_container: StyledContainer,
+    pub editor_container_inner_padding: NamedPadding,
+    pub editor_container_outer_padding: NamedPadding,
+    pub newtol_container: StyledContainer,
+    pub newtol_container_inner_padding: NamedPadding,
+    pub newtol_container_outer_padding: NamedPadding,
 
     pub color: ColorList,
     pub radius: RadiusList,
@@ -348,9 +363,9 @@ pub struct StyleSheet {
     pub spacing: SpacingList
 }
 
-impl Default for StyleSheet {
+impl Default for IcedStyleSheet {
     fn default() -> Self {
-        // Define classes first so they can be referenced in the StyleSheet construction
+        // Define classes first so they can be referenced in the IcedStyleSheet construction
         let color = ColorList::new()
             .add("primary", SerializableColor{r: 245, g: 245, b: 245, a: 1.0})
             .add("secondary", SerializableColor{r: 245, g: 245, b: 245, a: 1.0})
@@ -381,15 +396,16 @@ impl Default for StyleSheet {
         let spacing = SpacingList::new()
             .add("near", 10)
             .add("far", 20)
+            .add("huge", 40)
         ;
-        // Construct a stylesheet, note that `Named___` objects use a class list for validatation
-        StyleSheet{
-            //Project Labal
+        // Construct a iss, note that `Named___` objects use a class list for validatation
+        IcedStyleSheet{
+            //Project Label
             project_label_color: NamedColor::new("text_h1", &color),
             project_label_text_size: NamedTextSize::new("h1", &text_size),
             project_label_spacing: NamedSpacing::new("near", &spacing),
 
-            //Editable Label Label
+            //Editable Label
             editablelabel_label_color: NamedColor::new("text_h1", &color),
             editablelabel_label_text_size: NamedTextSize::new("h1", &text_size),
 
@@ -397,8 +413,8 @@ impl Default for StyleSheet {
             header_spacing: NamedSpacing::new("far", &spacing),
             header_button_spacing: NamedSpacing::new("near", &spacing),
 
-            //Home
-            home_container: DynamicContainer {
+            //Background Container
+            home_container: StyledContainer {
                 text_color: NamedColor::new("text_p", &color),
                 background: NamedColor::new("background", &color),
                 border_color: NamedColor::new("background", &color),
@@ -407,6 +423,35 @@ impl Default for StyleSheet {
             },
             home_padding: NamedPadding::new("narrow", &padding),
             
+            //area_mc_analysis
+            mc_results_row_spacing: NamedSpacing::new("far", &spacing),
+            mc_results_col_spacing: NamedSpacing::new("far", &spacing),
+
+            //area_stack_editor
+            editor_tol_spacing: NamedSpacing::new("far", &spacing),
+            editor_content_spacing: NamedSpacing::new("far", &spacing),
+            editor_title_text_size: NamedTextSize::new("h2", &text_size),
+            editor_scroll_area_padding: NamedPadding::new("narrow", &padding),
+            editor_header_padding: NamedPadding::new("narrow", &padding),
+            editor_container: StyledContainer {
+                text_color: NamedColor::new("text_p", &color),
+                background: NamedColor::new("background", &color),
+                border_color: NamedColor::new("background", &color),
+                border_radius: NamedRadius::new("none", &radius),
+                border_width: NamedWidth::new("none", &width),
+            },
+            editor_container_inner_padding: NamedPadding::new("narrow", &padding),
+            editor_container_outer_padding: NamedPadding::new("wide", &padding),
+            newtol_container: StyledContainer {
+                text_color: NamedColor::new("text_p", &color),
+                background: NamedColor::new("background", &color),
+                border_color: NamedColor::new("background", &color),
+                border_radius: NamedRadius::new("none", &radius),
+                border_width: NamedWidth::new("none", &width),
+            },
+            newtol_container_inner_padding: NamedPadding::new("wide", &padding),
+            newtol_container_outer_padding: NamedPadding::new("wide", &padding),
+
             // Classes placed at end to avoid needing a .clone()
             color,
             radius,
@@ -418,7 +463,7 @@ impl Default for StyleSheet {
     }
 }
 
-impl StyleSheet {
+impl IcedStyleSheet {
     pub fn color(&self, name: &NamedColor) -> iced_native::Color {
         self.color.resolve(name)
     }
@@ -443,8 +488,8 @@ impl StyleSheet {
         self.spacing.resolve(name)
     }
 
-    pub fn container(&self, container: &DynamicContainer) -> ContainerStyle {
-        ContainerStyle::new(container, self)
+    pub fn container(&self, container: &StyledContainer) -> IcedContainerStyle {
+        IcedContainerStyle::new(container, self)
     }
 
     fn path() -> std::path::PathBuf {
@@ -461,7 +506,7 @@ impl StyleSheet {
         path
     }
 
-    pub async fn load() -> Result<StyleSheet, LoadError> {
+    pub async fn load() -> Result<IcedStyleSheet, LoadError> {
         use async_std::prelude::*;
 
         let mut contents = String::new();
@@ -539,7 +584,7 @@ fn watch(path: PathBuf) -> Result<notify::event::Event, Box<dyn std::error::Erro
     Err(Box::from(std::io::Error::new(std::io::ErrorKind::Other, "No event returned from fn watch")))
 }
 
-impl<H, I> iced_native::subscription::Recipe<H, I> for StyleSheet
+impl<H, I> iced_native::subscription::Recipe<H, I> for IcedStyleSheet
 where
     H: std::hash::Hasher,
 {
@@ -556,7 +601,7 @@ where
 
         async_std::stream::repeat_with(move || {
             loop {
-                match watch(StyleSheet::path()) {
+                match watch(IcedStyleSheet::path()) {
                     Ok(_) =>  return true,
                     Err(_) => {},
                 }

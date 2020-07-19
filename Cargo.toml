@@ -1,5 +1,5 @@
 [package]
-name = "TolStack"
+name = "tolstack"
 version = "0.1.0"
 authors = ["Aevyrie Roessler <aevyrie@gmail.com>"]
 edition = "2018"

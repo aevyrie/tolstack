@@ -48,7 +48,7 @@ impl MonteCarloAnalysis {
         }
         Command::none()
     }
-    pub fn  view(&mut self, stylesheet: &style::StyleSheet) -> Element<Message> {
+    pub fn  view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
         let MonteCarloAnalysis {
             entry_form,
             simulation,
@@ -58,24 +58,24 @@ impl MonteCarloAnalysis {
             .push(Row::new()
                 .push(Text::new("Mean:"))
                 .push(Text::new(format!("{:.3}",simulation.results.mean)))
-                .spacing(20)
+                .spacing(iss.spacing(&iss.mc_results_row_spacing))
             )
             .push(Row::new()
                 .push(Text::new("Tolerance:"))
                 .push(Text::new(format!("{:.3}",simulation.results.tolerance)))
-                .spacing(20)
+                .spacing(iss.spacing(&iss.mc_results_row_spacing))
             )
             .push(Row::new()
                 .push(Text::new("Standard Deviation:"))
                 .push(Text::new(format!("{:.3}",simulation.results.stddev)))
-                .spacing(20)
+                .spacing(iss.spacing(&iss.mc_results_row_spacing))
             )
             .push(Row::new()
                 .push(Text::new("Iterations:"))
                 .push(Text::new(format!("{}",simulation.results.iterations)))
-                .spacing(20)
+                .spacing(iss.spacing(&iss.mc_results_row_spacing))
             )
-            .spacing(20);
+            .spacing(iss.spacing(&iss.mc_results_col_spacing));
 
         let results_summary = Container::new(Column::new()
                 .push(entry_form.view()
@@ -83,7 +83,7 @@ impl MonteCarloAnalysis {
                 )
                 .push(results_body)
                 .height(Length::Fill)
-                .spacing(40)
+                .spacing(iss.spacing(&iss.mc_results_col_spacing))
             )
             .padding(10);
 

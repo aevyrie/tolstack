@@ -236,7 +236,7 @@ impl StackEditor {
             }
         }
     }
-    pub fn view(&mut self, stylesheet: &style::StyleSheet) -> Element<Message> {
+    pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
         let StackEditor {
             entry_form,
             filter,
@@ -246,35 +246,46 @@ impl StackEditor {
         
         let filtered_tols =
             tolerances.iter().filter(|tol| filter.filter_value.matches(tol.analysis_model));
+        
+        // Iterate over all tols, calling their .view() function and adding them to a column
         let tolerances: Element<_> = if filtered_tols.count() > 0 {
-            self.tolerances
-                .iter_mut()
-                .enumerate()
-                .filter(|(_, tol)| filter.filter_value.matches(tol.analysis_model))
-                .fold(Column::new().spacing(20), |column, (i, tol)| {
-                    column.push(tol.view().map( move |message| {
-                        Message::EntryMessage(i, message)
-                    }))
-                })
-                .into()
+                self.tolerances
+                    .iter_mut()
+                    .enumerate()
+                    .filter(|(_, tol)| filter.filter_value.matches(tol.analysis_model))
+                    .fold(
+                        Column::new()
+                            .spacing(iss.spacing(&iss.editor_tol_spacing)),
+                        |column, (i, tol)| {
+                            column.push(
+                                tol.view()
+                                .map(move |message| {
+                                    // Take the message from the tolerance .view() and map it
+                                    // to an `area_stack_editor` Message as an `EntryMessage`
+                                    Message::EntryMessage(i, message)
+                                })
+                            )
+                        }
+                    )
+                    .into()
             } else {
-            empty_message(match filter.filter_value {
-                Filter::All => "There are no tolerances in the stack yet.",
-                Filter::Some(tol) => match tol {
-                    Tolerance::Linear(_) => "No linear tolerances in the stack.",
-                    Tolerance::Float(_) => "No float tolerances in the stack.",
-                }
-            })
-        };
+                empty_message(match filter.filter_value {
+                    Filter::All => "There are no tolerances in the stack yet.",
+                    Filter::Some(tol) => match tol {
+                        Tolerance::Linear(_) => "No linear tolerances in the stack.",
+                        Tolerance::Float(_) => "No float tolerances in the stack.",
+                    }
+                })
+            };
         let content = Column::new()
-            .spacing(20)
+            .spacing(iss.spacing(&iss.editor_tol_spacing))
             .push(tolerances);
         let stack_title = Text::new("Tolerance Stack")
             .width(Length::Fill)
-            .size(24)
+            .size(iss.text_size(&iss.editor_title_text_size))
             .horizontal_alignment(HorizontalAlignment::Left);
         let scrollable_content = Scrollable::new(&mut self.scroll_state)
-            .padding(10)
+            .padding(iss.padding(&iss.editor_scroll_area_padding))
             .height(Length::Fill)
             .width(Length::Shrink)
             .push(
@@ -285,18 +296,18 @@ impl StackEditor {
         let tol_stack_area = Container::new(
             Container::new(Column::new()
                     .push( Row::new()
-                            .push(stack_title)
-                            .push(filter_controls)
-                            .padding(10)
-                            .align_items(Align::Center)
-                        )
+                        .push(stack_title)
+                        .push(filter_controls)
+                        .padding(iss.padding(&iss.editor_header_padding))
+                        .align_items(Align::Center)
+                    )
                     .push(scrollable_content)
                 )
                 .style(style::Container::Background)
-                .padding(10)
+                .padding(iss.padding(&iss.editor_container_inner_padding))
                 .width(Length::Shrink)
             )
-            .padding(20)
+            .padding(iss.padding(&iss.editor_container_outer_padding))
             .width(Length::Fill)
             .center_x();
 
@@ -304,10 +315,10 @@ impl StackEditor {
                 Container::new(self.entry_form.view()
                     .map( move |message| { Message::NewEntryMessage(message) })
                 )
-                .padding(20)
-                .style(style::Container::Background)
+                .padding(iss.padding(&iss.newtol_container_inner_padding))
+                .style(iss.container(&iss.newtol_container))
             )
-            .padding(20)
+            .padding(iss.padding(&iss.newtol_container_outer_padding))
             .width(Length::Fill)
             .center_x();
         

@@ -34,24 +34,24 @@ impl Header {
             Message::OpenFile => {}
         }
     }
-    pub fn  view(&mut self, stylesheet: &style::StyleSheet) -> Element<Message> {
+    pub fn  view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
         let Header {
             title,
             button_open,
         } = self;
         let project_label = Text::new("Project: ")
             .width(Length::Shrink)
-            .size(stylesheet.text_size(&stylesheet.project_label_text_size))
-            .color(stylesheet.color(&stylesheet.project_label_color))
+            .size(iss.text_size(&iss.project_label_text_size))
+            .color(iss.color(&iss.project_label_color))
             .horizontal_alignment(HorizontalAlignment::Left);
 
         let project_title: Row<_> = Row::new()
             .push(project_label)
-            .push(title.view(&stylesheet).map( move |message| {
+            .push(title.view(&iss).map( move |message| {
                 Message::LabelMessage(message)
             }))
             .align_items(Align::Center)
-            .spacing(stylesheet.spacing(&stylesheet.project_label_spacing))
+            .spacing(iss.spacing(&iss.project_label_spacing))
             .into();
                         
         let project_title_container = 
@@ -67,14 +67,14 @@ impl Header {
         let header = Container::new(
             Column::new()
                 .max_width(800)
-                .spacing(stylesheet.spacing(&stylesheet.header_spacing))
+                .spacing(iss.spacing(&iss.header_spacing))
                 .push(project_title_container)
                 .push(Button::new(
                     button_open, 
                     Row::new()
                         .push(Text::new("Open"))
                         //.push(icons::edit())
-                        .spacing(stylesheet.spacing(&stylesheet.header_button_spacing))
+                        .spacing(iss.spacing(&iss.header_button_spacing))
                     )
                     .on_press(Message::OpenFile)
                     .style(style::Button::Neutral)

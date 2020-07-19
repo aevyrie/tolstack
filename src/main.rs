@@ -42,7 +42,7 @@ fn main() {
 // The state of the application
 #[derive(Debug, Default, Clone)]
 struct State {
-    stylesheet: style::StyleSheet,
+    iss: style::IcedStyleSheet,
     header: Header,
     stack_editor: StackEditor,
     monte_carlo_analysis: MonteCarloAnalysis,
@@ -61,7 +61,7 @@ enum Message {
     Saved(Result<(), io::saved_state::SaveError>),
     //
     StyleUpdateAvailable(bool),
-    LoadedStyle(Result<style::StyleSheet, style::LoadError>),
+    LoadedStyle(Result<style::IcedStyleSheet, style::LoadError>),
     StyleSaved(Result<(), style::SaveError>),
 }
 
@@ -114,7 +114,7 @@ impl Application for TolStack {
                                 .set_inputs(state.n_iteration, state.assy_sigma),
                             ..State::default()
                         });
-                        return Command::perform(style::StyleSheet::load(), Message::LoadedStyle)
+                        return Command::perform(style::IcedStyleSheet::load(), Message::LoadedStyle)
                     }
 
                     Message::Loaded(Err(_)) => {
@@ -168,11 +168,11 @@ impl Application for TolStack {
                     }
 
                     Message::StyleUpdateAvailable(_) => {
-                        return Command::perform(style::StyleSheet::load(), Message::LoadedStyle)
+                        return Command::perform(style::IcedStyleSheet::load(), Message::LoadedStyle)
                     }
 
-                    Message::LoadedStyle(Ok(stylesheet)) => {
-                        state.stylesheet = stylesheet;
+                    Message::LoadedStyle(Ok(iss)) => {
+                        state.iss = iss;
                     }
 
                     Message::LoadedStyle(Err(style::LoadError::FormatError)) => {
@@ -180,7 +180,7 @@ impl Application for TolStack {
                     }
 
                     Message::LoadedStyle(Err(style::LoadError::FileError)) => {
-                        return Command::perform(style::StyleSheet::save(state.stylesheet.clone()), Message::StyleSaved)
+                        return Command::perform(style::IcedStyleSheet::save(state.iss.clone()), Message::StyleSaved)
                     }
 
                     Message::StyleSaved(_) => {
@@ -234,14 +234,14 @@ impl Application for TolStack {
         match self {
             TolStack::Loading => Subscription::none(),
             TolStack::Loaded(State {
-                stylesheet,
+                iss,
                 header: _,
                 stack_editor: _,
                 monte_carlo_analysis: _,
                 dirty: _,
                 saving: _,
             }) => {
-                stylesheet.check_style_file().map(Message::StyleUpdateAvailable)
+                iss.check_style_file().map(Message::StyleUpdateAvailable)
             }
         }
     }
@@ -251,20 +251,20 @@ impl Application for TolStack {
         match self {
             TolStack::Loading => loading_message(),
             TolStack::Loaded(State {
-                stylesheet,
+                iss,
                 header,
                 stack_editor,
                 monte_carlo_analysis,
                 dirty: _,
                 saving: _,
             }) => {
-                let header = header.view(&stylesheet)
+                let header = header.view(&iss)
                     .map( move |message| { Message::HeaderMessage(message) });
                 
-                let stack_editor = stack_editor.view(&stylesheet)
+                let stack_editor = stack_editor.view(&iss)
                     .map( move |message| { Message::StackEditorMessage(message) });
                 
-                let monte_carlo_analysis = monte_carlo_analysis.view(&stylesheet)
+                let monte_carlo_analysis = monte_carlo_analysis.view(&iss)
                     .map( move |message| { Message::MonteCarloAnalysisMessage(message) });
                 
                 let gui = Container::new(
@@ -274,9 +274,9 @@ impl Application for TolStack {
                             .push(stack_editor)
                             .push(monte_carlo_analysis)
                         )
-                        .padding(stylesheet.padding(&stylesheet.home_padding))
+                        .padding(iss.padding(&iss.home_padding))
                     )
-                    .style(stylesheet.container(&stylesheet.home_container));
+                    .style(iss.container(&iss.home_container));
                     
                 //debug:
                 //let gui = gui.explain(Color::BLACK);
