@@ -501,10 +501,26 @@ impl IcedStyleSheet {
             std::env::current_dir().unwrap_or(std::path::PathBuf::new())
         };
 
-        path.push("style.toml");
+        path.push("style.json");
 
         path
     }
+
+    /*pub async fn load() -> Result<IcedStyleSheet, LoadError> {
+        use async_std::prelude::*;
+
+        let mut contents = String::new();
+
+        let mut file = async_std::fs::File::open(Self::path())
+            .await
+            .map_err(|_| LoadError::FileError)?;
+
+        file.read_to_string(&mut contents)
+            .await
+            .map_err(|_| LoadError::FileError)?;
+
+        toml::from_str(&contents).map_err(|_| LoadError::FormatError)
+    }*/
 
     pub async fn load() -> Result<IcedStyleSheet, LoadError> {
         use async_std::prelude::*;
@@ -519,9 +535,10 @@ impl IcedStyleSheet {
             .await
             .map_err(|_| LoadError::FileError)?;
 
-        toml::from_str(&contents).map_err(|_| LoadError::FormatError)
+        serde_json::from_str(&contents).map_err(|_| LoadError::FormatError)
     }
 
+    /*
     pub async fn save(self) -> Result<(), SaveError> {
         use async_std::prelude::*;
         let toml = toml::to_string(&self)
@@ -541,11 +558,11 @@ impl IcedStyleSheet {
                 .map_err(|_| SaveError::WriteError)?;
         }
         Ok(())
-    }
+    }*/
 
-    /*pub async fn save(self) -> Result<(), SaveError> {
+    pub async fn save(self) -> Result<(), SaveError> {
         use async_std::prelude::*;
-        let json = json::to_string_pretty(&self)
+        let json = serde_json::to_string_pretty(&self)
             .map_err(|_| SaveError::FormatError)?;
         let path = Self::path();
         if let Some(dir) = path.parent() {
@@ -562,7 +579,7 @@ impl IcedStyleSheet {
                 .map_err(|_| SaveError::WriteError)?;
         }
         Ok(())
-    }*/
+    }
 
     pub fn check_style_file(&self) -> iced::Subscription<bool> {
         iced::Subscription::from_recipe(self.clone())
