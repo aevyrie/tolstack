@@ -50,9 +50,9 @@ Output
   - [ ] Autosave toggle
   - [ ] Save/Open project
   - [ ] Export to CSV
-  - [ ] Text size increment
+  - [ ] Zoom multiplier (apply to all values by storing in stylesheet?)
   - [ ] Dark/light mode
-- [ ] Implement standardized styling
+- [X] Implement standardized styling
   - [X] Hot-reload via serde monitoring json file
 - [ ] Implement save/load dialog
 - [ ] Calculation result scrollable area showing results in progress and completed
