@@ -84,6 +84,16 @@ impl Named for NamedSpacing {
     fn name(&self) -> &str { &self.0 }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NamedVector(String);
+impl Named for NamedVector {
+    type List = VectorList;
+    type NamedItem = NamedVector;
+    fn new_unvalidated(name: &str) -> Self { NamedVector(name.to_string()) }
+    fn name(&self) -> &str { &self.0 }
+}
+
+
 pub trait Named {
     type List: NamedList;
     type NamedItem: Named;
@@ -280,6 +290,34 @@ impl NamedList for SpacingList {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VectorList { map: HashMap<String, (f32, f32)> }
+impl NamedList for VectorList {
+    type NamedItem = NamedVector;
+    type Value = (f32, f32);
+    type Stored = (f32, f32);
+
+    fn new() -> Self {
+        Self{ map: HashMap::new() }
+    }
+
+    fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
+        match self.map.get(&lookup.0) {
+            Some(lookup) => *lookup,
+            None => (1.0, 1.0),
+        }
+    }
+
+    fn is_valid_name<T:Named>(&self, lookup: &T) -> bool {
+        self.map.contains_key(lookup.name())
+    }
+
+    fn add(&mut self, name: &str, value: Self::Stored) -> Self {
+        self.map.insert(name.to_string(), value);
+        self.clone()
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StyledContainer {
     text_color: NamedColor,
     background: NamedColor,
@@ -319,30 +357,85 @@ impl IcedContainerStyle {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StyledButton {
+    shadow_offset: NamedVector,
+    background: NamedColor,
+    border_radius: NamedRadius,
+    border_width: NamedWidth,
+    border_color: NamedColor,
+    text_color: NamedColor,
+}
+
+pub struct IcedButtonStyle {
+    shadow_offset: Vector,
+    background: Option<Background>,
+    border_radius: u16,
+    border_width: u16,
+    border_color: Color,
+    text_color: Color,
+}
+impl button::StyleSheet for IcedButtonStyle {
+    fn active(&self) -> button::Style {
+        button::Style {
+            background: Some(Background::Color(Color::from_rgb(
+                0.8, 0.8, 0.8,
+            ))),
+            border_radius: 5,
+            text_color: Color::WHITE,
+            shadow_offset: Vector::new(1.0, 1.0),
+            ..button::Style::default()
+        }
+    }
+    
+    fn hovered(&self) -> button::Style {
+        let active = self.active();
+        button::Style {
+            text_color: Color::from_rgb(0.2, 0.2, 0.7),
+            shadow_offset: active.shadow_offset + Vector::new(0.0, 1.0),
+            ..active
+        }
+    }
+}
+impl IcedButtonStyle {
+    pub fn new(button: &StyledButton, iss: &IcedStyleSheet) -> Self {
+        let x = iss.vector.resolve(&button.shadow_offset).0;
+        let y = iss.vector.resolve(&button.shadow_offset).1;
+        IcedButtonStyle{
+            shadow_offset: Vector::new(x,y),
+            background: Some(Background::Color(iss.color.resolve(&button.background))),
+            border_radius: iss.radius.resolve(&button.border_radius),
+            border_width: iss.width.resolve(&button.border_width),
+            border_color: iss.color.resolve(&button.border_color),
+            text_color: iss.color.resolve(&button.text_color),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IcedStyleSheet {
     
-    //Project Label
+    // Project Label
     pub project_label_color: NamedColor,
     pub project_label_text_size: NamedTextSize,
     pub project_label_spacing: NamedSpacing,
 
-    //Editable Label
+    // Editable Label
     pub editablelabel_label_color: NamedColor,
     pub editablelabel_label_text_size: NamedTextSize,
 
-    //Header
+    // Header
     pub header_spacing: NamedSpacing,
     pub header_button_spacing: NamedSpacing,
 
-    //Background Container
+    // Background Container
     pub home_container: StyledContainer,
     pub home_padding: NamedPadding,   
 
-    //area_mc_analysis
+    // area_mc_analysis
     pub mc_results_row_spacing: NamedSpacing,
     pub mc_results_col_spacing: NamedSpacing,
 
-    //area_stack_editor
+    // area_stack_editor
     pub editor_tol_spacing: NamedSpacing,
     pub editor_content_spacing: NamedSpacing,
     pub editor_title_text_size: NamedTextSize,
@@ -355,12 +448,21 @@ pub struct IcedStyleSheet {
     pub newtol_container_inner_padding: NamedPadding,
     pub newtol_container_outer_padding: NamedPadding,
 
+    // entry_tolerance
+    pub tol_entry_padding: NamedPadding,
+    pub tol_entry_spacing: NamedSpacing,
+    pub tol_entry_button_spacing: NamedSpacing,
+    pub tol_entry_button_padding: NamedPadding,
+    pub tol_entry_button: StyledButton,
+
+    // Named propery lists
     pub color: ColorList,
     pub radius: RadiusList,
     pub width: WidthList,
     pub text_size: TextSizeList,
     pub padding: PaddingList,
-    pub spacing: SpacingList
+    pub spacing: SpacingList,
+    pub vector: VectorList,
 }
 
 impl Default for IcedStyleSheet {
@@ -398,6 +500,10 @@ impl Default for IcedStyleSheet {
             .add("far", 20)
             .add("huge", 40)
         ;
+        let vector = VectorList::new()
+            .add("bottom", (0.0, 1.0))
+        ;
+
         // Construct a iss, note that `Named___` objects use a class list for validatation
         IcedStyleSheet{
             //Project Label
@@ -452,6 +558,20 @@ impl Default for IcedStyleSheet {
             newtol_container_inner_padding: NamedPadding::new("wide", &padding),
             newtol_container_outer_padding: NamedPadding::new("wide", &padding),
 
+            // entry_tolerance
+            tol_entry_padding: NamedPadding::new("narrow", &padding),
+            tol_entry_spacing: NamedSpacing::new("far", &spacing),
+            tol_entry_button_spacing: NamedSpacing::new("near", &spacing),
+            tol_entry_button_padding: NamedPadding::new("narrow", &padding),
+            tol_entry_button: StyledButton {
+                shadow_offset: NamedVector::new("bottom", &vector),
+                background: NamedColor::new("primary", &color),
+                border_radius: NamedRadius::new("small", &radius),
+                border_width: NamedWidth::new("none", &width),
+                border_color: NamedColor::new("primary", &color),
+                text_color: NamedColor::new("text", &color),
+            },
+
             // Classes placed at end to avoid needing a .clone()
             color,
             radius,
@@ -459,6 +579,7 @@ impl Default for IcedStyleSheet {
             text_size,
             padding,
             spacing,
+            vector,
         }
     }
 }
@@ -490,6 +611,10 @@ impl IcedStyleSheet {
 
     pub fn container(&self, container: &StyledContainer) -> IcedContainerStyle {
         IcedContainerStyle::new(container, self)
+    }
+
+    pub fn vector(&self, name: &NamedVector) -> (f32, f32) {
+        self.vector.resolve(name)
     }
 
     fn path() -> std::path::PathBuf {
