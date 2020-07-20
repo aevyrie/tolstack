@@ -284,13 +284,19 @@ impl StackEditor {
             .width(Length::Fill)
             .size(iss.text_size(&iss.editor_title_text_size))
             .horizontal_alignment(HorizontalAlignment::Left);
-        let scrollable_content = Scrollable::new(&mut self.scroll_state)
-            .padding(iss.padding(&iss.editor_scroll_area_padding))
-            .height(Length::Fill)
-            .width(Length::Shrink)
-            .push(
-                Container::new(content).width(Length::Shrink).center_x(),
-            );
+        let scrollable_content = Container::new(
+            Scrollable::new(&mut self.scroll_state)
+                .height(Length::Fill)
+                .width(Length::Shrink)
+                .push(
+                    Container::new(content)
+                    .width(Length::Shrink)
+                    .center_x()
+                    .padding(iss.padding(&iss.editor_scroll_area_padding))
+                )
+            )
+            .padding(iss.padding(&iss.editor_scroll_area_padding_correction))
+            .style(iss.container(&iss.editor_scroll_container));
         let filter_controls = filter.view()
             .map( move |message| { Message::FilterMessage(message) });
         let tol_stack_area = Container::new(
@@ -303,7 +309,7 @@ impl StackEditor {
                     )
                     .push(scrollable_content)
                 )
-                .style(style::Container::Background)
+                .style(iss.container(&iss.editor_container))
                 .padding(iss.padding(&iss.editor_container_inner_padding))
                 .width(Length::Shrink)
             )
