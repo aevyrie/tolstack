@@ -476,9 +476,11 @@ pub struct IcedStyleSheet {
     pub tol_entry_summary_text_size: NamedTextSize,
     pub tol_entry_padding: NamedPadding,
     pub tol_entry_spacing: NamedSpacing,
+    pub tol_entry_button_text_size: NamedTextSize,
     pub tol_entry_button_spacing: NamedSpacing,
     pub tol_entry_button_padding: NamedPadding,
     pub tol_entry_container: StyledContainer,
+    pub tol_edit_button_text_size: NamedTextSize,
     pub tol_edit_field_padding: NamedPadding,
     pub tol_edit_field_text_size: NamedTextSize,
     pub tol_edit_heading_text_size: NamedTextSize,
@@ -516,7 +518,7 @@ impl Default for IcedStyleSheet {
             .add("background", SerializableColor{r: 236, g: 236, b: 236, a: 1.0})
             .add("panel", SerializableColor{r: 245, g: 245, b: 245, a: 1.0})
             .add("panel_border", SerializableColor{r: 200, g: 200, b: 200, a: 1.0})
-            .add("text_light", SerializableColor{r: 150, g: 149, b: 147, a: 1.0})
+            .add("text_light", SerializableColor{r: 250, g: 250, b: 250, a: 1.0})
             .add("text", SerializableColor{r: 64, g: 61, b: 57, a: 1.0})
             .add("scroll_area", SerializableColor{r: 255, g: 255, b: 255, a: 1.0})
             .add("entry", SerializableColor{r: 230, g: 230, b: 230, a: 1.0}) 
@@ -610,6 +612,7 @@ impl Default for IcedStyleSheet {
             tol_entry_summary_text_size: NamedTextSize::new("p", &text_size),
             tol_entry_padding: NamedPadding::new("narrow", &padding),
             tol_entry_spacing: NamedSpacing::new("near", &spacing),
+            tol_entry_button_text_size: NamedTextSize::new("p", &text_size),
             tol_entry_button_spacing: NamedSpacing::new("near", &spacing),
             tol_entry_button_padding: NamedPadding::new("narrow", &padding),
             tol_entry_container: StyledContainer {
@@ -619,6 +622,7 @@ impl Default for IcedStyleSheet {
                 border_radius: NamedRadius::new("small", &radius),
                 border_width: NamedWidth::new("thin", &width),
             },
+            tol_edit_button_text_size: NamedTextSize::new("p", &text_size),
             tol_edit_field_padding: NamedPadding::new("narrow", &padding),
             tol_edit_field_text_size: NamedTextSize::new("p", &text_size),
             tol_edit_heading_text_size: NamedTextSize::new("h3", &text_size),
@@ -643,7 +647,7 @@ impl Default for IcedStyleSheet {
                 active_border_radius: NamedRadius::new("small", &radius),
                 active_border_width: NamedWidth::new("none", &width),
                 active_border_color: NamedColor::new("primary", &color),
-                active_text_color: NamedColor::new("text", &color),
+                active_text_color: NamedColor::new("text_light", &color),
                 hover_shadow_offset: NamedVector::new("bottom", &vector),
                 hover_background: NamedColor::new("primary", &color),
                 hover_border_radius: NamedRadius::new("small", &radius),

@@ -401,8 +401,10 @@ impl ToleranceEntry {
                         Button::new(
                             button_edit, 
                             Row::new()
-                                .push(Text::new("Edit"))
-                                .push(icons::edit())
+                                //.push(Text::new("Edit")
+                                //    .size(iss.text_size(&iss.tol_entry_button_text_size)))
+                                .push(icons::edit()
+                                    .size(iss.text_size(&iss.tol_entry_button_text_size)))
                                 .spacing(iss.spacing(&iss.tol_entry_button_spacing))
                         )
                         .on_press(Message::EntryEdit)
@@ -431,8 +433,10 @@ impl ToleranceEntry {
                                 button_save,
                                 Row::new()
                                     .spacing(iss.spacing(&iss.tol_entry_button_spacing))
-                                    .push(icons::check())
-                                    .push(Text::new("Save")),
+                                    .push(icons::check()
+                                        .size(iss.text_size(&iss.tol_edit_button_text_size)))
+                                    .push(Text::new("Save")
+                                        .size(iss.text_size(&iss.tol_edit_button_text_size))),
                             )
                             .on_press(Message::EntryFinishEditing)
                             .padding(iss.padding(&iss.tol_entry_button_padding))
@@ -444,8 +448,10 @@ impl ToleranceEntry {
                                 button_delete,
                                 Row::new()
                                     .spacing(iss.spacing(&iss.tol_entry_button_spacing))
-                                    .push(icons::delete())
-                                    .push(Text::new("Delete")),
+                                    .push(icons::delete()
+                                        .size(iss.text_size(&iss.tol_edit_button_text_size)))
+                                    .push(Text::new("Delete")
+                                        .size(iss.text_size(&iss.tol_edit_button_text_size))),
                             )
                             .on_press(Message::EntryDelete)
                             .padding(iss.padding(&iss.tol_entry_button_padding))
@@ -871,11 +877,11 @@ impl ToleranceEntry {
                             .push(row_header)
                             .push(Row::new().height(Length::Units(5)))
                             .push(row_description)
-                            .push(Text::new("Hole"))
+                            .push(Text::new("Hole Dimensions"))
                             .push(row_diameter_hole)
                             .push(row_tolerance_hole_pos)
                             .push(row_tolerance_hole_neg)
-                            .push(Text::new("Pin"))
+                            .push(Text::new("Pin Dimensions"))
                             .push(row_diameter_pin)
                             .push(row_tolerance_pin_pos)
                             .push(row_tolerance_pin_neg)
