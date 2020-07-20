@@ -410,7 +410,7 @@ impl ToleranceEntry {
                     );
 
                 Container::new(row_contents)
-                    .style(style::Container::Entry)
+                    .style(iss.container(&iss.tol_entry_container))
                     .into()
             }
             State::Editing { form_tolentry } => {
