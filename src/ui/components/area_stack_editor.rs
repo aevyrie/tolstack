@@ -258,7 +258,7 @@ impl StackEditor {
                             .spacing(iss.spacing(&iss.editor_tol_spacing)),
                         |column, (i, tol)| {
                             column.push(
-                                tol.view()
+                                tol.view(&iss)
                                 .map(move |message| {
                                     // Take the message from the tolerance .view() and map it
                                     // to an `area_stack_editor` Message as an `EntryMessage`

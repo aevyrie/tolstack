@@ -343,7 +343,7 @@ impl ToleranceEntry {
         }
     }
 
-    pub fn  view(&mut self) -> Element<Message> {
+    pub fn  view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
         match &mut self.state {
             State::Idle { button_edit } => {
                 let checkbox = Checkbox::new(
@@ -391,8 +391,8 @@ impl ToleranceEntry {
                 });
 
                 let row_contents = Row::new()
-                    .padding(10)    
-                    .spacing(20)
+                    .padding(iss.padding(&iss.tol_entry_padding))    
+                    .spacing(iss.spacing(&iss.tol_entry_spacing))
                     .align_items(Align::Center)
                     .push(checkbox)
                     .push(summary)
@@ -402,11 +402,11 @@ impl ToleranceEntry {
                             Row::new()
                                 .push(Text::new("Edit"))
                                 .push(icons::edit())
-                                .spacing(10)
+                                .spacing(iss.spacing(&iss.tol_entry_button_spacing))
                         )
                         .on_press(Message::EntryEdit)
-                        .padding(10)
-                        .style(style::Button::Icon)
+                        .padding(iss.padding(&iss.tol_entry_button_padding))
+                        .style(iss.button(&iss.tol_entry_button))
                     );
 
                 Container::new(row_contents)

@@ -459,6 +459,7 @@ pub struct IcedStyleSheet {
     pub tol_entry_button_spacing: NamedSpacing,
     pub tol_entry_button_padding: NamedPadding,
     pub tol_entry_button: StyledButton,
+    pub tol_entry_container: StyledContainer,
 
     // Named propery lists
     pub color: ColorList,
@@ -483,8 +484,8 @@ impl Default for IcedStyleSheet {
             .add("text_light", SerializableColor{r: 150, g: 149, b: 147, a: 1.0})
             .add("text", SerializableColor{r: 64, g: 61, b: 57, a: 1.0})
             .add("scroll_area", SerializableColor{r: 255, g: 255, b: 255, a: 1.0})
-
-            
+            .add("entry", SerializableColor{r: 250, g: 250, b: 250, a: 1.0}) 
+            .add("entry_border", SerializableColor{r: 245, g: 245, b: 245, a: 1.0}) 
         ;
         let radius = RadiusList::new()
             .add("none", 0)
@@ -600,6 +601,13 @@ impl Default for IcedStyleSheet {
                 border_color: NamedColor::new("primary", &color),
                 text_color: NamedColor::new("text", &color),
             },
+            tol_entry_container: StyledContainer {
+                text_color: NamedColor::new("text", &color),
+                background: NamedColor::new("entry", &color),
+                border_color: NamedColor::new("entry_border", &color),
+                border_radius: NamedRadius::new("large", &radius),
+                border_width: NamedWidth::new("bold", &width),
+            },
 
             // Classes placed at end to avoid needing a .clone()
             color,
@@ -638,12 +646,16 @@ impl IcedStyleSheet {
         self.spacing.resolve(name)
     }
 
+    pub fn vector(&self, name: &NamedVector) -> (f32, f32) {
+        self.vector.resolve(name)
+    }
+
     pub fn container(&self, container: &StyledContainer) -> IcedContainerStyle {
         IcedContainerStyle::new(container, self)
     }
 
-    pub fn vector(&self, name: &NamedVector) -> (f32, f32) {
-        self.vector.resolve(name)
+    pub fn button(&self, button: &StyledButton) -> IcedButtonStyle {
+        IcedButtonStyle::new(button, self)
     }
 
     fn path() -> std::path::PathBuf {
