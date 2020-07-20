@@ -388,7 +388,8 @@ impl ToleranceEntry {
                     false => {
                         format!("Incomplete entry")
                     }
-                });
+                })
+                .size(iss.text_size(&iss.tol_entry_summary_text_size));
 
                 let row_contents = Row::new()
                     .padding(iss.padding(&iss.tol_entry_padding))    
@@ -406,7 +407,7 @@ impl ToleranceEntry {
                         )
                         .on_press(Message::EntryEdit)
                         .padding(iss.padding(&iss.tol_entry_button_padding))
-                        .style(iss.button(&iss.tol_entry_button))
+                        .style(iss.button(&iss.button_action))
                     );
 
                 Container::new(row_contents)
@@ -429,25 +430,27 @@ impl ToleranceEntry {
                             Button::new(
                                 button_save,
                                 Row::new()
-                                    .spacing(10)
+                                    .spacing(iss.spacing(&iss.tol_entry_button_spacing))
                                     .push(icons::check())
                                     .push(Text::new("Save")),
                             )
                             .on_press(Message::EntryFinishEditing)
-                            .padding(10)
-                            .style(style::Button::Constructive);
+                            .padding(iss.padding(&iss.tol_entry_button_padding))
+                            .style(iss.button(&iss.button_constructive))
+                            ;
                         
                         let view_button_delete =
                             Button::new(
                                 button_delete,
                                 Row::new()
-                                    .spacing(10)
+                                    .spacing(iss.spacing(&iss.tol_entry_button_spacing))
                                     .push(icons::delete())
                                     .push(Text::new("Delete")),
                             )
                             .on_press(Message::EntryDelete)
-                            .padding(10)
-                            .style(style::Button::Destructive);
+                            .padding(iss.padding(&iss.tol_entry_button_padding))
+                            .style(iss.button(&iss.button_destructive))
+                            ;
 
                         let view_description = 
                             TextInput::new(
@@ -462,7 +465,9 @@ impl ToleranceEntry {
                                 Message::EditedDescription,
                             )
                             .on_submit(Message::EntryFinishEditing)
-                            .padding(10);
+                            .padding(iss.padding(&iss.tol_edit_field_padding))
+                            .size(iss.text_size(&iss.tol_edit_field_text_size))
+                            ;
                         
                         let view_dimension = 
                             TextInput::new(
@@ -477,7 +482,9 @@ impl ToleranceEntry {
                                 Message::EditedLinearDimension,
                             )
                             .on_submit(Message::EntryFinishEditing)
-                            .padding(10);
+                            .padding(iss.padding(&iss.tol_edit_field_padding))
+                            .size(iss.text_size(&iss.tol_edit_field_text_size))
+                            ;
                         
                         let view_tolerance_pos = 
                             TextInput::new(
@@ -492,7 +499,9 @@ impl ToleranceEntry {
                                 Message::EditedLinearTolerancePos,
                             )
                             .on_submit(Message::EntryFinishEditing)
-                            .padding(10);
+                            .padding(iss.padding(&iss.tol_edit_field_padding))
+                            .size(iss.text_size(&iss.tol_edit_field_text_size))
+                            ;
 
                         let view_tolerance_neg = 
                             TextInput::new(
@@ -507,7 +516,9 @@ impl ToleranceEntry {
                                 Message::EditedLinearToleranceNeg,
                             )
                             .on_submit(Message::EntryFinishEditing)
-                            .padding(10);
+                            .padding(iss.padding(&iss.tol_edit_field_padding))
+                            .size(iss.text_size(&iss.tol_edit_field_text_size))
+                            ;
 
                         let view_sigma = 
                             TextInput::new(
@@ -522,53 +533,67 @@ impl ToleranceEntry {
                                 Message::EditedLinearSigma,
                             )
                             .on_submit(Message::EntryFinishEditing)
-                            .padding(10);
+                            .padding(iss.padding(&iss.tol_edit_field_padding))
+                            .size(iss.text_size(&iss.tol_edit_field_text_size))
+                            ;
 
 
                         let row_header = Row::new()
                             .push(Text::new("Editing Linear Tolerance")
-                                .size(24)
+                                .size(iss.text_size(&iss.tol_edit_heading_text_size))
                                 .width(Length::Fill)
                                 .horizontal_alignment(HorizontalAlignment::Left)
                             )
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
 
                         let row_description = Row::new()
-                            .push(Text::new("Description:"))
+                            .push(Text::new("Description:")
+                                .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_description)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
 
                         let row_dimension = Row::new()
-                            .push(Text::new("Dimension:"))
+                            .push(Text::new("Dimension:")
+                                .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_dimension)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
 
                         let row_tolerance_pos = Row::new()
-                            .push(Text::new("+ Tolerance:"))
+                            .push(Text::new("+ Tolerance:")
+                                .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_tolerance_pos)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
 
                         let row_tolerance_neg = Row::new()
-                            .push(Text::new("- Tolerance:"))
+                            .push(Text::new("- Tolerance:")
+                                .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_tolerance_neg)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
 
                         let row_sigma = Row::new()
-                            .push(Text::new("Sigma:"))
+                            .push(Text::new("Sigma:")
+                                .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_sigma)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
 
                         let row_buttons = Row::new()
                             .push(view_button_delete)
                             .push(view_button_save)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
         
                         let entry_contents = Column::new()
                             .push(row_header)
@@ -580,11 +605,12 @@ impl ToleranceEntry {
                             .push(row_sigma)
                             .push(Row::new().height(Length::Units(5)))
                             .push(row_buttons)
-                            .spacing(10)
-                            .padding(20);
+                            .spacing(iss.spacing(&iss.tol_edit_vspacing))
+                            .padding(iss.padding(&iss.tol_edit_padding))
+                            ;
                         
                         Container::new(entry_contents)
-                            .style(style::Container::Entry)
+                            .style(iss.container(&iss.tol_entry_container))
                             .into()
                     },
                     FormState::Float {
@@ -637,7 +663,9 @@ impl ToleranceEntry {
                                 Message::EditedDescription,
                             )
                             .on_submit(Message::EntryFinishEditing)
-                            .padding(10);
+                            .padding(iss.padding(&iss.tol_edit_field_padding))
+                            .size(iss.text_size(&iss.tol_edit_field_text_size))
+                            ;
 
                         let view_diameter_hole = 
                             TextInput::new(
@@ -652,7 +680,9 @@ impl ToleranceEntry {
                                 Message::EditedFloatDiameterHole,
                             )
                             .on_submit(Message::EntryFinishEditing)
-                            .padding(10);
+                            .padding(iss.padding(&iss.tol_edit_field_padding))
+                            .size(iss.text_size(&iss.tol_edit_field_text_size))
+                            ;
 
                         let view_diameter_pin = 
                             TextInput::new(
@@ -667,7 +697,9 @@ impl ToleranceEntry {
                                 Message::EditedFloatDiameterPin,
                             )
                             .on_submit(Message::EntryFinishEditing)
-                            .padding(10);
+                            .padding(iss.padding(&iss.tol_edit_field_padding))
+                            .size(iss.text_size(&iss.tol_edit_field_text_size))
+                            ;
                         
                         let view_tolerance_hole_pos = 
                             TextInput::new(
@@ -682,8 +714,10 @@ impl ToleranceEntry {
                                 Message::EditedFloatTolHolePos,
                             )
                             .on_submit(Message::EntryFinishEditing)
-                            .padding(10);
-                        
+                            .padding(iss.padding(&iss.tol_edit_field_padding))
+                            .size(iss.text_size(&iss.tol_edit_field_text_size))
+                            ;
+
                         let view_tolerance_hole_neg = 
                             TextInput::new(
                                 tolerance_hole_neg,
@@ -697,8 +731,10 @@ impl ToleranceEntry {
                                 Message::EditedFloatTolHoleNeg,
                             )
                             .on_submit(Message::EntryFinishEditing)
-                            .padding(10);
-
+                            .padding(iss.padding(&iss.tol_edit_field_padding))
+                            .size(iss.text_size(&iss.tol_edit_field_text_size))
+                            ;
+                            
                         let view_tolerance_pin_pos = 
                             TextInput::new(
                                 tolerance_pin_pos,
@@ -712,8 +748,10 @@ impl ToleranceEntry {
                                 Message::EditedFloatTolPinPos,
                             )
                             .on_submit(Message::EntryFinishEditing)
-                            .padding(10);
-                        
+                            .padding(iss.padding(&iss.tol_edit_field_padding))
+                            .size(iss.text_size(&iss.tol_edit_field_text_size))
+                            ;
+                                                    
                         let view_tolerance_pin_neg = 
                             TextInput::new(
                                 tolerance_pin_neg,
@@ -727,8 +765,10 @@ impl ToleranceEntry {
                                 Message::EditedFloatTolPinNeg,
                             )
                             .on_submit(Message::EntryFinishEditing)
-                            .padding(10);
-                        
+                            .padding(iss.padding(&iss.tol_edit_field_padding))
+                            .size(iss.text_size(&iss.tol_edit_field_text_size))
+                            ;
+                                                    
                         let view_sigma = 
                             TextInput::new(
                                 sigma,
@@ -742,70 +782,90 @@ impl ToleranceEntry {
                                 Message::EditedFloatSigma,
                             )
                             .on_submit(Message::EntryFinishEditing)
-                            .padding(10);
-
+                            .padding(iss.padding(&iss.tol_edit_field_padding))
+                            .size(iss.text_size(&iss.tol_edit_field_text_size))
+                            ;
+                            
                         let row_header = Row::new()
                             .push(Text::new("Editing Float Tolerance")
-                                .size(24)
+                                .size(iss.text_size(&iss.tol_edit_heading_text_size))
                                 .width(Length::Fill)
                                 .horizontal_alignment(HorizontalAlignment::Left)
                             )
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
                             
                         let row_description = Row::new()
-                            .push(Text::new("Description:"))
+                            .push(Text::new("Description:")
+                                .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_description)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
 
                         let row_diameter_hole = Row::new()
-                            .push(Text::new("Hole Diameter:"))
+                            .push(Text::new("Hole Diameter:")
+                                .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_diameter_hole)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
 
                         let row_diameter_pin = Row::new()
-                            .push(Text::new("Pin Diameter:"))
+                            .push(Text::new("Pin Diameter:")
+                                .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_diameter_pin)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
 
                         let row_tolerance_hole_pos = Row::new()
-                            .push(Text::new("+ Hole Tolerance:"))
+                            .push(Text::new("+ Hole Tolerance:")
+                                .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_tolerance_hole_pos)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
 
                         let row_tolerance_hole_neg = Row::new()
-                            .push(Text::new("- Hole Tolerance:"))
+                            .push(Text::new("- Hole Tolerance:")
+                                .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_tolerance_hole_neg)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
 
                         let row_tolerance_pin_pos = Row::new()
-                            .push(Text::new("+ Pin Tolerance:"))
+                            .push(Text::new("+ Pin Tolerance:")
+                                .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_tolerance_pin_pos)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
 
                         let row_tolerance_pin_neg = Row::new()
-                            .push(Text::new("- Pin Tolerance:"))
+                            .push(Text::new("- Pin Tolerance:")
+                                .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_tolerance_pin_neg)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
 
                         let row_sigma = Row::new()
-                            .push(Text::new("Sigma:"))
+                            .push(Text::new("Sigma:")
+                                .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_sigma)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
 
                         let row_buttons = Row::new()
                             .push(view_button_delete)
                             .push(view_button_save)
-                            .spacing(20)
-                            .align_items(Align::Center);
+                            .spacing(iss.spacing(&iss.tol_edit_label_spacing))
+                            .align_items(Align::Center)
+                            ;
         
                         let entry_contents = Column::new()
                             .push(row_header)
@@ -822,11 +882,12 @@ impl ToleranceEntry {
                             .push(row_sigma)
                             .push(Row::new().height(Length::Units(5)))
                             .push(row_buttons)
-                            .spacing(10)
-                            .padding(20);
+                            .spacing(iss.spacing(&iss.tol_edit_vspacing))
+                            .padding(iss.padding(&iss.tol_edit_padding))
+                            ;
                         
                         Container::new(entry_contents)
-                            .style(style::Container::Entry)
+                            .style(iss.container(&iss.tol_entry_container))
                             .into()
                     },
                     FormState::Compound {} => {

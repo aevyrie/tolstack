@@ -358,55 +358,77 @@ impl IcedContainerStyle {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StyledButton {
-    shadow_offset: NamedVector,
-    background: NamedColor,
-    border_radius: NamedRadius,
-    border_width: NamedWidth,
-    border_color: NamedColor,
-    text_color: NamedColor,
+    active_shadow_offset: NamedVector,
+    active_background: NamedColor,
+    active_border_radius: NamedRadius,
+    active_border_width: NamedWidth,
+    active_border_color: NamedColor,
+    active_text_color: NamedColor,
+    hover_shadow_offset: NamedVector,
+    hover_background: NamedColor,
+    hover_border_radius: NamedRadius,
+    hover_border_width: NamedWidth,
+    hover_border_color: NamedColor,
+    hover_text_color: NamedColor,
 }
 
 pub struct IcedButtonStyle {
-    shadow_offset: Vector,
-    background: Option<Background>,
-    border_radius: u16,
-    border_width: u16,
-    border_color: Color,
-    text_color: Color,
+    active_shadow_offset: Vector,
+    active_background: Option<Background>,
+    active_border_radius: u16,
+    active_border_width: u16,
+    active_border_color: Color,
+    active_text_color: Color,
+    hover_shadow_offset: Vector,
+    hover_background: Option<Background>,
+    hover_border_radius: u16,
+    hover_border_width: u16,
+    hover_border_color: Color,
+    hover_text_color: Color,
 }
 impl button::StyleSheet for IcedButtonStyle {
     fn active(&self) -> button::Style {
         button::Style {
-            background: Some(Background::Color(Color::from_rgb(
-                0.8, 0.8, 0.8,
-            ))),
-            border_radius: 5,
-            text_color: Color::WHITE,
-            shadow_offset: Vector::new(1.0, 1.0),
-            ..button::Style::default()
+            shadow_offset: self.active_shadow_offset,
+            background: self.active_background,
+            border_radius: self.active_border_radius,
+            border_width: self.active_border_width,
+            border_color: self.active_border_color,
+            text_color: self.active_text_color,
         }
     }
     
     fn hovered(&self) -> button::Style {
         let active = self.active();
         button::Style {
-            text_color: Color::from_rgb(0.2, 0.2, 0.7),
-            shadow_offset: active.shadow_offset + Vector::new(0.0, 1.0),
-            ..active
+            shadow_offset: self.hover_shadow_offset,
+            background: self.hover_background,
+            border_radius: self.hover_border_radius,
+            border_width: self.hover_border_width,
+            border_color: self.hover_border_color,
+            text_color: self.hover_text_color,
         }
     }
 }
 impl IcedButtonStyle {
     pub fn new(button: &StyledButton, iss: &IcedStyleSheet) -> Self {
-        let x = iss.vector.resolve(&button.shadow_offset).0;
-        let y = iss.vector.resolve(&button.shadow_offset).1;
+        let x_a = iss.vector.resolve(&button.active_shadow_offset).0;
+        let y_a = iss.vector.resolve(&button.active_shadow_offset).1;
+        let x_h = iss.vector.resolve(&button.hover_shadow_offset).0;
+        let y_h = iss.vector.resolve(&button.hover_shadow_offset).1;
         IcedButtonStyle{
-            shadow_offset: Vector::new(x,y),
-            background: Some(Background::Color(iss.color.resolve(&button.background))),
-            border_radius: iss.radius.resolve(&button.border_radius),
-            border_width: iss.width.resolve(&button.border_width),
-            border_color: iss.color.resolve(&button.border_color),
-            text_color: iss.color.resolve(&button.text_color),
+            active_shadow_offset: Vector::new(x_a, y_a),
+            active_background: Some(Background::Color(iss.color.resolve(&button.active_background))),
+            active_border_radius: iss.radius.resolve(&button.active_border_radius),
+            active_border_width: iss.width.resolve(&button.active_border_width),
+            active_border_color: iss.color.resolve(&button.active_border_color),
+            active_text_color: iss.color.resolve(&button.active_text_color),
+            hover_shadow_offset: Vector::new(x_h, y_h),
+            hover_background: Some(Background::Color(iss.color.resolve(&button.hover_background))),
+            hover_border_radius: iss.radius.resolve(&button.hover_border_radius),
+            hover_border_width: iss.width.resolve(&button.hover_border_width),
+            hover_border_color: iss.color.resolve(&button.hover_border_color),
+            hover_text_color: iss.color.resolve(&button.hover_text_color),
         }
     }
 }
@@ -454,12 +476,25 @@ pub struct IcedStyleSheet {
     pub newtol_container_outer_padding: NamedPadding,
 
     // entry_tolerance
+    pub tol_entry_summary_text_size: NamedTextSize,
     pub tol_entry_padding: NamedPadding,
     pub tol_entry_spacing: NamedSpacing,
     pub tol_entry_button_spacing: NamedSpacing,
     pub tol_entry_button_padding: NamedPadding,
-    pub tol_entry_button: StyledButton,
     pub tol_entry_container: StyledContainer,
+    pub tol_edit_field_padding: NamedPadding,
+    pub tol_edit_field_text_size: NamedTextSize,
+    pub tol_edit_heading_text_size: NamedTextSize,
+    pub tol_edit_label_text_size: NamedTextSize,
+    pub tol_edit_label_spacing: NamedSpacing,
+    pub tol_edit_vspacing: NamedSpacing,
+    pub tol_edit_padding: NamedPadding,
+
+    // General Buttons
+    pub button_action: StyledButton,
+    pub button_constructive: StyledButton,
+    pub button_destructive: StyledButton,
+    
 
     // Named propery lists
     pub color: ColorList,
@@ -500,6 +535,7 @@ impl Default for IcedStyleSheet {
         let text_size = TextSizeList::new()
             .add("h1", 32)
             .add("h2", 24)
+            .add("h3", 16)
             .add("p", 12)
         ;
         let padding = PaddingList::new()
@@ -589,24 +625,68 @@ impl Default for IcedStyleSheet {
             newtol_container_outer_padding: NamedPadding::new("narrow", &padding),
 
             // entry_tolerance
+            tol_entry_summary_text_size: NamedTextSize::new("h3", &text_size),
             tol_entry_padding: NamedPadding::new("narrow", &padding),
             tol_entry_spacing: NamedSpacing::new("far", &spacing),
             tol_entry_button_spacing: NamedSpacing::new("near", &spacing),
             tol_entry_button_padding: NamedPadding::new("narrow", &padding),
-            tol_entry_button: StyledButton {
-                shadow_offset: NamedVector::new("bottom", &vector),
-                background: NamedColor::new("primary", &color),
-                border_radius: NamedRadius::new("small", &radius),
-                border_width: NamedWidth::new("none", &width),
-                border_color: NamedColor::new("primary", &color),
-                text_color: NamedColor::new("text", &color),
-            },
             tol_entry_container: StyledContainer {
                 text_color: NamedColor::new("text", &color),
                 background: NamedColor::new("entry", &color),
                 border_color: NamedColor::new("entry_border", &color),
                 border_radius: NamedRadius::new("large", &radius),
                 border_width: NamedWidth::new("bold", &width),
+            },
+            tol_edit_field_padding: NamedPadding::new("narrow", &padding),
+            tol_edit_field_text_size: NamedTextSize::new("p", &text_size),
+            tol_edit_heading_text_size: NamedTextSize::new("h3", &text_size),
+            tol_edit_label_text_size: NamedTextSize::new("p", &text_size),
+            tol_edit_label_spacing: NamedSpacing::new("far", &spacing),
+            tol_edit_vspacing: NamedSpacing::new("far", &spacing),
+            tol_edit_padding: NamedPadding::new("narrow", &padding),
+
+            // General Buttons
+            button_action: StyledButton {
+                active_shadow_offset: NamedVector::new("bottom", &vector),
+                active_background: NamedColor::new("primary", &color),
+                active_border_radius: NamedRadius::new("small", &radius),
+                active_border_width: NamedWidth::new("none", &width),
+                active_border_color: NamedColor::new("primary", &color),
+                active_text_color: NamedColor::new("text", &color),
+                hover_shadow_offset: NamedVector::new("bottom", &vector),
+                hover_background: NamedColor::new("primary", &color),
+                hover_border_radius: NamedRadius::new("small", &radius),
+                hover_border_width: NamedWidth::new("none", &width),
+                hover_border_color: NamedColor::new("primary", &color),
+                hover_text_color: NamedColor::new("text", &color),
+            },
+            button_constructive: StyledButton {
+                active_shadow_offset: NamedVector::new("bottom", &vector),
+                active_background: NamedColor::new("constructive", &color),
+                active_border_radius: NamedRadius::new("small", &radius),
+                active_border_width: NamedWidth::new("none", &width),
+                active_border_color: NamedColor::new("primary", &color),
+                active_text_color: NamedColor::new("text", &color),
+                hover_shadow_offset: NamedVector::new("bottom", &vector),
+                hover_background: NamedColor::new("constructive", &color),
+                hover_border_radius: NamedRadius::new("small", &radius),
+                hover_border_width: NamedWidth::new("none", &width),
+                hover_border_color: NamedColor::new("primary", &color),
+                hover_text_color: NamedColor::new("text", &color),
+            },
+            button_destructive: StyledButton {
+                active_shadow_offset: NamedVector::new("bottom", &vector),
+                active_background: NamedColor::new("destructive", &color),
+                active_border_radius: NamedRadius::new("small", &radius),
+                active_border_width: NamedWidth::new("none", &width),
+                active_border_color: NamedColor::new("primary", &color),
+                active_text_color: NamedColor::new("text", &color),
+                hover_shadow_offset: NamedVector::new("bottom", &vector),
+                hover_background: NamedColor::new("destructive", &color),
+                hover_border_radius: NamedRadius::new("small", &radius),
+                hover_border_width: NamedWidth::new("none", &width),
+                hover_border_color: NamedColor::new("primary", &color),
+                hover_text_color: NamedColor::new("text", &color),
             },
 
             // Classes placed at end to avoid needing a .clone()
