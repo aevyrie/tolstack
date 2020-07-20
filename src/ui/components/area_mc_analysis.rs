@@ -78,7 +78,7 @@ impl MonteCarloAnalysis {
             .spacing(iss.spacing(&iss.mc_results_col_spacing));
 
         let results_summary = Container::new(Column::new()
-                .push(entry_form.view()
+                .push(entry_form.view(&iss)
                     .map( move |message| { Message::NewMcAnalysisMessage(message) })
                 )
                 .push(results_body)
@@ -89,7 +89,7 @@ impl MonteCarloAnalysis {
 
         let tol_chain_output = Column::new()
             .push(Container::new(Container::new(results_summary)
-                    .style(iss.container(&iss.mc_results_container))
+                    .style(iss.container(&iss.panel_container))
                     .padding(iss.padding(&iss.mc_results_container_inner_padding))
                     .height(Length::Fill)
                 )

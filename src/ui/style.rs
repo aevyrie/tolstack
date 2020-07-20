@@ -456,7 +456,6 @@ pub struct IcedStyleSheet {
     // area_mc_analysis
     pub mc_results_row_spacing: NamedSpacing,
     pub mc_results_col_spacing: NamedSpacing,
-    pub mc_results_container: StyledContainer,
     pub mc_results_container_inner_padding: NamedPadding,
     pub mc_results_container_outer_padding: NamedPadding,
 
@@ -468,10 +467,8 @@ pub struct IcedStyleSheet {
     pub editor_scroll_area_padding_correction: NamedPadding,
     pub editor_scroll_container: StyledContainer,
     pub editor_header_padding: NamedPadding,
-    pub editor_container: StyledContainer,
     pub editor_container_inner_padding: NamedPadding,
     pub editor_container_outer_padding: NamedPadding,
-    pub newtol_container: StyledContainer,
     pub newtol_container_inner_padding: NamedPadding,
     pub newtol_container_outer_padding: NamedPadding,
 
@@ -489,6 +486,9 @@ pub struct IcedStyleSheet {
     pub tol_edit_label_spacing: NamedSpacing,
     pub tol_edit_vspacing: NamedSpacing,
     pub tol_edit_padding: NamedPadding,
+
+    // General Coontainers
+    pub panel_container: StyledContainer,
 
     // General Buttons
     pub button_action: StyledButton,
@@ -515,17 +515,18 @@ impl Default for IcedStyleSheet {
             .add("destructive", SerializableColor{r: 239, g: 62, b: 54, a: 1.0})
             .add("background", SerializableColor{r: 236, g: 236, b: 236, a: 1.0})
             .add("panel", SerializableColor{r: 245, g: 245, b: 245, a: 1.0})
-            .add("panel_border", SerializableColor{r: 220, g: 220, b: 220, a: 1.0})
+            .add("panel_border", SerializableColor{r: 200, g: 200, b: 200, a: 1.0})
             .add("text_light", SerializableColor{r: 150, g: 149, b: 147, a: 1.0})
             .add("text", SerializableColor{r: 64, g: 61, b: 57, a: 1.0})
             .add("scroll_area", SerializableColor{r: 255, g: 255, b: 255, a: 1.0})
-            .add("entry", SerializableColor{r: 250, g: 250, b: 250, a: 1.0}) 
-            .add("entry_border", SerializableColor{r: 245, g: 245, b: 245, a: 1.0}) 
+            .add("entry", SerializableColor{r: 230, g: 230, b: 230, a: 1.0}) 
+            .add("entry_border", SerializableColor{r: 200, g: 200, b: 200, a: 1.0}) 
         ;
         let radius = RadiusList::new()
             .add("none", 0)
             .add("small", 4)
             .add("large", 6)
+            .add("extra_large", 12)
         ;
         let width = WidthList::new()
             .add("none", 0)
@@ -535,14 +536,16 @@ impl Default for IcedStyleSheet {
         let text_size = TextSizeList::new()
             .add("h1", 32)
             .add("h2", 24)
-            .add("h3", 16)
-            .add("p", 12)
+            .add("h3", 20)
+            .add("p", 16)
         ;
         let padding = PaddingList::new()
             .add("tiny", 1)
             .add("narrow", 10)
             .add("wide", 20)
             .add("extra_wide", 30)
+            .add("panel_outer", 10)
+            .add("panel_inner", 30)
         ;
         let spacing = SpacingList::new()
             .add("near", 10)
@@ -581,69 +584,57 @@ impl Default for IcedStyleSheet {
             //area_mc_analysis
             mc_results_row_spacing: NamedSpacing::new("far", &spacing),
             mc_results_col_spacing: NamedSpacing::new("far", &spacing),
-            mc_results_container: StyledContainer {
-                text_color: NamedColor::new("text", &color),
-                background: NamedColor::new("panel", &color),
-                border_color: NamedColor::new("panel_border", &color),
-                border_radius: NamedRadius::new("large", &radius),
-                border_width: NamedWidth::new("bold", &width),
-            },
-            mc_results_container_inner_padding: NamedPadding::new("narrow", &padding),
-            mc_results_container_outer_padding: NamedPadding::new("narrow", &padding),
+            mc_results_container_inner_padding: NamedPadding::new("panel_inner", &padding),
+            mc_results_container_outer_padding: NamedPadding::new("panel_outer", &padding),
 
             //area_stack_editor
-            editor_tol_spacing: NamedSpacing::new("far", &spacing),
+            editor_tol_spacing: NamedSpacing::new("near", &spacing),
             editor_content_spacing: NamedSpacing::new("far", &spacing),
             editor_title_text_size: NamedTextSize::new("h2", &text_size),
-            editor_scroll_area_padding: NamedPadding::new("extra_wide", &padding),
+            editor_scroll_area_padding: NamedPadding::new("narrow", &padding),
             editor_scroll_area_padding_correction: NamedPadding::new("tiny", &padding),
             editor_scroll_container: StyledContainer {
                 text_color: NamedColor::new("text", &color),
                 background: NamedColor::new("scroll_area", &color),
                 border_color: NamedColor::new("panel_border", &color),
-                border_radius: NamedRadius::new("small", &radius),
+                border_radius: NamedRadius::new("large", &radius),
                 border_width: NamedWidth::new("thin", &width),
             },
             editor_header_padding: NamedPadding::new("narrow", &padding),
-            editor_container: StyledContainer {
-                text_color: NamedColor::new("text", &color),
-                background: NamedColor::new("panel", &color),
-                border_color: NamedColor::new("panel_border", &color),
-                border_radius: NamedRadius::new("large", &radius),
-                border_width: NamedWidth::new("bold", &width),
-            },
-            editor_container_inner_padding: NamedPadding::new("wide", &padding),
-            editor_container_outer_padding: NamedPadding::new("narrow", &padding),
-            newtol_container: StyledContainer {
-                text_color: NamedColor::new("text", &color),
-                background: NamedColor::new("panel", &color),
-                border_color: NamedColor::new("panel_border", &color),
-                border_radius: NamedRadius::new("large", &radius),
-                border_width: NamedWidth::new("bold", &width),
-            },
-            newtol_container_inner_padding: NamedPadding::new("wide", &padding),
-            newtol_container_outer_padding: NamedPadding::new("narrow", &padding),
+            editor_container_inner_padding: NamedPadding::new("panel_inner", &padding),
+            editor_container_outer_padding: NamedPadding::new("panel_outer", &padding),
+            newtol_container_inner_padding: NamedPadding::new("panel_inner", &padding),
+            newtol_container_outer_padding: NamedPadding::new("panel_outer", &padding),
 
             // entry_tolerance
-            tol_entry_summary_text_size: NamedTextSize::new("h3", &text_size),
+            tol_entry_summary_text_size: NamedTextSize::new("p", &text_size),
             tol_entry_padding: NamedPadding::new("narrow", &padding),
-            tol_entry_spacing: NamedSpacing::new("far", &spacing),
+            tol_entry_spacing: NamedSpacing::new("near", &spacing),
             tol_entry_button_spacing: NamedSpacing::new("near", &spacing),
             tol_entry_button_padding: NamedPadding::new("narrow", &padding),
             tol_entry_container: StyledContainer {
                 text_color: NamedColor::new("text", &color),
                 background: NamedColor::new("entry", &color),
                 border_color: NamedColor::new("entry_border", &color),
-                border_radius: NamedRadius::new("large", &radius),
-                border_width: NamedWidth::new("bold", &width),
+                border_radius: NamedRadius::new("small", &radius),
+                border_width: NamedWidth::new("thin", &width),
             },
             tol_edit_field_padding: NamedPadding::new("narrow", &padding),
             tol_edit_field_text_size: NamedTextSize::new("p", &text_size),
             tol_edit_heading_text_size: NamedTextSize::new("h3", &text_size),
             tol_edit_label_text_size: NamedTextSize::new("p", &text_size),
             tol_edit_label_spacing: NamedSpacing::new("far", &spacing),
-            tol_edit_vspacing: NamedSpacing::new("far", &spacing),
-            tol_edit_padding: NamedPadding::new("narrow", &padding),
+            tol_edit_vspacing: NamedSpacing::new("near", &spacing),
+            tol_edit_padding: NamedPadding::new("wide", &padding),
+            
+            // General Containers
+            panel_container: StyledContainer {
+                text_color: NamedColor::new("text", &color),
+                background: NamedColor::new("panel", &color),
+                border_color: NamedColor::new("panel_border", &color),
+                border_radius: NamedRadius::new("large", &radius),
+                border_width: NamedWidth::new("thin", &width),
+            },
 
             // General Buttons
             button_action: StyledButton {

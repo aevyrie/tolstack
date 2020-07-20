@@ -42,7 +42,7 @@ impl NewMonteCarloAnalysis {
             Message::CalculateComplete(_) => {}
         }
     }
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
         let NewMonteCarloAnalysis {
             n_iteration,
             assy_sigma,
@@ -96,7 +96,7 @@ impl NewMonteCarloAnalysis {
                             //.push(icons::check())
                             .push(Text::new("Run Simulation")),
                     )
-                    .style(style::Button::Constructive)
+                    .style(iss.button(&iss.button_constructive))
                     .padding(10)
                     .on_press(Message::Calculate)
                 )
