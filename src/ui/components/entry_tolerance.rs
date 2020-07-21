@@ -555,6 +555,7 @@ impl ToleranceEntry {
                             ;
 
                         let row_description = Row::new()
+                            .push(Column::new().width(Length::Units(20)))
                             .push(Text::new("Description:")
                                 .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_description)
@@ -563,6 +564,7 @@ impl ToleranceEntry {
                             ;
 
                         let row_dimension = Row::new()
+                            .push(Column::new().width(Length::Units(20)))
                             .push(Text::new("Dimension:")
                                 .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_dimension)
@@ -571,6 +573,7 @@ impl ToleranceEntry {
                             ;
 
                         let row_tolerance_pos = Row::new()
+                            .push(Column::new().width(Length::Units(20)))
                             .push(Text::new("+ Tolerance:")
                                 .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_tolerance_pos)
@@ -579,6 +582,7 @@ impl ToleranceEntry {
                             ;
 
                         let row_tolerance_neg = Row::new()
+                            .push(Column::new().width(Length::Units(20)))
                             .push(Text::new("- Tolerance:")
                                 .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_tolerance_neg)
@@ -587,6 +591,7 @@ impl ToleranceEntry {
                             ;
 
                         let row_sigma = Row::new()
+                            .push(Column::new().width(Length::Units(20)))
                             .push(Text::new("Sigma:")
                                 .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_sigma)
@@ -803,6 +808,7 @@ impl ToleranceEntry {
                             ;
                             
                         let row_description = Row::new()
+                            .push(Column::new().width(Length::Units(20)))
                             .push(Text::new("Description:")
                                 .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_description)
@@ -811,6 +817,7 @@ impl ToleranceEntry {
                             ;
 
                         let row_diameter_hole = Row::new()
+                            .push(Column::new().width(Length::Units(20)))
                             .push(Text::new("Hole Diameter:")
                                 .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_diameter_hole)
@@ -819,6 +826,7 @@ impl ToleranceEntry {
                             ;
 
                         let row_diameter_pin = Row::new()
+                            .push(Column::new().width(Length::Units(20)))
                             .push(Text::new("Pin Diameter:")
                                 .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_diameter_pin)
@@ -827,6 +835,7 @@ impl ToleranceEntry {
                             ;
 
                         let row_tolerance_hole_pos = Row::new()
+                            .push(Column::new().width(Length::Units(20)))
                             .push(Text::new("+ Hole Tolerance:")
                                 .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_tolerance_hole_pos)
@@ -835,6 +844,7 @@ impl ToleranceEntry {
                             ;
 
                         let row_tolerance_hole_neg = Row::new()
+                            .push(Column::new().width(Length::Units(20)))
                             .push(Text::new("- Hole Tolerance:")
                                 .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_tolerance_hole_neg)
@@ -843,6 +853,7 @@ impl ToleranceEntry {
                             ;
 
                         let row_tolerance_pin_pos = Row::new()
+                            .push(Column::new().width(Length::Units(20)))
                             .push(Text::new("+ Pin Tolerance:")
                                 .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_tolerance_pin_pos)
@@ -851,6 +862,7 @@ impl ToleranceEntry {
                             ;
 
                         let row_tolerance_pin_neg = Row::new()
+                            .push(Column::new().width(Length::Units(20)))
                             .push(Text::new("- Pin Tolerance:")
                                 .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_tolerance_pin_neg)
@@ -859,6 +871,7 @@ impl ToleranceEntry {
                             ;
 
                         let row_sigma = Row::new()
+                            .push(Column::new().width(Length::Units(20)))
                             .push(Text::new("Sigma:")
                                 .size(iss.text_size(&iss.tol_edit_label_text_size)))
                             .push(view_sigma)
