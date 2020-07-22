@@ -62,13 +62,19 @@ Output
   - [ ] Save As
   - [X] Open
 - [ ] Scrollable calculation result area
-  - [ ] Add export results button on these result entries
-  - [ ] Save out results as CSV
+  - [ ] Add export results button on the result entries
+  - [ ] Save out selected results as CSV
   - [ ] Calculation progress
-- [ ] Implement RSS tolerance analysis
-- [ ] Implement worst case tolerance calculation
+- [ ] Analysis features
+  - [ ] Implement RSS tolerance analysis
+  - [ ] Implement worst case tolerance calculation
+  - [ ] Add distribution options
+    - [ ] `Linear`: Normal, Normal Clipped (OOS rejected), Normal Skewed, Flat
+    - [ ] `Float`: Reject connections with more than n units of interference
+  - [ ] Add unit selection (mm/in) on a per-tolerance and project basis
+  - [ ] Compute per-measurment sensitivity, display as absolute or percentage of total
+  - [ ] Compare calculation results side-by-side showing the full stack
 - [ ] Sidebar with multiple tolstacks in a project
-- [ ] Add `Float` distribultion type option (flat/normal)
 - [ ] Report number of `Float` tolerances that result in a diametric interference
 
 #### Long Term
