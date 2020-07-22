@@ -1,35 +1,37 @@
 # tolstack
 
-A cross-platform tolerance analysis application for building and analyzing one-dimensional geometric tolerance models. Targets Windows, MacOS, and Linux. Written in Rust, UI built with [iced](https://github.com/hecrj/iced). This is a learning project.
+A tolerance analysis application for building and analyzing 1D geometric tolerance models. The goal of this tool is to make tolerance stackup analysis simple and error-free.
 
 **Breaking changes in master**
 
 ![Screenshot](docs/screenshot.png)
-
-## Build Instructions
-
-1. Clone the repository.
-2. Install Rust via [Rustup](https://www.rust-lang.org/tools/install).
-3. From the root directory, run `cargo run --release` to build and launch the application with compiler optimizations.
 
 ## Features
 
 Tolerance Stack Model
 
 * `Linear`: Linear dimensions (point A to B with some tolerance)
-* `Float`: Single hole/pin pair (a part with one pin located in another part with one hole, with some tolerance on each dia)
+* `Float`: Represents a connection between parts with a hole/pin pair
 * Supports unequal bilateral tolerances (+0.2/-0.1)
 
 Analysis
 
 * Monte Carlo simulation
-* ~~RSS, worst case~~
+* Todo: ~~RSS, worst case~~
+* Todo: ~~Hole.pin connections in parallel
 
 Output
 
 * Auto saving
-* Manually save/load JSON project files - WIP UI support partially complete
-* ~~Export simulation output data to CSV for plotting~~ WIP UI support
+* WIP: Manually save/load JSON project files
+* Todo: ~~Export simulation output data to CSV for plotting~~
+* Todo: ~~Generate CSV report
+
+## Build Instructions
+
+1. Clone the repository.
+2. Install Rust via [Rustup](https://www.rust-lang.org/tools/install).
+3. From the root directory, run `cargo run --release` to build and launch the application with compiler optimizations.
 
 ## Todo
 
@@ -49,18 +51,25 @@ Output
 - [ ] Implement ribbon or menu bar
   - [ ] Autosave toggle
   - [ ] Save/Open project
-  - [ ] Export to CSV
+  - [ ] Export calculation data to CSV
+  - [ ] Generate CSV report
   - [ ] Zoom multiplier (apply to all values by storing in stylesheet?)
   - [ ] Dark/light mode
 - [X] Implement standardized styling
   - [X] Hot-reload via serde monitoring json file
 - [ ] Implement save/load dialog
-- [ ] Calculation result scrollable area showing results in progress and completed
+  - [ ] Save
+  - [ ] Save As
+  - [X] Open
+- [ ] Scrollable calculation result area
   - [ ] Add export results button on these result entries
   - [ ] Save out results as CSV
-  - [ ] Calculation progress bar
+  - [ ] Calculation progress
 - [ ] Implement RSS tolerance analysis
 - [ ] Implement worst case tolerance calculation
+- [ ] Sidebar with multiple tolstacks in a project
+- [ ] Add `Float` distribultion type option (flat/normal)
+- [ ] Report number of `Float` tolerances that result in a diametric interference
 
 #### Long Term
 
@@ -70,6 +79,7 @@ Output
   - [ ] Implement butt joints, pos/neg determine butt direction
 - [ ] Generate plots in GUI
 - [ ] Tolerance stack visualization
-- [ ] Make threading more intelligent, detect num_cpus, revisit perf
+- [ ] Make threading more intelligent, detect num_cpus, revisit perf, thread pooling?
 - [ ] Test coverage
 - [ ] Go 2D?
+- [ ] Constraint solver?
