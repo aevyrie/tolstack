@@ -18,14 +18,14 @@ Analysis
 
 * Monte Carlo simulation
 * Todo: ~~RSS, worst case~~
-* Todo: ~~Hole.pin connections in parallel
+* Todo: ~~Hole.pin connections in parallel~~
 
 Output
 
 * Auto saving
 * WIP: Manually save/load JSON project files
 * Todo: ~~Export simulation output data to CSV for plotting~~
-* Todo: ~~Generate CSV report
+* Todo: ~~Generate CSV report~~
 
 ## Build Instructions
 
