@@ -1,9 +1,8 @@
-use iced::{
-    button, text_input, Align, Button, Length, Element,
-    Row, Column, Text, TextInput, Command,
-};
-use crate::ui::{ style };
 use crate::analysis::*;
+use crate::ui::style;
+use iced::{
+    button, text_input, Align, Button, Column, Command, Element, Length, Row, Text, TextInput,
+};
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -27,14 +26,18 @@ impl NewMonteCarloAnalysis {
             Message::IterEdited(input) => {
                 if input.parse::<usize>().is_ok() {
                     let mut number = input.parse::<usize>().unwrap();
-                    if number < 100000 { number = 100000 };
+                    if number < 100000 {
+                        number = 100000
+                    };
                     self.n_iteration = number;
                 }
             }
             Message::SigmaEdited(input) => {
                 if input.parse::<f64>().is_ok() {
                     let mut number = input.parse::<f64>().unwrap();
-                    if number <= 1.0 { number = 1.0 };
+                    if number <= 1.0 {
+                        number = 1.0
+                    };
                     self.assy_sigma = number;
                 }
             }
@@ -51,46 +54,50 @@ impl NewMonteCarloAnalysis {
             state_input_iterations,
         } = self;
         let results_header = Column::new()
-            .push(Row::new()
-                .push(Text::new("Simulation Parameters")
-                    .size(24)
-                    .width(Length::Fill))
-                .align_items(Align::Center)
-                .width(Length::Fill)
-            )
-            .push(Row::new()
-                .push(Text::new("Iterations"))
-                .push(
-                    TextInput::new(
-                        state_input_iterations,
-                        "Enter a value...",
-                        &n_iteration.to_string(),
-                        Message::IterEdited,
+            .push(
+                Row::new()
+                    .push(
+                        Text::new("Simulation Parameters")
+                            .size(24)
+                            .width(Length::Fill),
                     )
-                    .padding(10)
-                )
-                .align_items(Align::Center)
-                .spacing(20)
+                    .align_items(Align::Center)
+                    .width(Length::Fill),
             )
-            .push(Row::new()
-                .push(Text::new("Assembly Sigma"))
-                .push(
-                    TextInput::new(
-                        state_input_assy_sigma,
-                        "Enter a value...",
-                        &assy_sigma.to_string(),
-                        Message::SigmaEdited,
+            .push(
+                Row::new()
+                    .push(Text::new("Iterations"))
+                    .push(
+                        TextInput::new(
+                            state_input_iterations,
+                            "Enter a value...",
+                            &n_iteration.to_string(),
+                            Message::IterEdited,
+                        )
+                        .padding(10),
                     )
-                    .padding(10)
-                )
-                .align_items(Align::Center)
-                .spacing(20)
+                    .align_items(Align::Center)
+                    .spacing(20),
             )
-            .push(Row::new()
-                .push(Column::new().width(Length::Fill))
-                .push(
-                    Button::new( 
-                        state_calculate_button, 
+            .push(
+                Row::new()
+                    .push(Text::new("Assembly Sigma"))
+                    .push(
+                        TextInput::new(
+                            state_input_assy_sigma,
+                            "Enter a value...",
+                            &assy_sigma.to_string(),
+                            Message::SigmaEdited,
+                        )
+                        .padding(10),
+                    )
+                    .align_items(Align::Center)
+                    .spacing(20),
+            )
+            .push(
+                Row::new().push(Column::new().width(Length::Fill)).push(
+                    Button::new(
+                        state_calculate_button,
                         Row::new()
                             .spacing(10)
                             //.push(icons::check())
@@ -98,8 +105,8 @@ impl NewMonteCarloAnalysis {
                     )
                     .style(iss.button(&iss.button_constructive))
                     .padding(10)
-                    .on_press(Message::Calculate)
-                )
+                    .on_press(Message::Calculate),
+                ),
             )
             .spacing(20);
 

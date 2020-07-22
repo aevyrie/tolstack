@@ -1,4 +1,4 @@
-use iced::{ Font, Text, HorizontalAlignment, Length };
+use iced::{Font, HorizontalAlignment, Length, Text};
 
 const ICONS: Font = Font::External {
     name: "Icons",

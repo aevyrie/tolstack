@@ -16,21 +16,21 @@ mod io {
     pub mod saved_state;
 }
 
-use ui::components::*;
 use io::saved_state::*;
+use ui::components::*;
 use ui::{style, style::*};
 
-use iced::{
-    Application, Column, Command, Container, Element, HorizontalAlignment, Length, Row, Settings, 
-    Text, Subscription, window,
-};
 use colored::*;
+use iced::{
+    window, Application, Column, Command, Container, Element, HorizontalAlignment, Length, Row,
+    Settings, Subscription, Text,
+};
 
 use std::path::{Path, PathBuf};
 
 fn main() {
     let mut settings = Settings::default();
-    settings.window = window::Settings{
+    settings.window = window::Settings {
         size: (1024, 768),
         resizable: true,
         decorations: true,
@@ -56,7 +56,7 @@ enum Message {
     HeaderMessage(area_header::Message),
     StackEditorMessage(area_stack_editor::Message),
     MonteCarloAnalysisMessage(area_mc_analysis::Message),
-    // 
+    //
     Loaded(Result<SavedState, io::saved_state::LoadError>),
     Saved(Result<(), io::saved_state::SaveError>),
     //
@@ -90,18 +90,30 @@ impl Application for TolStack {
         };
         let project_name = match self {
             TolStack::Loading => String::from("Loading..."),
-            TolStack::Loaded(state) => if state.header.title.text.len() == 0 {
-                String::from("New Project")
-            } else {
-                state.header.title.text.clone()
-            }};
+            TolStack::Loaded(state) => {
+                if state.header.title.text.len() == 0 {
+                    String::from("New Project")
+                } else {
+                    state.header.title.text.clone()
+                }
+            }
+        };
 
-        format!("{}{} - TolStack Tolerance Analysis", project_name, if dirty { "*" } else { "" })
+        format!(
+            "{}{} - TolStack Tolerance Analysis",
+            project_name,
+            if dirty { "*" } else { "" }
+        )
     }
 
     // Update logic - how to react to messages sent through the application
     fn update(&mut self, message: Message) -> Command<Message> {
-        println!("\n\n{}{}\n{:#?}", chrono::offset::Local::now(), " MESSAGE RECEIVED:".yellow(), message);
+        println!(
+            "\n\n{}{}\n{:#?}",
+            chrono::offset::Local::now(),
+            " MESSAGE RECEIVED:".yellow(),
+            message
+        );
         match self {
             TolStack::Loading => {
                 match message {
@@ -114,13 +126,14 @@ impl Application for TolStack {
                                 .set_inputs(state.n_iteration, state.assy_sigma),
                             ..State::default()
                         });
-                        return Command::perform(style::IcedStyleSheet::load(), Message::LoadedStyle)
+                        return Command::perform(
+                            style::IcedStyleSheet::load(),
+                            Message::LoadedStyle,
+                        );
                     }
 
                     Message::Loaded(Err(_)) => {
-                        *self = TolStack::Loaded(State {
-                            ..State::default()
-                        });
+                        *self = TolStack::Loaded(State { ..State::default() });
                     }
                     _ => {}
                 }
@@ -132,60 +145,66 @@ impl Application for TolStack {
                 let mut saved = false;
 
                 match message {
-
                     Message::HeaderMessage(area_header::Message::OpenFile) => {
                         return Command::perform(SavedState::open(), Message::Loaded)
                     }
 
-                    Message::HeaderMessage(message) => {
-                        state.header.update(message)
-                    }
+                    Message::HeaderMessage(message) => state.header.update(message),
 
-                    Message::StackEditorMessage(message) => {
-                        state.stack_editor.update(message)
-                    }
-                    
+                    Message::StackEditorMessage(message) => state.stack_editor.update(message),
+
                     Message::MonteCarloAnalysisMessage(
                         area_mc_analysis::Message::NewMcAnalysisMessage(
-                            form_new_mc_analysis::Message::Calculate
-                        )
+                            form_new_mc_analysis::Message::Calculate,
+                        ),
                     ) => {
                         // Clone the contents of the stack editor tolerance list into the monte
                         // carlo simulation's input tolerance list.
-                        state.monte_carlo_analysis.input_stack = state.stack_editor.tolerances.clone();
+                        state.monte_carlo_analysis.input_stack =
+                            state.stack_editor.tolerances.clone();
                         // Pass this message into the child so the computation gets kicked off.
                         let calculate_message = area_mc_analysis::Message::NewMcAnalysisMessage(
-                            form_new_mc_analysis::Message::Calculate
+                            form_new_mc_analysis::Message::Calculate,
                         );
-                        return state.monte_carlo_analysis.update(calculate_message)
-                            .map( move |message| { Message::MonteCarloAnalysisMessage(message) })
+                        return state
+                            .monte_carlo_analysis
+                            .update(calculate_message)
+                            .map(move |message| Message::MonteCarloAnalysisMessage(message));
                     }
 
                     Message::MonteCarloAnalysisMessage(message) => {
                         // TODO collect commands and run at end instead of breaking at match arm.
-                        return state.monte_carlo_analysis.update(message)
-                            .map( move |message| { Message::MonteCarloAnalysisMessage(message) })
+                        return state
+                            .monte_carlo_analysis
+                            .update(message)
+                            .map(move |message| Message::MonteCarloAnalysisMessage(message));
                     }
 
                     Message::StyleUpdateAvailable(_) => {
-                        return Command::perform(style::IcedStyleSheet::load(), Message::LoadedStyle)
+                        return Command::perform(
+                            style::IcedStyleSheet::load(),
+                            Message::LoadedStyle,
+                        )
                     }
 
                     Message::LoadedStyle(Ok(iss)) => {
                         state.iss = iss;
                     }
 
-                    Message::LoadedStyle(Err(style::LoadError::FormatError)) => {
-                        println!("\n\n{}{}", chrono::offset::Local::now(), " Error loading style file".red())
-                    }
+                    Message::LoadedStyle(Err(style::LoadError::FormatError)) => println!(
+                        "\n\n{}{}",
+                        chrono::offset::Local::now(),
+                        " Error loading style file".red()
+                    ),
 
                     Message::LoadedStyle(Err(style::LoadError::FileError)) => {
-                        return Command::perform(style::IcedStyleSheet::save(state.iss.clone()), Message::StyleSaved)
+                        return Command::perform(
+                            style::IcedStyleSheet::save(state.iss.clone()),
+                            Message::StyleSaved,
+                        )
                     }
 
-                    Message::StyleSaved(_) => {
-
-                    }
+                    Message::StyleSaved(_) => {}
 
                     Message::Saved(_) => {
                         state.saving = false;
@@ -202,12 +221,16 @@ impl Application for TolStack {
                         };
                     }
 
-                    Message::Loaded(Err(_)) => {
-                        println!("\n\n{}{}", chrono::offset::Local::now(), " Error loading save file".red())
-                    }
+                    Message::Loaded(Err(_)) => println!(
+                        "\n\n{}{}",
+                        chrono::offset::Local::now(),
+                        " Error loading save file".red()
+                    ),
                 }
 
-                if !saved { state.dirty = true }
+                if !saved {
+                    state.dirty = true
+                }
 
                 if state.dirty && !state.saving {
                     state.dirty = false;
@@ -240,9 +263,7 @@ impl Application for TolStack {
                 monte_carlo_analysis: _,
                 dirty: _,
                 saving: _,
-            }) => {
-                iss.check_style_file().map(Message::StyleUpdateAvailable)
-            }
+            }) => iss.check_style_file().map(Message::StyleUpdateAvailable),
         }
     }
 
@@ -258,26 +279,26 @@ impl Application for TolStack {
                 dirty: _,
                 saving: _,
             }) => {
-                let header = header.view(&iss)
-                    .map( move |message| { Message::HeaderMessage(message) });
-                
-                let stack_editor = stack_editor.view(&iss)
-                    .map( move |message| { Message::StackEditorMessage(message) });
-                
-                let monte_carlo_analysis = monte_carlo_analysis.view(&iss)
-                    .map( move |message| { Message::MonteCarloAnalysisMessage(message) });
-                
+                let header = header
+                    .view(&iss)
+                    .map(move |message| Message::HeaderMessage(message));
+
+                let stack_editor = stack_editor
+                    .view(&iss)
+                    .map(move |message| Message::StackEditorMessage(message));
+
+                let monte_carlo_analysis = monte_carlo_analysis
+                    .view(&iss)
+                    .map(move |message| Message::MonteCarloAnalysisMessage(message));
+
                 let gui = Container::new(
                     Column::new()
                         .push(header)
-                        .push(Row::new()
-                            .push(stack_editor)
-                            .push(monte_carlo_analysis)
-                        )
-                        .padding(iss.padding(&iss.home_padding))
-                    )
-                    .style(iss.container(&iss.home_container));
-                    
+                        .push(Row::new().push(stack_editor).push(monte_carlo_analysis))
+                        .padding(iss.padding(&iss.home_padding)),
+                )
+                .style(iss.container(&iss.home_container));
+
                 //debug:
                 //let gui = gui.explain(Color::BLACK);
 

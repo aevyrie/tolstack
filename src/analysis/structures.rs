@@ -2,17 +2,17 @@
 use serde_derive::*;
 
 #[derive(Copy, Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
-pub struct DimTol{
+pub struct DimTol {
     pub dim: f64,
     pub tol_pos: f64,
     pub tol_neg: f64,
     pub tol_multiplier: f64,
     pub sigma: f64,
 }
-impl DimTol{
+impl DimTol {
     pub fn new(dim: f64, tol_pos: f64, tol_neg: f64, sigma: f64) -> Self {
         let tol_multiplier: f64 = (tol_pos + tol_neg) / 2.0 / sigma;
-        DimTol{
+        DimTol {
             dim,
             tol_pos,
             tol_neg,
@@ -23,7 +23,7 @@ impl DimTol{
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
-pub enum Tolerance{
+pub enum Tolerance {
     Linear(LinearTL),
     Float(FloatTL),
     //Compound(CompoundFloatTL),
@@ -38,14 +38,11 @@ impl Default for Tolerance {
 pub struct LinearTL {
     pub distance: DimTol,
 }
-impl  LinearTL {
+impl LinearTL {
     pub fn new(distance: DimTol) -> Self {
-        LinearTL {
-            distance,
-        }
+        LinearTL { distance }
     }
 }
-
 
 #[derive(Copy, Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
 pub struct FloatTL {
@@ -53,13 +50,9 @@ pub struct FloatTL {
     pub pin: DimTol,
     pub sigma: f64,
 }
-impl  FloatTL {
+impl FloatTL {
     pub fn new(hole: DimTol, pin: DimTol, sigma: f64) -> Self {
-        FloatTL {
-            hole,
-            pin,
-            sigma,
-        }
+        FloatTL { hole, pin, sigma }
     }
 }
 
@@ -70,9 +63,14 @@ pub struct CompoundFloatTL {
     pub float_list: OffsetFloat,
     pub sigma: f64,
 }
-impl  CompoundFloatTL {
-    pub fn new(datumtime_start: DimTol, datumend: DimTol, floatlist: OffsetFloat, sigma: f64) -> Self {
-        CompoundFloatTL{
+impl CompoundFloatTL {
+    pub fn new(
+        datumtime_start: DimTol,
+        datumend: DimTol,
+        floatlist: OffsetFloat,
+        sigma: f64,
+    ) -> Self {
+        CompoundFloatTL {
             datum_start: datumtime_start,
             datum_end: datumend,
             float_list: floatlist,
@@ -88,7 +86,7 @@ pub struct OffsetFloat {
     pub hole_spacing: DimTol,
     pub pin_spacing: DimTol,
 }
-impl  OffsetFloat {
+impl OffsetFloat {
     pub fn new(hole: DimTol, pin: DimTol, hole_spacing: DimTol, pin_spacing: DimTol) -> Self {
         OffsetFloat {
             hole,

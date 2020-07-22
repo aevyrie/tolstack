@@ -1,10 +1,8 @@
+use crate::analysis::structures::*;
+use crate::ui::style;
 use iced::{
-    button, text_input, Align, Button, HorizontalAlignment, Length, Element,
-    Row, Column, Text, TextInput, Command,
-};
-use crate::ui::{ style };
-use crate::analysis::{
-    structures::*,
+    button, text_input, Align, Button, Column, Command, Element, HorizontalAlignment, Length, Row,
+    Text, TextInput,
 };
 
 #[derive(Debug, Clone)]
@@ -32,10 +30,9 @@ impl NewToleranceEntry {
             Message::TolNameChanged(value) => {
                 self.tolerance_text_value = value;
             }
-            Message::CreateTol(_,_) => {
+            Message::CreateTol(_, _) => {
                 self.tolerance_text_value.clear();
             }
-
         }
         Command::none()
     }
@@ -50,52 +47,61 @@ impl NewToleranceEntry {
         } = self;
 
         let tolerance_label = Text::new("Add Tolerance")
-                    .width(Length::Fill)
-                    .size(24)
-                    .horizontal_alignment(HorizontalAlignment::Left);
+            .width(Length::Fill)
+            .size(24)
+            .horizontal_alignment(HorizontalAlignment::Left);
         let tolerance_text = TextInput::new(
             state_tolerance_text,
             "Tolerance name, press enter to add.",
             tolerance_text_value,
             Message::TolNameChanged,
-            )
-            .padding(10)
-            .on_submit(Message::CreateTol(tolerance_text_value.clone(), tolerance_type.clone()));
+        )
+        .padding(10)
+        .on_submit(Message::CreateTol(
+            tolerance_text_value.clone(),
+            tolerance_type.clone(),
+        ));
 
         let button = |state, label, tolerance: Tolerance, current_tol: Tolerance| {
             let label = Text::new(label).size(18);
-            let button =
-                Button::new(state, label).style(style::Button::Choice {
-                    selected: tolerance == current_tol,
-                });
+            let button = Button::new(state, label).style(style::Button::Choice {
+                selected: tolerance == current_tol,
+            });
 
-            button.on_press(Message::TolTypeChanged(tolerance)).padding(8)
+            button
+                .on_press(Message::TolTypeChanged(tolerance))
+                .padding(8)
         };
 
-        Row::new().push(Column::new()
-            .push(Row::new()
-                .spacing(20)
-                .align_items(Align::Center)
-                .push(tolerance_label)
-                .push(Row::new()
-                    .width(Length::Shrink)
-                    .spacing(10)
-                    .push(button(
-                        state_linear_button,
-                        "Linear",
-                        Tolerance::Linear(LinearTL::default()),
-                        self.tolerance_type,
-                    ))
-                    .push(button(
-                        state_float_button,
-                        "Float",
-                        Tolerance::Float(FloatTL::default()),
-                        self.tolerance_type,
-                    ))
-                )
+        Row::new()
+            .push(
+                Column::new()
+                    .push(
+                        Row::new()
+                            .spacing(20)
+                            .align_items(Align::Center)
+                            .push(tolerance_label)
+                            .push(
+                                Row::new()
+                                    .width(Length::Shrink)
+                                    .spacing(10)
+                                    .push(button(
+                                        state_linear_button,
+                                        "Linear",
+                                        Tolerance::Linear(LinearTL::default()),
+                                        self.tolerance_type,
+                                    ))
+                                    .push(button(
+                                        state_float_button,
+                                        "Float",
+                                        Tolerance::Float(FloatTL::default()),
+                                        self.tolerance_type,
+                                    )),
+                            ),
+                    )
+                    .push(tolerance_text)
+                    .spacing(10),
             )
-            .push(tolerance_text)
-            .spacing(10)
-        ).into()
+            .into()
     }
 }

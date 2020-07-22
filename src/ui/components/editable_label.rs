@@ -1,18 +1,14 @@
-use serde_derive::*;
+use crate::ui::{icons, style};
 use iced::{
-    button, text_input, Align, Button, Container, Element, HorizontalAlignment, Length,
-    Row, Text, TextInput,
+    button, text_input, Align, Button, Container, Element, HorizontalAlignment, Length, Row, Text,
+    TextInput,
 };
-use crate::ui::{ style, icons };
+use serde_derive::*;
 
 #[derive(Debug, Clone)]
 pub enum State {
-    Idle {
-        edit_button: button::State,
-    },
-    Editing {
-        text_input: text_input::State,
-    },
+    Idle { edit_button: button::State },
+    Editing { text_input: text_input::State },
 }
 impl Default for State {
     fn default() -> Self {
@@ -37,7 +33,7 @@ pub struct EditableLabel {
     state: State,
 }
 impl EditableLabel {
-    pub fn new<T: Into<String>,U: Into<String>>(text: T, placeholder: U) -> Self {
+    pub fn new<T: Into<String>, U: Into<String>>(text: T, placeholder: U) -> Self {
         EditableLabel {
             text: text.into(),
             placeholder: placeholder.into(),
@@ -87,12 +83,9 @@ impl EditableLabel {
                             .style(style::Button::Icon),
                     );
 
-                Container::new(row_contents)
-                    .into()
+                Container::new(row_contents).into()
             }
-            State::Editing {
-                text_input,
-            } => {
+            State::Editing { text_input } => {
                 let text_input = TextInput::new(
                     text_input,
                     &self.placeholder,
@@ -101,15 +94,14 @@ impl EditableLabel {
                 )
                 .on_submit(Message::FinishEditing)
                 .padding(10)
-                .width(Length::Fill);   
+                .width(Length::Fill);
 
                 let row_contents = Row::new()
                     .padding(10)
                     .spacing(20)
                     .align_items(Align::Center)
                     .push(text_input);
-                Container::new(row_contents)
-                    .into()
+                Container::new(row_contents).into()
             }
         }
     }
@@ -123,4 +115,3 @@ impl Default for EditableLabel {
         }
     }
 }
-

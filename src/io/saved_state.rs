@@ -1,5 +1,5 @@
-use crate::ui::components::entry_tolerance::ToleranceEntry;
 use super::dialogs;
+use crate::ui::components::entry_tolerance::ToleranceEntry;
 use serde_derive::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -27,13 +27,12 @@ pub enum SaveError {
 #[cfg(not(target_arch = "wasm32"))]
 impl SavedState {
     fn path() -> std::path::PathBuf {
-        let mut path = if let Some(project_dirs) =
-            directories::ProjectDirs::from("rs", "", "TolStack")
-        {
-            project_dirs.data_dir().into()
-        } else {
-            std::env::current_dir().unwrap_or(std::path::PathBuf::new())
-        };
+        let mut path =
+            if let Some(project_dirs) = directories::ProjectDirs::from("rs", "", "TolStack") {
+                project_dirs.data_dir().into()
+            } else {
+                std::env::current_dir().unwrap_or(std::path::PathBuf::new())
+            };
 
         path.push("tolstack.json");
 
@@ -58,8 +57,7 @@ impl SavedState {
 
     pub async fn save(self) -> Result<(), SaveError> {
         use async_std::prelude::*;
-        let json = serde_json::to_string_pretty(&self)
-            .map_err(|_| SaveError::FormatError)?;
+        let json = serde_json::to_string_pretty(&self).map_err(|_| SaveError::FormatError)?;
         let path = Self::path();
         if let Some(dir) = path.parent() {
             async_std::fs::create_dir_all(dir)
@@ -81,14 +79,12 @@ impl SavedState {
         Ok(())
     }
 
-    
-
     pub async fn open() -> Result<SavedState, LoadError> {
         let path = match dialogs::open().await {
             Ok(path) => path,
             Err(error) => {
                 println!("{:?}", error);
-                return Err(LoadError::FileError)
+                return Err(LoadError::FileError);
             }
         };
 

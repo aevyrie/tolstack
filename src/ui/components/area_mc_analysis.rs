@@ -1,8 +1,6 @@
-use iced::{
-    Container, Element, Length, Row, Text, Column, Command,
-};
-use crate::ui::{ style, components::* };
 use crate::analysis::monte_carlo;
+use crate::ui::{components::*, style};
+use iced::{Column, Command, Container, Element, Length, Row, Text};
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -17,7 +15,6 @@ pub struct MonteCarloAnalysis {
     pub input_stack: Vec<entry_tolerance::ToleranceEntry>,
 }
 impl MonteCarloAnalysis {
-
     pub fn new() -> Self {
         MonteCarloAnalysis::default()
     }
@@ -32,74 +29,82 @@ impl MonteCarloAnalysis {
                 let simulation_input = self.build_stack();
                 if let Some(stack) = simulation_input {
                     return Command::perform(
-                        MonteCarloAnalysis::compute(stack), Message::CalculateComplete
-                    )
+                        MonteCarloAnalysis::compute(stack),
+                        Message::CalculateComplete,
+                    );
                 }
             }
             Message::NewMcAnalysisMessage(message) => {
                 entry_form.update(message);
             }
-            Message::CalculateComplete(result) => {
-                match result {
-                    Some(result) => simulation.results = result,
-                    None => {}
-                }
-            }
+            Message::CalculateComplete(result) => match result {
+                Some(result) => simulation.results = result,
+                None => {}
+            },
         }
         Command::none()
     }
-    pub fn  view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
+    pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
         let MonteCarloAnalysis {
             entry_form,
             simulation,
             input_stack,
         } = self;
         let results_body = Column::new()
-            .push(Row::new()
-                .push(Text::new("Mean:"))
-                .push(Text::new(format!("{:.3}",simulation.results.mean)))
-                .spacing(iss.spacing(&iss.mc_results_row_spacing))
+            .push(
+                Row::new()
+                    .push(Text::new("Mean:"))
+                    .push(Text::new(format!("{:.3}", simulation.results.mean)))
+                    .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
-            .push(Row::new()
-                .push(Text::new("Tolerance:"))
-                .push(Text::new(format!("{:.3}",simulation.results.tolerance)))
-                .spacing(iss.spacing(&iss.mc_results_row_spacing))
+            .push(
+                Row::new()
+                    .push(Text::new("Tolerance:"))
+                    .push(Text::new(format!("{:.3}", simulation.results.tolerance)))
+                    .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
-            .push(Row::new()
-                .push(Text::new("Standard Deviation:"))
-                .push(Text::new(format!("{:.3}",simulation.results.stddev)))
-                .spacing(iss.spacing(&iss.mc_results_row_spacing))
+            .push(
+                Row::new()
+                    .push(Text::new("Standard Deviation:"))
+                    .push(Text::new(format!("{:.3}", simulation.results.stddev)))
+                    .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
-            .push(Row::new()
-                .push(Text::new("Iterations:"))
-                .push(Text::new(format!("{}",simulation.results.iterations)))
-                .spacing(iss.spacing(&iss.mc_results_row_spacing))
+            .push(
+                Row::new()
+                    .push(Text::new("Iterations:"))
+                    .push(Text::new(format!("{}", simulation.results.iterations)))
+                    .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
             .spacing(iss.spacing(&iss.mc_results_col_spacing));
 
-        let results_summary = Container::new(Column::new()
-                .push(entry_form.view(&iss)
-                    .map( move |message| { Message::NewMcAnalysisMessage(message) })
+        let results_summary = Container::new(
+            Column::new()
+                .push(
+                    entry_form
+                        .view(&iss)
+                        .map(move |message| Message::NewMcAnalysisMessage(message)),
                 )
                 .push(results_body)
                 .height(Length::Fill)
-                .spacing(iss.spacing(&iss.mc_results_col_spacing))
-            )
-            .padding(10);
+                .spacing(iss.spacing(&iss.mc_results_col_spacing)),
+        )
+        .padding(10);
 
         let tol_chain_output = Column::new()
-            .push(Container::new(Container::new(results_summary)
-                    .style(iss.container(&iss.panel_container))
-                    .padding(iss.padding(&iss.mc_results_container_inner_padding))
-                    .height(Length::Fill)
+            .push(
+                Container::new(
+                    Container::new(results_summary)
+                        .style(iss.container(&iss.panel_container))
+                        .padding(iss.padding(&iss.mc_results_container_inner_padding))
+                        .height(Length::Fill),
                 )
                 .padding(iss.padding(&iss.mc_results_container_outer_padding))
                 .height(Length::Fill)
-                .center_x()
+                .center_x(),
             )
             .height(Length::Fill)
             .width(Length::FillPortion(2));
-        
+
         tol_chain_output.into()
     }
 
@@ -112,19 +117,21 @@ impl MonteCarloAnalysis {
         // Make sure all active entries are valid
         let mut valid = true;
         for entry in &self.input_stack {
-            if entry.active && !entry.valid { 
+            if entry.active && !entry.valid {
                 valid = false;
             }
         }
         // Build the tolerance stack
         if valid {
             for entry in &self.input_stack {
-                if entry.active { self.simulation.add(entry.analysis_model.clone()) }
+                if entry.active {
+                    self.simulation.add(entry.analysis_model.clone())
+                }
             }
             Some(self.simulation.clone())
         } else {
             None
-        }      
+        }
     }
 
     /// Takes a monte carlo simulatio state, constructs a new tolerance model, and runs the simulation
@@ -136,10 +143,10 @@ impl MonteCarloAnalysis {
         let result = monte_carlo::run(&simulation).await.unwrap();
         let duration = time_start.elapsed();
         println!("Simulation Duration: {:.3?}", duration,);
-        //println!("Result: {:.3} +/- {:.3}; Stddev: {:.3};\nSamples: {}; Duration: {:.3?}", 
-        //    simulation.results.mean, 
-        //    simulation.results.tolerance, 
-        //    simulation.results.stddev, 
+        //println!("Result: {:.3} +/- {:.3}; Stddev: {:.3};\nSamples: {}; Duration: {:.3?}",
+        //    simulation.results.mean,
+        //    simulation.results.tolerance,
+        //    simulation.results.stddev,
         //    simulation.results.iterations,
         //    duration,
         //);

@@ -1,11 +1,11 @@
-use iced::{button, container, Background, Color, Vector, Subscription, futures};
-use std::time::Instant;
-use std::path::{Path, PathBuf};
-use std::collections::HashMap;
-use serde_derive::*;
-use notify::{RecommendedWatcher, RecursiveMode, Watcher};
-use colored::*;
 use chrono;
+use colored::*;
+use iced::{button, container, futures, Background, Color, Subscription, Vector};
+use notify::{RecommendedWatcher, RecursiveMode, Watcher};
+use serde_derive::*;
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
+use std::time::Instant;
 
 #[derive(Debug, Clone)]
 pub enum LoadError {
@@ -22,11 +22,16 @@ pub enum SaveError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SerializableColor { r: u8, g: u8, b: u8, a: f32 }
+pub struct SerializableColor {
+    r: u8,
+    g: u8,
+    b: u8,
+    a: f32,
+}
 
 impl SerializableColor {
     fn from_rgba(r: u8, g: u8, b: u8, a: f32) -> Self {
-        SerializableColor{r, b, g, a}
+        SerializableColor { r, b, g, a }
     }
 }
 
@@ -35,8 +40,12 @@ pub struct NamedColor(String);
 impl Named for NamedColor {
     type List = ColorList;
     type NamedItem = NamedColor;
-    fn new_unvalidated(name: &str) -> Self { NamedColor(name.to_string()) }
-    fn name(&self) -> &str { &self.0 }
+    fn new_unvalidated(name: &str) -> Self {
+        NamedColor(name.to_string())
+    }
+    fn name(&self) -> &str {
+        &self.0
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -44,8 +53,12 @@ pub struct NamedRadius(String);
 impl Named for NamedRadius {
     type List = RadiusList;
     type NamedItem = NamedRadius;
-    fn new_unvalidated(name: &str) -> Self { NamedRadius(name.to_string()) }
-    fn name(&self) -> &str { &self.0 }
+    fn new_unvalidated(name: &str) -> Self {
+        NamedRadius(name.to_string())
+    }
+    fn name(&self) -> &str {
+        &self.0
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -53,8 +66,12 @@ pub struct NamedWidth(String);
 impl Named for NamedWidth {
     type List = WidthList;
     type NamedItem = NamedWidth;
-    fn new_unvalidated(name: &str) -> Self { NamedWidth(name.to_string()) }
-    fn name(&self) -> &str { &self.0 }
+    fn new_unvalidated(name: &str) -> Self {
+        NamedWidth(name.to_string())
+    }
+    fn name(&self) -> &str {
+        &self.0
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -62,8 +79,12 @@ pub struct NamedTextSize(String);
 impl Named for NamedTextSize {
     type List = TextSizeList;
     type NamedItem = NamedTextSize;
-    fn new_unvalidated(name: &str) -> Self { NamedTextSize(name.to_string()) }
-    fn name(&self) -> &str { &self.0 }
+    fn new_unvalidated(name: &str) -> Self {
+        NamedTextSize(name.to_string())
+    }
+    fn name(&self) -> &str {
+        &self.0
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -71,8 +92,12 @@ pub struct NamedPadding(String);
 impl Named for NamedPadding {
     type List = PaddingList;
     type NamedItem = NamedPadding;
-    fn new_unvalidated(name: &str) -> Self { NamedPadding(name.to_string()) }
-    fn name(&self) -> &str { &self.0 }
+    fn new_unvalidated(name: &str) -> Self {
+        NamedPadding(name.to_string())
+    }
+    fn name(&self) -> &str {
+        &self.0
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -80,8 +105,12 @@ pub struct NamedSpacing(String);
 impl Named for NamedSpacing {
     type List = SpacingList;
     type NamedItem = NamedSpacing;
-    fn new_unvalidated(name: &str) -> Self { NamedSpacing(name.to_string()) }
-    fn name(&self) -> &str { &self.0 }
+    fn new_unvalidated(name: &str) -> Self {
+        NamedSpacing(name.to_string())
+    }
+    fn name(&self) -> &str {
+        &self.0
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -89,10 +118,13 @@ pub struct NamedVector(String);
 impl Named for NamedVector {
     type List = VectorList;
     type NamedItem = NamedVector;
-    fn new_unvalidated(name: &str) -> Self { NamedVector(name.to_string()) }
-    fn name(&self) -> &str { &self.0 }
+    fn new_unvalidated(name: &str) -> Self {
+        NamedVector(name.to_string())
+    }
+    fn name(&self) -> &str {
+        &self.0
+    }
 }
-
 
 pub trait Named {
     type List: NamedList;
@@ -103,7 +135,11 @@ pub trait Named {
         if list.is_valid_name(&unvalidated) {
             return unvalidated;
         } else {
-            panic!("{:?} '{}' failed validation", std::any::type_name::<Self>(), name);
+            panic!(
+                "{:?} '{}' failed validation",
+                std::any::type_name::<Self>(),
+                name
+            );
         }
     }
     fn new_unvalidated(name: &str) -> Self;
@@ -121,43 +157,50 @@ pub trait NamedList {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ColorList { map: HashMap<String, SerializableColor> }
+pub struct ColorList {
+    map: HashMap<String, SerializableColor>,
+}
 impl NamedList for ColorList {
     type NamedItem = NamedColor;
     type Value = Color;
     type Stored = SerializableColor;
 
     fn new() -> Self {
-        ColorList{ map: HashMap::new() }
+        ColorList {
+            map: HashMap::new(),
+        }
     }
 
     fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
         match self.map.get(&lookup.0) {
             Some(color) => Color::from_rgba8(color.r, color.g, color.b, color.a),
-            None => Color::from_rgb(1.0,0.0,1.0),
+            None => Color::from_rgb(1.0, 0.0, 1.0),
         }
     }
 
-    fn is_valid_name<T:Named>(&self, lookup: &T) -> bool {
+    fn is_valid_name<T: Named>(&self, lookup: &T) -> bool {
         self.map.contains_key(lookup.name())
     }
 
     fn add(&mut self, name: &str, value: Self::Stored) -> Self {
         self.map.insert(name.to_string(), value);
         self.clone()
-
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RadiusList { map: HashMap<String, u16> }
+pub struct RadiusList {
+    map: HashMap<String, u16>,
+}
 impl NamedList for RadiusList {
     type NamedItem = NamedRadius;
     type Value = u16;
     type Stored = u16;
 
     fn new() -> Self {
-        RadiusList{ map: HashMap::new() }
+        RadiusList {
+            map: HashMap::new(),
+        }
     }
 
     fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
@@ -167,7 +210,7 @@ impl NamedList for RadiusList {
         }
     }
 
-    fn is_valid_name<T:Named>(&self, lookup: &T) -> bool {
+    fn is_valid_name<T: Named>(&self, lookup: &T) -> bool {
         self.map.contains_key(lookup.name())
     }
 
@@ -178,14 +221,18 @@ impl NamedList for RadiusList {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct WidthList { map: HashMap<String, u16> }
+pub struct WidthList {
+    map: HashMap<String, u16>,
+}
 impl NamedList for WidthList {
     type NamedItem = NamedWidth;
     type Value = u16;
     type Stored = u16;
 
     fn new() -> Self {
-        WidthList{ map: HashMap::new() }
+        WidthList {
+            map: HashMap::new(),
+        }
     }
 
     fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
@@ -195,7 +242,7 @@ impl NamedList for WidthList {
         }
     }
 
-    fn is_valid_name<T:Named>(&self, lookup: &T) -> bool {
+    fn is_valid_name<T: Named>(&self, lookup: &T) -> bool {
         self.map.contains_key(lookup.name())
     }
 
@@ -206,14 +253,18 @@ impl NamedList for WidthList {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TextSizeList { map: HashMap<String, u16> }
+pub struct TextSizeList {
+    map: HashMap<String, u16>,
+}
 impl NamedList for TextSizeList {
     type NamedItem = NamedTextSize;
     type Value = u16;
     type Stored = u16;
 
     fn new() -> Self {
-        TextSizeList{ map: HashMap::new() }
+        TextSizeList {
+            map: HashMap::new(),
+        }
     }
 
     fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
@@ -223,7 +274,7 @@ impl NamedList for TextSizeList {
         }
     }
 
-    fn is_valid_name<T:Named>(&self, lookup: &T) -> bool {
+    fn is_valid_name<T: Named>(&self, lookup: &T) -> bool {
         self.map.contains_key(lookup.name())
     }
 
@@ -234,14 +285,18 @@ impl NamedList for TextSizeList {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PaddingList { map: HashMap<String, u16> }
+pub struct PaddingList {
+    map: HashMap<String, u16>,
+}
 impl NamedList for PaddingList {
     type NamedItem = NamedPadding;
     type Value = u16;
     type Stored = u16;
 
     fn new() -> Self {
-        Self{ map: HashMap::new() }
+        Self {
+            map: HashMap::new(),
+        }
     }
 
     fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
@@ -251,7 +306,7 @@ impl NamedList for PaddingList {
         }
     }
 
-    fn is_valid_name<T:Named>(&self, lookup: &T) -> bool {
+    fn is_valid_name<T: Named>(&self, lookup: &T) -> bool {
         self.map.contains_key(lookup.name())
     }
 
@@ -262,14 +317,18 @@ impl NamedList for PaddingList {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SpacingList { map: HashMap<String, u16> }
+pub struct SpacingList {
+    map: HashMap<String, u16>,
+}
 impl NamedList for SpacingList {
     type NamedItem = NamedSpacing;
     type Value = u16;
     type Stored = u16;
 
     fn new() -> Self {
-        Self{ map: HashMap::new() }
+        Self {
+            map: HashMap::new(),
+        }
     }
 
     fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
@@ -279,7 +338,7 @@ impl NamedList for SpacingList {
         }
     }
 
-    fn is_valid_name<T:Named>(&self, lookup: &T) -> bool {
+    fn is_valid_name<T: Named>(&self, lookup: &T) -> bool {
         self.map.contains_key(lookup.name())
     }
 
@@ -290,14 +349,18 @@ impl NamedList for SpacingList {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct VectorList { map: HashMap<String, (f32, f32)> }
+pub struct VectorList {
+    map: HashMap<String, (f32, f32)>,
+}
 impl NamedList for VectorList {
     type NamedItem = NamedVector;
     type Value = (f32, f32);
     type Stored = (f32, f32);
 
     fn new() -> Self {
-        Self{ map: HashMap::new() }
+        Self {
+            map: HashMap::new(),
+        }
     }
 
     fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
@@ -307,7 +370,7 @@ impl NamedList for VectorList {
         }
     }
 
-    fn is_valid_name<T:Named>(&self, lookup: &T) -> bool {
+    fn is_valid_name<T: Named>(&self, lookup: &T) -> bool {
         self.map.contains_key(lookup.name())
     }
 
@@ -323,7 +386,7 @@ pub struct StyledContainer {
     background: NamedColor,
     border_color: NamedColor,
     border_radius: NamedRadius,
-    border_width: NamedWidth
+    border_width: NamedWidth,
 }
 
 pub struct IcedContainerStyle {
@@ -335,7 +398,7 @@ pub struct IcedContainerStyle {
 }
 impl container::StyleSheet for IcedContainerStyle {
     fn style(&self) -> container::Style {
-        iced::container::Style{
+        iced::container::Style {
             text_color: self.text_color,
             background: self.background,
             border_color: self.border_color,
@@ -346,7 +409,7 @@ impl container::StyleSheet for IcedContainerStyle {
 }
 impl IcedContainerStyle {
     pub fn new(container: &StyledContainer, iss: &IcedStyleSheet) -> Self {
-        IcedContainerStyle{
+        IcedContainerStyle {
             text_color: Some(iss.color.resolve(&container.text_color)),
             background: Some(Background::Color(iss.color.resolve(&container.background))),
             border_color: iss.color.resolve(&container.border_color),
@@ -397,7 +460,7 @@ impl button::StyleSheet for IcedButtonStyle {
             text_color: self.active_text_color,
         }
     }
-    
+
     fn hovered(&self) -> button::Style {
         let active = self.active();
         button::Style {
@@ -416,15 +479,19 @@ impl IcedButtonStyle {
         let y_a = iss.vector.resolve(&button.active_shadow_offset).1;
         let x_h = iss.vector.resolve(&button.hover_shadow_offset).0;
         let y_h = iss.vector.resolve(&button.hover_shadow_offset).1;
-        IcedButtonStyle{
+        IcedButtonStyle {
             active_shadow_offset: Vector::new(x_a, y_a),
-            active_background: Some(Background::Color(iss.color.resolve(&button.active_background))),
+            active_background: Some(Background::Color(
+                iss.color.resolve(&button.active_background),
+            )),
             active_border_radius: iss.radius.resolve(&button.active_border_radius),
             active_border_width: iss.width.resolve(&button.active_border_width),
             active_border_color: iss.color.resolve(&button.active_border_color),
             active_text_color: iss.color.resolve(&button.active_text_color),
             hover_shadow_offset: Vector::new(x_h, y_h),
-            hover_background: Some(Background::Color(iss.color.resolve(&button.hover_background))),
+            hover_background: Some(Background::Color(
+                iss.color.resolve(&button.hover_background),
+            )),
             hover_border_radius: iss.radius.resolve(&button.hover_border_radius),
             hover_border_width: iss.width.resolve(&button.hover_border_width),
             hover_border_color: iss.color.resolve(&button.hover_border_color),
@@ -435,7 +502,6 @@ impl IcedButtonStyle {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IcedStyleSheet {
-    
     // Project Label
     pub project_label_color: NamedColor,
     pub project_label_text_size: NamedTextSize,
@@ -451,7 +517,7 @@ pub struct IcedStyleSheet {
 
     // Background Container
     pub home_container: StyledContainer,
-    pub home_padding: NamedPadding,   
+    pub home_padding: NamedPadding,
 
     // area_mc_analysis
     pub mc_results_row_spacing: NamedSpacing,
@@ -496,7 +562,6 @@ pub struct IcedStyleSheet {
     pub button_action: StyledButton,
     pub button_constructive: StyledButton,
     pub button_destructive: StyledButton,
-    
 
     // Named propery lists
     pub color: ColorList,
@@ -512,54 +577,134 @@ impl Default for IcedStyleSheet {
     fn default() -> Self {
         // Define classes first so they can be referenced in the IcedStyleSheet construction
         let color = ColorList::new()
-            .add("primary", SerializableColor{r: 0, g: 126, b: 167, a: 1.0})
-            .add("constructive", SerializableColor{r: 107, g: 212, b: 37, a: 1.0})
-            .add("destructive", SerializableColor{r: 239, g: 62, b: 54, a: 1.0})
-            .add("background", SerializableColor{r: 236, g: 236, b: 236, a: 1.0})
-            .add("panel", SerializableColor{r: 245, g: 245, b: 245, a: 1.0})
-            .add("panel_border", SerializableColor{r: 200, g: 200, b: 200, a: 1.0})
-            .add("text_light", SerializableColor{r: 250, g: 250, b: 250, a: 1.0})
-            .add("text", SerializableColor{r: 64, g: 61, b: 57, a: 1.0})
-            .add("scroll_area", SerializableColor{r: 255, g: 255, b: 255, a: 1.0})
-            .add("entry", SerializableColor{r: 230, g: 230, b: 230, a: 1.0}) 
-            .add("entry_border", SerializableColor{r: 200, g: 200, b: 200, a: 1.0}) 
-        ;
+            .add(
+                "primary",
+                SerializableColor {
+                    r: 0,
+                    g: 126,
+                    b: 167,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "constructive",
+                SerializableColor {
+                    r: 107,
+                    g: 212,
+                    b: 37,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "destructive",
+                SerializableColor {
+                    r: 239,
+                    g: 62,
+                    b: 54,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "background",
+                SerializableColor {
+                    r: 236,
+                    g: 236,
+                    b: 236,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "panel",
+                SerializableColor {
+                    r: 245,
+                    g: 245,
+                    b: 245,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "panel_border",
+                SerializableColor {
+                    r: 200,
+                    g: 200,
+                    b: 200,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "text_light",
+                SerializableColor {
+                    r: 250,
+                    g: 250,
+                    b: 250,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "text",
+                SerializableColor {
+                    r: 64,
+                    g: 61,
+                    b: 57,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "scroll_area",
+                SerializableColor {
+                    r: 255,
+                    g: 255,
+                    b: 255,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "entry",
+                SerializableColor {
+                    r: 230,
+                    g: 230,
+                    b: 230,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "entry_border",
+                SerializableColor {
+                    r: 200,
+                    g: 200,
+                    b: 200,
+                    a: 1.0,
+                },
+            );
         let radius = RadiusList::new()
             .add("none", 0)
             .add("small", 4)
             .add("large", 6)
-            .add("extra_large", 12)
-        ;
+            .add("extra_large", 12);
         let width = WidthList::new()
             .add("none", 0)
             .add("thin", 1)
-            .add("bold", 3)
-        ;
+            .add("bold", 3);
         let text_size = TextSizeList::new()
             .add("h1", 32)
             .add("h2", 24)
             .add("h3", 20)
-            .add("p", 16)
-        ;
+            .add("p", 16);
         let padding = PaddingList::new()
             .add("tiny", 1)
             .add("narrow", 10)
             .add("wide", 20)
             .add("extra_wide", 30)
             .add("panel_outer", 10)
-            .add("panel_inner", 30)
-        ;
+            .add("panel_inner", 30);
         let spacing = SpacingList::new()
             .add("near", 10)
             .add("far", 20)
-            .add("huge", 40)
-        ;
-        let vector = VectorList::new()
-            .add("bottom", (0.0, 1.0))
-        ;
+            .add("huge", 40);
+        let vector = VectorList::new().add("bottom", (0.0, 1.0));
 
         // Construct a iss, note that `Named___` objects use a class list for validatation
-        IcedStyleSheet{
+        IcedStyleSheet {
             //Project Label
             project_label_color: NamedColor::new("text", &color),
             project_label_text_size: NamedTextSize::new("h1", &text_size),
@@ -582,7 +727,7 @@ impl Default for IcedStyleSheet {
                 border_width: NamedWidth::new("none", &width),
             },
             home_padding: NamedPadding::new("narrow", &padding),
-            
+
             //area_mc_analysis
             mc_results_row_spacing: NamedSpacing::new("far", &spacing),
             mc_results_col_spacing: NamedSpacing::new("far", &spacing),
@@ -630,7 +775,7 @@ impl Default for IcedStyleSheet {
             tol_edit_label_spacing: NamedSpacing::new("far", &spacing),
             tol_edit_vspacing: NamedSpacing::new("near", &spacing),
             tol_edit_padding: NamedPadding::new("wide", &padding),
-            
+
             // General Containers
             panel_container: StyledContainer {
                 text_color: NamedColor::new("text", &color),
@@ -700,7 +845,7 @@ impl IcedStyleSheet {
     pub fn color(&self, name: &NamedColor) -> iced_native::Color {
         self.color.resolve(name)
     }
-    
+
     pub fn radius(&self, name: &NamedRadius) -> u16 {
         self.radius.resolve(name)
     }
@@ -734,13 +879,12 @@ impl IcedStyleSheet {
     }
 
     fn path() -> std::path::PathBuf {
-        let mut path = if let Some(project_dirs) =
-            directories::ProjectDirs::from("rs", "", "TolStack")
-        {
-            project_dirs.data_dir().into()
-        } else {
-            std::env::current_dir().unwrap_or(std::path::PathBuf::new())
-        };
+        let mut path =
+            if let Some(project_dirs) = directories::ProjectDirs::from("rs", "", "TolStack") {
+                project_dirs.data_dir().into()
+            } else {
+                std::env::current_dir().unwrap_or(std::path::PathBuf::new())
+            };
 
         path.push("style.json");
 
@@ -803,8 +947,7 @@ impl IcedStyleSheet {
 
     pub async fn save(self) -> Result<(), SaveError> {
         use async_std::prelude::*;
-        let json = serde_json::to_string_pretty(&self)
-            .map_err(|_| SaveError::FormatError)?;
+        let json = serde_json::to_string_pretty(&self).map_err(|_| SaveError::FormatError)?;
         let path = Self::path();
         if let Some(dir) = path.parent() {
             async_std::fs::create_dir_all(dir)
@@ -839,7 +982,10 @@ fn watch(path: PathBuf) -> Result<notify::event::Event, Box<dyn std::error::Erro
         }
     }
 
-    Err(Box::from(std::io::Error::new(std::io::ErrorKind::Other, "No event returned from fn watch")))
+    Err(Box::from(std::io::Error::new(
+        std::io::ErrorKind::Other,
+        "No event returned from fn watch",
+    )))
 }
 
 impl<H, I> iced_native::subscription::Recipe<H, I> for IcedStyleSheet
@@ -854,22 +1000,21 @@ where
         std::any::TypeId::of::<Self>().hash(state);
     }
 
-    fn stream(self: Box<Self>,_input: futures::stream::BoxStream<'static, I>,) -> futures::stream::BoxStream<'static, Self::Output> {
+    fn stream(
+        self: Box<Self>,
+        _input: futures::stream::BoxStream<'static, I>,
+    ) -> futures::stream::BoxStream<'static, Self::Output> {
         use futures::stream::StreamExt;
 
-        async_std::stream::repeat_with(move || {
-            loop {
-                match watch(IcedStyleSheet::path()) {
-                    Ok(_) =>  return true,
-                    Err(_) => {},
-                }
+        async_std::stream::repeat_with(move || loop {
+            match watch(IcedStyleSheet::path()) {
+                Ok(_) => return true,
+                Err(_) => {}
             }
-        }).boxed()
+        })
+        .boxed()
     }
 }
-
-
-
 
 pub enum Button {
     Filter { selected: bool },
@@ -880,93 +1025,79 @@ pub enum Button {
     Neutral,
 }
 impl button::StyleSheet for Button {
-fn active(&self) -> button::Style {
-    match self {
-        Button::Filter { selected } => {
-            if *selected {
-                button::Style {
-                    background: Some(Background::Color(
-                        Color::from_rgb(0.95, 0.95, 0.95),
-                    )),
-                    border_radius: 5,
-                    text_color: Color::BLACK,
-                    ..button::Style::default()
+    fn active(&self) -> button::Style {
+        match self {
+            Button::Filter { selected } => {
+                if *selected {
+                    button::Style {
+                        background: Some(Background::Color(Color::from_rgb(0.95, 0.95, 0.95))),
+                        border_radius: 5,
+                        text_color: Color::BLACK,
+                        ..button::Style::default()
+                    }
+                } else {
+                    button::Style::default()
                 }
-            } else {
-                button::Style::default()
             }
-        }
-        Button::Choice { selected } => {
-            if *selected {
-                button::Style {
-                    background: Some(Background::Color(
-                        Color::from_rgb(0.2, 0.4, 0.7),
-                    )),
-                    border_radius: 5,
-                    text_color: Color::WHITE,
-                    ..button::Style::default()
+            Button::Choice { selected } => {
+                if *selected {
+                    button::Style {
+                        background: Some(Background::Color(Color::from_rgb(0.2, 0.4, 0.7))),
+                        border_radius: 5,
+                        text_color: Color::WHITE,
+                        ..button::Style::default()
+                    }
+                } else {
+                    button::Style::default()
                 }
-            } else {
-                button::Style::default()
             }
+            Button::Icon => button::Style {
+                text_color: Color::from_rgb(0.5, 0.5, 0.5),
+                ..button::Style::default()
+            },
+            Button::Destructive => button::Style {
+                background: Some(Background::Color(Color::from_rgb(0.8, 0.2, 0.2))),
+                border_radius: 5,
+                text_color: Color::WHITE,
+                shadow_offset: Vector::new(1.0, 1.0),
+                ..button::Style::default()
+            },
+            Button::Constructive => button::Style {
+                background: Some(Background::Color(Color::from_rgb(0.2, 0.8, 0.2))),
+                border_radius: 5,
+                text_color: Color::WHITE,
+                shadow_offset: Vector::new(1.0, 1.0),
+                ..button::Style::default()
+            },
+            Button::Neutral => button::Style {
+                background: Some(Background::Color(Color::from_rgb(0.8, 0.8, 0.8))),
+                border_radius: 5,
+                text_color: Color::WHITE,
+                shadow_offset: Vector::new(1.0, 1.0),
+                ..button::Style::default()
+            },
         }
-        Button::Icon => button::Style {
-            text_color: Color::from_rgb(0.5, 0.5, 0.5),
-            ..button::Style::default()
-        },
-        Button::Destructive => button::Style {
-            background: Some(Background::Color(Color::from_rgb(
-                0.8, 0.2, 0.2,
-            ))),
-            border_radius: 5,
-            text_color: Color::WHITE,
-            shadow_offset: Vector::new(1.0, 1.0),
-            ..button::Style::default()
-        },
-        Button::Constructive => button::Style {
-            background: Some(Background::Color(Color::from_rgb(
-                0.2, 0.8, 0.2,
-            ))),
-            border_radius: 5,
-            text_color: Color::WHITE,
-            shadow_offset: Vector::new(1.0, 1.0),
-            ..button::Style::default()
-        },
-        Button::Neutral => button::Style {
-            background: Some(Background::Color(Color::from_rgb(
-                0.8, 0.8, 0.8,
-            ))),
-            border_radius: 5,
-            text_color: Color::WHITE,
-            shadow_offset: Vector::new(1.0, 1.0),
-            ..button::Style::default()
-        },
     }
-}
 
-fn hovered(&self) -> button::Style {
-    let active = self.active();
+    fn hovered(&self) -> button::Style {
+        let active = self.active();
 
-    button::Style {
-        text_color: match self {
-            Button::Icon => Color::from_rgb(0.2, 0.2, 0.7),
-            Button::Filter { selected } if !selected => {
-                Color::from_rgb(0.5, 0.5, 0.5)
-            }
-            Button::Filter { selected } if !selected => {
-                Color::from_rgb(0.3, 0.5, 0.8)
-            }
-            _ => active.text_color,
-        },
-        shadow_offset: active.shadow_offset + Vector::new(0.0, 1.0),
-        ..active
+        button::Style {
+            text_color: match self {
+                Button::Icon => Color::from_rgb(0.2, 0.2, 0.7),
+                Button::Filter { selected } if !selected => Color::from_rgb(0.5, 0.5, 0.5),
+                Button::Filter { selected } if !selected => Color::from_rgb(0.3, 0.5, 0.8),
+                _ => active.text_color,
+            },
+            shadow_offset: active.shadow_offset + Vector::new(0.0, 1.0),
+            ..active
+        }
     }
-}
 }
 
 pub enum Container {
-Entry,
-Background,
+    Entry,
+    Background,
 }
 impl container::StyleSheet for Container {
     fn style(&self) -> container::Style {

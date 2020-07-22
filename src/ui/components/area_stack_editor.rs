@@ -1,12 +1,10 @@
-use iced::{
-    scrollable, Align, Container, Element, HorizontalAlignment, Length, Row, Column, Text,
-    Scrollable, 
-};
-use crate::ui::{ style };
-use crate::analysis::{
-    structures::*,
-};
+use crate::analysis::structures::*;
 use crate::ui::components::*;
+use crate::ui::style;
+use iced::{
+    scrollable, Align, Column, Container, Element, HorizontalAlignment, Length, Row, Scrollable,
+    Text,
+};
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -23,7 +21,7 @@ pub struct StackEditor {
     scroll_state: scrollable::State,
 }
 impl StackEditor {
-    pub fn new() -> Self{
+    pub fn new() -> Self {
         StackEditor::default()
     }
     pub fn update(&mut self, message: Message) {
@@ -38,10 +36,8 @@ impl StackEditor {
                 match &message {
                     form_new_tolerance::Message::CreateTol(input_text, input_type) => {
                         if !input_text.is_empty() {
-                            tolerances.push(ToleranceEntry::new(
-                                input_text.clone(),
-                                input_type.clone(),
-                            ));
+                            tolerances
+                                .push(ToleranceEntry::new(input_text.clone(), input_type.clone()));
                         }
                     }
                     form_new_tolerance::Message::TolNameChanged(_) => {}
@@ -66,7 +62,7 @@ impl StackEditor {
                         tolerances.remove(i);
                     }
                     entry_tolerance::Message::EntryFinishEditing => match tolerances.get_mut(i) {
-                        Some(entry) => match  &entry.input {
+                        Some(entry) => match &entry.input {
                             FormValues::Linear {
                                 description,
                                 dimension,
@@ -116,15 +112,17 @@ impl StackEditor {
                                 if entry.valid {
                                     entry.active = true;
                                     let linear = DimTol::new(
-                                        sanitized_dimension, 
-                                        sanitized_tolerance_pos, 
-                                        sanitized_tolerance_neg, 
+                                        sanitized_dimension,
+                                        sanitized_tolerance_pos,
+                                        sanitized_tolerance_neg,
                                         sanitized_sigma,
                                     );
                                     let linear = Tolerance::Linear(LinearTL::new(linear));
                                     entry.analysis_model = linear;
-                                } else { entry.active = false; }
-                            },
+                                } else {
+                                    entry.active = false;
+                                }
+                            }
                             FormValues::Float {
                                 description,
                                 diameter_hole,
@@ -203,28 +201,25 @@ impl StackEditor {
                                 if entry.valid {
                                     entry.active = true;
                                     let hole = DimTol::new(
-                                        sanitized_diameter_hole, 
-                                        sanitized_tolerance_hole_pos, 
-                                        sanitized_tolerance_hole_neg, 
+                                        sanitized_diameter_hole,
+                                        sanitized_tolerance_hole_pos,
+                                        sanitized_tolerance_hole_neg,
                                         sanitized_sigma,
                                     );
                                     let pin = DimTol::new(
-                                        sanitized_diameter_pin, 
-                                        sanitized_tolerance_pin_pos, 
-                                        sanitized_tolerance_pin_neg, 
+                                        sanitized_diameter_pin,
+                                        sanitized_tolerance_pin_pos,
+                                        sanitized_tolerance_pin_neg,
                                         sanitized_sigma,
                                     );
-                                    let data = Tolerance::Float(
-                                        FloatTL::new(hole, pin,3.0)
-                                    );
+                                    let data = Tolerance::Float(FloatTL::new(hole, pin, 3.0));
                                     //println!("{:#?}",data);
                                     entry.analysis_model = data;
                                 }
-                            },
-                        }
-                        ,
+                            }
+                        },
                         None => {}
-                    }
+                    },
                     _ => {}
                 };
                 if let Some(tol) = tolerances.get_mut(i) {
@@ -243,40 +238,37 @@ impl StackEditor {
             tolerances,
             scroll_state,
         } = self;
-        
-        let filtered_tols =
-            tolerances.iter().filter(|tol| filter.filter_value.matches(tol.analysis_model));
-        
+
+        let filtered_tols = tolerances
+            .iter()
+            .filter(|tol| filter.filter_value.matches(tol.analysis_model));
+
         // Iterate over all tols, calling their .view() function and adding them to a column
         let tolerances: Element<_> = if filtered_tols.count() > 0 {
-                self.tolerances
-                    .iter_mut()
-                    .enumerate()
-                    .filter(|(_, tol)| filter.filter_value.matches(tol.analysis_model))
-                    .fold(
-                        Column::new()
-                            .spacing(iss.spacing(&iss.editor_tol_spacing)),
-                        |column, (i, tol)| {
-                            column.push(
-                                tol.view(&iss)
-                                .map(move |message| {
-                                    // Take the message from the tolerance .view() and map it
-                                    // to an `area_stack_editor` Message as an `EntryMessage`
-                                    Message::EntryMessage(i, message)
-                                })
-                            )
-                        }
-                    )
-                    .into()
-            } else {
-                empty_message(match filter.filter_value {
-                    Filter::All => "There are no tolerances in the stack yet.",
-                    Filter::Some(tol) => match tol {
-                        Tolerance::Linear(_) => "No linear tolerances in the stack.",
-                        Tolerance::Float(_) => "No float tolerances in the stack.",
-                    }
-                })
-            };
+            self.tolerances
+                .iter_mut()
+                .enumerate()
+                .filter(|(_, tol)| filter.filter_value.matches(tol.analysis_model))
+                .fold(
+                    Column::new().spacing(iss.spacing(&iss.editor_tol_spacing)),
+                    |column, (i, tol)| {
+                        column.push(tol.view(&iss).map(move |message| {
+                            // Take the message from the tolerance .view() and map it
+                            // to an `area_stack_editor` Message as an `EntryMessage`
+                            Message::EntryMessage(i, message)
+                        }))
+                    },
+                )
+                .into()
+        } else {
+            empty_message(match filter.filter_value {
+                Filter::All => "There are no tolerances in the stack yet.",
+                Filter::Some(tol) => match tol {
+                    Tolerance::Linear(_) => "No linear tolerances in the stack.",
+                    Tolerance::Float(_) => "No float tolerances in the stack.",
+                },
+            })
+        };
         let content = Column::new()
             .spacing(iss.spacing(&iss.editor_tol_spacing))
             .push(tolerances);
@@ -290,49 +282,54 @@ impl StackEditor {
                 .width(Length::Shrink)
                 .push(
                     Container::new(content)
-                    .width(Length::Shrink)
-                    .center_x()
-                    .padding(iss.padding(&iss.editor_scroll_area_padding))
-                )
-            )
-            .padding(iss.padding(&iss.editor_scroll_area_padding_correction))
-            .style(iss.container(&iss.editor_scroll_container));
-        let filter_controls = filter.view()
-            .map( move |message| { Message::FilterMessage(message) });
+                        .width(Length::Shrink)
+                        .center_x()
+                        .padding(iss.padding(&iss.editor_scroll_area_padding)),
+                ),
+        )
+        .padding(iss.padding(&iss.editor_scroll_area_padding_correction))
+        .style(iss.container(&iss.editor_scroll_container));
+        let filter_controls = filter
+            .view()
+            .map(move |message| Message::FilterMessage(message));
         let tol_stack_area = Container::new(
-            Container::new(Column::new()
-                    .push( Row::new()
-                        .push(stack_title)
-                        .push(filter_controls)
-                        .padding(iss.padding(&iss.editor_header_padding))
-                        .align_items(Align::Center)
+            Container::new(
+                Column::new()
+                    .push(
+                        Row::new()
+                            .push(stack_title)
+                            .push(filter_controls)
+                            .padding(iss.padding(&iss.editor_header_padding))
+                            .align_items(Align::Center),
                     )
-                    .push(scrollable_content)
-                )
-                .style(iss.container(&iss.panel_container))
-                .padding(iss.padding(&iss.editor_container_inner_padding))
-                .width(Length::Shrink)
+                    .push(scrollable_content),
             )
-            .padding(iss.padding(&iss.editor_container_outer_padding))
-            .width(Length::Fill)
-            .center_x();
+            .style(iss.container(&iss.panel_container))
+            .padding(iss.padding(&iss.editor_container_inner_padding))
+            .width(Length::Shrink),
+        )
+        .padding(iss.padding(&iss.editor_container_outer_padding))
+        .width(Length::Fill)
+        .center_x();
 
         let new_tol_area = Container::new(
-                Container::new(self.entry_form.view()
-                    .map( move |message| { Message::NewEntryMessage(message) })
-                )
-                .padding(iss.padding(&iss.newtol_container_inner_padding))
-                .style(iss.container(&iss.panel_container))
+            Container::new(
+                self.entry_form
+                    .view()
+                    .map(move |message| Message::NewEntryMessage(message)),
             )
-            .padding(iss.padding(&iss.newtol_container_outer_padding))
-            .width(Length::Fill)
-            .center_x();
-        
+            .padding(iss.padding(&iss.newtol_container_inner_padding))
+            .style(iss.container(&iss.panel_container)),
+        )
+        .padding(iss.padding(&iss.newtol_container_outer_padding))
+        .width(Length::Fill)
+        .center_x();
+
         let tol_chain_input = Column::new()
             .push(new_tol_area)
             .push(tol_stack_area)
             .width(Length::FillPortion(3));
-            
+
         tol_chain_input.into()
     }
     pub fn tolerances(&mut self, tolerances: Vec<ToleranceEntry>) -> Self {

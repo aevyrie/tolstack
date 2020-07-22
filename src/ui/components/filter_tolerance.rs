@@ -1,15 +1,11 @@
-use serde_derive::*;
-use iced::{
-    button, Align, Button, Length, Row, Text, Element,
-};
+use crate::analysis::structures::*;
 use crate::ui::style;
-use crate::analysis::{
-    structures::*,
-};
+use iced::{button, Align, Button, Element, Length, Row, Text};
+use serde_derive::*;
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    FilterChanged(Filter)
+    FilterChanged(Filter),
 }
 
 #[derive(Debug, Default, Clone)]
@@ -46,40 +42,35 @@ impl ToleranceFilter {
 
         let filter_button = |state, label, filter, current_filter| {
             let label = Text::new(label).size(16);
-            let button =
-                Button::new(state, label).style(style::Button::Filter {
-                    selected: filter == current_filter,
-                });
+            let button = Button::new(state, label).style(style::Button::Filter {
+                selected: filter == current_filter,
+            });
 
             button.on_press(Message::FilterChanged(filter)).padding(8)
         };
 
         Row::new()
-        .spacing(20)
-        .align_items(Align::Center)
-        .push(Row::new()
-            .width(Length::Shrink)
-            .spacing(10)
-            .push(filter_button(
-                all_button,
-                "All",
-                Filter::All,
-                *filter_value,
-            ))
-            .push(filter_button(
-                linear_button,
-                "Linear",
-                Filter::Some(Tolerance::Linear(LinearTL::default())),
-                *filter_value,
-            ))
-            .push(filter_button(
-                float_button,
-                "Float",
-                Filter::Some(Tolerance::Float(FloatTL::default())),
-                *filter_value,
-            ))
-        )
-        .into()
+            .spacing(20)
+            .align_items(Align::Center)
+            .push(
+                Row::new()
+                    .width(Length::Shrink)
+                    .spacing(10)
+                    .push(filter_button(all_button, "All", Filter::All, *filter_value))
+                    .push(filter_button(
+                        linear_button,
+                        "Linear",
+                        Filter::Some(Tolerance::Linear(LinearTL::default())),
+                        *filter_value,
+                    ))
+                    .push(filter_button(
+                        float_button,
+                        "Float",
+                        Filter::Some(Tolerance::Float(FloatTL::default())),
+                        *filter_value,
+                    )),
+            )
+            .into()
     }
 }
 
@@ -94,7 +85,7 @@ impl Filter {
             Filter::All => true,
             Filter::Some(tol_self) => {
                 std::mem::discriminant(tol_self) == std::mem::discriminant(&tol)
-            },
+            }
         }
     }
 }
