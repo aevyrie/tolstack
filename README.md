@@ -1,8 +1,8 @@
 # tolstack
 
-A tolerance analysis application for building and analyzing 1D geometric tolerance models. The goal of this tool is to make tolerance stackup analysis simple and error-free.
+A tolerance analysis application for building and analyzing 1D geometric tolerance models. The goal of this tool is to make tolerance stackup analysis simple and reduce error.
 
-**Breaking changes in master**
+**This comes with no gaurantee of accuracy, verify all calculations independently.**
 
 ![Screenshot](docs/screenshot.png)
 
