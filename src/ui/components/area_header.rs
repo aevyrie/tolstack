@@ -13,16 +13,22 @@ pub enum Message {
 pub struct Header {
     pub title: EditableLabel,
     button_open: button::State,
+    button_save: button::State,
 }
 impl Header {
     pub fn new() -> Self {
         Header {
             title: EditableLabel::new("New Project", "Add a project name..."),
             button_open: button::State::new(),
+            button_save: button::State::new(),
         }
     }
     pub fn update(&mut self, message: Message) {
-        let Header { title, button_open } = self;
+        let Header {
+            title,
+            button_open,
+            button_save,
+        } = self;
         match message {
             Message::LabelMessage(label_message) => {
                 // Pass the message into the title
@@ -32,7 +38,11 @@ impl Header {
         }
     }
     pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
-        let Header { title, button_open } = self;
+        let Header {
+            title,
+            button_open,
+            button_save,
+        } = self;
         let project_label = Text::new("Project: ")
             .width(Length::Shrink)
             .size(iss.text_size(&iss.project_label_text_size))
@@ -56,22 +66,41 @@ impl Header {
                 .center_x()
                 .center_y();
 
+        let button_open = Button::new(
+            button_open,
+            Row::new()
+                .spacing(iss.spacing(&iss.header_button_spacing))
+                .push(Text::new("Open").size(iss.text_size(&iss.tol_edit_button_text_size))),
+        )
+        .on_press(Message::OpenFile)
+        .padding(iss.padding(&iss.tol_entry_button_padding))
+        .style(iss.button(&iss.button_action));
+
+        let button_save = Button::new(
+            button_save,
+            Row::new()
+                .spacing(iss.spacing(&iss.header_button_spacing))
+                .push(Text::new("Save").size(iss.text_size(&iss.tol_edit_button_text_size))),
+        )
+        .on_press(Message::OpenFile)
+        .padding(iss.padding(&iss.tol_entry_button_padding))
+        .style(iss.button(&iss.button_action));
+
+        let ribbon = Container::new(
+            Row::new()
+                .push(button_open)
+                .push(button_save)
+                .width(Length::Fill),
+        )
+        .width(Length::Fill)
+        .style(iss.container(&iss.panel_container));
+
         let header = Container::new(
             Column::new()
-                .max_width(800)
-                .spacing(iss.spacing(&iss.header_spacing))
+                .push(ribbon)
                 .push(project_title_container)
-                .push(
-                    Button::new(
-                        button_open,
-                        Row::new()
-                            .push(Text::new("Open"))
-                            //.push(icons::edit())
-                            .spacing(iss.spacing(&iss.header_button_spacing)),
-                    )
-                    .on_press(Message::OpenFile)
-                    .style(style::Button::Neutral),
-                ),
+                .max_width(800)
+                .spacing(iss.spacing(&iss.header_spacing)),
         )
         .width(Length::Fill)
         .padding(10)
