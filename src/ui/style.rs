@@ -480,6 +480,7 @@ impl IcedButtonStyle {
         let x_h = iss.vector.resolve(&button.hover_shadow_offset).0;
         let y_h = iss.vector.resolve(&button.hover_shadow_offset).1;
         IcedButtonStyle {
+            // Styling for active button
             active_shadow_offset: Vector::new(x_a, y_a),
             active_background: Some(Background::Color(
                 iss.color.resolve(&button.active_background),
@@ -488,6 +489,7 @@ impl IcedButtonStyle {
             active_border_width: iss.width.resolve(&button.active_border_width),
             active_border_color: iss.color.resolve(&button.active_border_color),
             active_text_color: iss.color.resolve(&button.active_text_color),
+            // Styling for hovered button
             hover_shadow_offset: Vector::new(x_h, y_h),
             hover_background: Some(Background::Color(
                 iss.color.resolve(&button.hover_background),
@@ -514,6 +516,7 @@ pub struct IcedStyleSheet {
     // Header
     pub header_spacing: NamedSpacing,
     pub header_button_spacing: NamedSpacing,
+    pub header_button_text_size: NamedTextSize,
 
     // Background Container
     pub home_container: StyledContainer,
@@ -703,7 +706,7 @@ impl Default for IcedStyleSheet {
             .add("huge", 40);
         let vector = VectorList::new().add("bottom", (0.0, 1.0));
 
-        // Construct a iss, note that `Named___` objects use a class list for validatation
+        // Construct an IcedStyleSheet, note that `Named` objects use a class list for validatation
         IcedStyleSheet {
             //Project Label
             project_label_color: NamedColor::new("text", &color),
@@ -717,6 +720,7 @@ impl Default for IcedStyleSheet {
             //Header
             header_spacing: NamedSpacing::new("far", &spacing),
             header_button_spacing: NamedSpacing::new("near", &spacing),
+            header_button_text_size: NamedTextSize::new("p", &text_size),
 
             //Background Container
             home_container: StyledContainer {
