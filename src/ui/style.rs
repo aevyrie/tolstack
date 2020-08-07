@@ -749,7 +749,7 @@ impl Default for IcedStyleSheet {
                 border_width: NamedWidth::new("none", &width),
             },
 
-            //Background Container
+            //Home Container
             home_container: StyledContainer {
                 text_color: NamedColor::new("text", &color),
                 background: NamedColor::new("background", &color),

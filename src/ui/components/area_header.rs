@@ -101,16 +101,17 @@ impl Header {
         .width(Length::Fill)
         .style(iss.container(&iss.panel_container));
 
-        let header = Container::new(
-            Column::new()
-                .push(ribbon)
-                .push(project_title_container)
-                .max_width(800)
-                .spacing(iss.spacing(&iss.header_spacing)),
-        )
-        .width(Length::Fill)
-        .padding(10)
-        .center_x();
+        let header = Column::new().push(ribbon).push(
+            Container::new(
+                Column::new()
+                    .push(project_title_container)
+                    .max_width(800)
+                    .spacing(iss.spacing(&iss.header_spacing)),
+            )
+            .width(Length::Fill)
+            .padding(10)
+            .center_x(),
+        );
 
         header.into()
     }

@@ -157,7 +157,7 @@ impl Application for TolStack {
                                 n_iteration: state.monte_carlo_analysis.entry_form.n_iteration,
                                 assy_sigma: state.monte_carlo_analysis.entry_form.assy_sigma,
                             }
-                            .save(), 
+                            .save(),
                             Message::Saved,
                         )
                     }
@@ -304,15 +304,12 @@ impl Application for TolStack {
                     .view(&iss)
                     .map(move |message| Message::MonteCarloAnalysisMessage(message));
 
-                let gui = Column::new()
-                    .push(header)
-                    .push(Container::new(
-                        Column::new()
-                            .push(Row::new().push(stack_editor).push(monte_carlo_analysis))
-                            .padding(iss.padding(&iss.home_padding)),
-                    )
-                    .style(iss.container(&iss.home_container))
-                );
+                let content = Column::new()
+                    .push(Row::new().push(stack_editor).push(monte_carlo_analysis))
+                    .padding(iss.padding(&iss.home_padding));
+
+                let gui = Container::new(Column::new().push(header).push(content))
+                    .style(iss.container(&iss.home_container));
 
                 //debug:
                 //let gui = gui.explain(Color::BLACK);
