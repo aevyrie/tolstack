@@ -517,6 +517,9 @@ pub struct IcedStyleSheet {
     pub header_spacing: NamedSpacing,
     pub header_button_spacing: NamedSpacing,
     pub header_button_text_size: NamedTextSize,
+    pub header_button_padding: NamedPadding,
+    pub header_button_style: StyledButton,
+    pub header_menu_container: StyledContainer,
 
     // Background Container
     pub home_container: StyledContainer,
@@ -704,7 +707,9 @@ impl Default for IcedStyleSheet {
             .add("near", 10)
             .add("far", 20)
             .add("huge", 40);
-        let vector = VectorList::new().add("bottom", (0.0, 1.0));
+        let vector = VectorList::new()
+            .add("none", (0.0, 0.0))
+            .add("bottom", (0.0, 1.0));
 
         // Construct an IcedStyleSheet, note that `Named` objects use a class list for validatation
         IcedStyleSheet {
@@ -721,6 +726,28 @@ impl Default for IcedStyleSheet {
             header_spacing: NamedSpacing::new("far", &spacing),
             header_button_spacing: NamedSpacing::new("near", &spacing),
             header_button_text_size: NamedTextSize::new("p", &text_size),
+            header_button_padding: NamedPadding::new("tiny", &padding),
+            header_button_style: StyledButton {
+                active_shadow_offset: NamedVector::new("none", &vector),
+                active_background: NamedColor::new("panel", &color),
+                active_border_radius: NamedRadius::new("none", &radius),
+                active_border_width: NamedWidth::new("none", &width),
+                active_border_color: NamedColor::new("panel_border", &color),
+                active_text_color: NamedColor::new("text", &color),
+                hover_shadow_offset: NamedVector::new("none", &vector),
+                hover_background: NamedColor::new("panel_border", &color),
+                hover_border_radius: NamedRadius::new("none", &radius),
+                hover_border_width: NamedWidth::new("none", &width),
+                hover_border_color: NamedColor::new("panel_border", &color),
+                hover_text_color: NamedColor::new("text_light", &color),
+            },
+            header_menu_container: StyledContainer {
+                text_color: NamedColor::new("text", &color),
+                background: NamedColor::new("panel", &color),
+                border_color: NamedColor::new("panel_border", &color),
+                border_radius: NamedRadius::new("none", &radius),
+                border_width: NamedWidth::new("none", &width),
+            },
 
             //Background Container
             home_container: StyledContainer {
