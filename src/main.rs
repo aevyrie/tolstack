@@ -304,13 +304,15 @@ impl Application for TolStack {
                     .view(&iss)
                     .map(move |message| Message::MonteCarloAnalysisMessage(message));
 
-                let gui = Container::new(
-                    Column::new()
-                        .push(header)
-                        .push(Row::new().push(stack_editor).push(monte_carlo_analysis))
-                        .padding(iss.padding(&iss.home_padding)),
-                )
-                .style(iss.container(&iss.home_container));
+                let gui = Column::new()
+                    .push(header)
+                    .push(Container::new(
+                        Column::new()
+                            .push(Row::new().push(stack_editor).push(monte_carlo_analysis))
+                            .padding(iss.padding(&iss.home_padding)),
+                    )
+                    .style(iss.container(&iss.home_container))
+                );
 
                 //debug:
                 //let gui = gui.explain(Color::BLACK);

@@ -80,7 +80,7 @@ impl Header {
         )
         .on_press(Message::OpenFile)
         .padding(iss.padding(&iss.header_button_padding))
-        .style(iss.button(&iss.button_action));
+        .style(iss.button(&iss.header_button_style));
 
         let button_save = Button::new(
             button_save,
@@ -90,7 +90,7 @@ impl Header {
         )
         .on_press(Message::SaveFile)
         .padding(iss.padding(&iss.header_button_padding))
-        .style(iss.button(&iss.button_action));
+        .style(iss.button(&iss.header_button_style));
 
         let ribbon = Container::new(
             Row::new()
