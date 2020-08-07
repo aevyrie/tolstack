@@ -515,7 +515,8 @@ pub struct IcedStyleSheet {
 
     // Header
     pub header_spacing: NamedSpacing,
-    pub header_button_spacing: NamedSpacing,
+    pub header_button_internal_spacing: NamedSpacing,
+    pub header_button_external_spacing: NamedSpacing,
     pub header_button_text_size: NamedTextSize,
     pub header_button_padding: NamedPadding,
     pub header_button_style: StyledButton,
@@ -724,9 +725,10 @@ impl Default for IcedStyleSheet {
 
             //Header
             header_spacing: NamedSpacing::new("far", &spacing),
-            header_button_spacing: NamedSpacing::new("near", &spacing),
-            header_button_text_size: NamedTextSize::new("p", &text_size),
-            header_button_padding: NamedPadding::new("tiny", &padding),
+            header_button_external_spacing: NamedSpacing::new("near", &spacing),
+            header_button_internal_spacing: NamedSpacing::new("near", &spacing),
+            header_button_text_size: NamedTextSize::new("h3", &text_size),
+            header_button_padding: NamedPadding::new("wide", &padding),
             header_button_style: StyledButton {
                 active_shadow_offset: NamedVector::new("none", &vector),
                 active_background: NamedColor::new("panel", &color),

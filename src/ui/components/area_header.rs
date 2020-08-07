@@ -75,43 +75,44 @@ impl Header {
         let button_open = Button::new(
             button_open,
             Row::new()
-                .spacing(iss.spacing(&iss.header_button_spacing))
+                .spacing(iss.spacing(&iss.header_button_internal_spacing))
                 .push(Text::new("Open").size(iss.text_size(&iss.header_button_text_size))),
         )
         .on_press(Message::OpenFile)
-        .padding(iss.padding(&iss.header_button_padding))
         .style(iss.button(&iss.header_button_style));
 
         let button_save = Button::new(
             button_save,
             Row::new()
-                .spacing(iss.spacing(&iss.header_button_spacing))
+                .spacing(iss.spacing(&iss.header_button_internal_spacing))
                 .push(Text::new("Save").size(iss.text_size(&iss.header_button_text_size))),
         )
         .on_press(Message::SaveFile)
-        .padding(iss.padding(&iss.header_button_padding))
         .style(iss.button(&iss.header_button_style));
 
         let ribbon = Container::new(
             Row::new()
                 .push(button_open)
                 .push(button_save)
-                .width(Length::Fill),
+                .width(Length::Fill)
+                .spacing(iss.spacing(&iss.header_button_external_spacing))
         )
         .width(Length::Fill)
-        .style(iss.container(&iss.panel_container));
+        .padding(iss.padding(&iss.header_button_padding))
+        .style(iss.container(&iss.header_menu_container));
 
         let header = Column::new().push(ribbon).push(
             Container::new(
                 Column::new()
                     .push(project_title_container)
                     .max_width(800)
-                    .spacing(iss.spacing(&iss.header_spacing)),
             )
             .width(Length::Fill)
             .padding(10)
             .center_x(),
-        );
+            
+        )
+        .spacing(iss.spacing(&iss.header_spacing));
 
         header.into()
     }
