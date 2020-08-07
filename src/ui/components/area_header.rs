@@ -7,6 +7,7 @@ use iced::{
 pub enum Message {
     LabelMessage(editable_label::Message),
     OpenFile,
+    SaveFile,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -34,7 +35,12 @@ impl Header {
                 // Pass the message into the title
                 title.update(label_message);
             }
-            Message::OpenFile => {}
+            Message::OpenFile => {
+                // This message is captured in main.rs
+            }
+            Message::SaveFile => (
+                // This message is captured in main.rs
+            ),
         }
     }
     pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
@@ -70,20 +76,20 @@ impl Header {
             button_open,
             Row::new()
                 .spacing(iss.spacing(&iss.header_button_spacing))
-                .push(Text::new("Open").size(iss.text_size(&iss.tol_edit_button_text_size))),
+                .push(Text::new("Open").size(iss.text_size(&iss.header_button_text_size))),
         )
         .on_press(Message::OpenFile)
-        .padding(iss.padding(&iss.tol_entry_button_padding))
+        .padding(iss.padding(&iss.header_button_padding))
         .style(iss.button(&iss.button_action));
 
         let button_save = Button::new(
             button_save,
             Row::new()
                 .spacing(iss.spacing(&iss.header_button_spacing))
-                .push(Text::new("Save").size(iss.text_size(&iss.tol_edit_button_text_size))),
+                .push(Text::new("Save").size(iss.text_size(&iss.header_button_text_size))),
         )
-        .on_press(Message::OpenFile)
-        .padding(iss.padding(&iss.tol_entry_button_padding))
+        .on_press(Message::SaveFile)
+        .padding(iss.padding(&iss.header_button_padding))
         .style(iss.button(&iss.button_action));
 
         let ribbon = Container::new(

@@ -149,6 +149,19 @@ impl Application for TolStack {
                         return Command::perform(SavedState::open(), Message::Loaded)
                     }
 
+                    Message::HeaderMessage(area_header::Message::SaveFile) => {
+                        return Command::perform(
+                            SavedState {
+                                name: state.header.title.text.clone(),
+                                tolerances: state.stack_editor.tolerances.clone(),
+                                n_iteration: state.monte_carlo_analysis.entry_form.n_iteration,
+                                assy_sigma: state.monte_carlo_analysis.entry_form.assy_sigma,
+                            }
+                            .save(), 
+                            Message::Saved,
+                        )
+                    }
+
                     Message::HeaderMessage(message) => state.header.update(message),
 
                     Message::StackEditorMessage(message) => state.stack_editor.update(message),
