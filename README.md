@@ -50,15 +50,15 @@ Output
 - [X] Show tolerance summary on entries in idle state
 - [ ] Implement ribbon or menu bar
   - [ ] Autosave toggle
-  - [ ] Save/Open project
+  - [X] Save/Open project
+  - [ ] Save As project
   - [ ] Export calculation data to CSV
-  - [ ] Generate CSV report
   - [ ] Zoom multiplier (apply to all values by storing in stylesheet?)
   - [ ] Dark/light mode
 - [X] Implement standardized styling
   - [X] Hot-reload via serde monitoring json file
 - [ ] Implement save/load dialog
-  - [ ] Save
+  - [X] Save
   - [ ] Save As
   - [X] Open
 - [ ] Scrollable calculation result area
