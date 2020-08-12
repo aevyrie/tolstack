@@ -1,4 +1,4 @@
-![TOLSTACK](docs/logo-header.png) 
+![TOLSTACK](docs/logo-title.png) 
 
 A tolerance analysis application for building and analyzing 1D geometric tolerance models. The goal of this tool is to make tolerance stackup analysis simple and less error-prone.
 
