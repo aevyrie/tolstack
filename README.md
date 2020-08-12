@@ -15,7 +15,7 @@ A tolerance analysis application for building and analyzing 1D geometric toleran
 
 ### 1D Tolerance Analysis
 
-This application does not attempt to model all of the tolerances in your part, rather, this is a tool to help you model and understand critical tolerance stacks in one dimension. This greatly simplifies the modelling process and generally makes for much clearer, actionable, output.
+This application does not attempt to model all of the tolerances in your assembly, rather, this is a tool to help you model and understand critical tolerance stacks in one dimension. This greatly simplifies the modelling process and generally makes for much clearer, actionable, output.
 
 
 ## Features
