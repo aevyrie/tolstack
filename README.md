@@ -1,8 +1,11 @@
-![TOLSTACK](docs/logo.png) 
+<p align="center">
+  <img src="docs/logo.png" width="498">
+</p>
+<br/>
 
 A tolerance analysis application for building and analyzing 1D geometric tolerance models. The goal of this tool is to make tolerance stackup analysis simple and less error-prone.
 
-**This comes with no gaurantee of accuracy, verify all calculations independently.**
+**This application is in development and not ready for use.**
 
 ![Screenshot](docs/screenshot.png)
 
