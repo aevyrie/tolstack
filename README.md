@@ -43,7 +43,7 @@ This application does not attempt to model all of the tolerances in your assembl
 
 1. Install Rust via [Rustup](https://www.rust-lang.org/tools/install).
 2. Clone the repository with `git clone https://github.com/aevyrie/tolstack.git`
-3. From the `\tolstack` directory, run `cargo run --release` to build and launch the application with compiler optimizations.
+3. From the `tolstack` directory, run `cargo run --release` to build and launch the application with compiler optimizations.
 
 ## Roadmap
 
