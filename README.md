@@ -25,20 +25,20 @@ This application does not attempt to model all of the tolerances in your assembl
 
 ## Features
 
-Tolerance Stack Model
+### Tolerance Stack Model
 
 * `Linear`: Linear dimensions (point A to B with some tolerance)
 * `Float`: Represents a connection between parts with a hole/pin pair
 * Supports unequal bilateral tolerances (+0.2/-0.1)
 
-Analysis
+### Analysis
 
 * Monte Carlo simulation
 * Worst case stackup
 * WIP: ~~RSS~~
 * WIP: ~~Hole-pin connections in parallel~~
 
-Output
+### Output
 
 * Auto saving
 * WIP: ~~Manually save/load JSON project files~~
