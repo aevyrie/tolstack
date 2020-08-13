@@ -36,7 +36,7 @@ impl NewToleranceEntry {
         }
         Command::none()
     }
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
         let NewToleranceEntry {
             tolerance_type,
             tolerance_text_value,
@@ -64,10 +64,12 @@ impl NewToleranceEntry {
 
         let button = |state, label, tolerance: Tolerance, current_tol: Tolerance| {
             let label = Text::new(label).size(18);
-            let button = Button::new(state, label).style(style::Button::Choice {
-                selected: tolerance == current_tol,
-            });
-
+            let active = tolerance == current_tol;
+            let button = Button::new(state, label).style(iss.toggle_button(
+                active,
+                &iss.button_active,
+                &iss.button_inactive,
+            ));
             button
                 .on_press(Message::TolTypeChanged(tolerance))
                 .padding(8)

@@ -315,7 +315,7 @@ impl StackEditor {
         let new_tol_area = Container::new(
             Container::new(
                 self.entry_form
-                    .view()
+                    .view(&iss)
                     .map(move |message| Message::NewEntryMessage(message)),
             )
             .padding(iss.padding(&iss.newtol_container_inner_padding))
