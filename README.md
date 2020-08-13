@@ -79,7 +79,7 @@ Output
   - [ ] Calculation progress
 - [ ] Analysis features
   - [ ] Implement RSS tolerance analysis
-  - [ ] Implement worst case tolerance calculation
+  - [X] Implement worst case tolerance calculation
   - [ ] Add distribution options
     - [ ] `Linear`: Normal, Normal Clipped (OOS rejected), Normal Skewed, Flat
     - [ ] `Float`: Reject connections with more than n units of interference
