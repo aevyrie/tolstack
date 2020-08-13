@@ -46,7 +46,7 @@ This application does not attempt to model all of the tolerances in your assembl
 
 ## Roadmap
 
-### v0.10
+### v0.1
 
 - [x] GUI for building tolerance model
 - [X] Make computation function async
@@ -73,7 +73,7 @@ This application does not attempt to model all of the tolerances in your assembl
 - [ ] Unit tests
   - [ ] Basic tolerance stack with linear + float, verify output
 
-### v0.20
+### v0.2
 
 - [ ] Undo/Redo
 - [ ] Calculation results history
