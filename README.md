@@ -1,19 +1,19 @@
 <p align="center">
   <img src="docs/logo.png" width="498">
+  <br/>
+  <b>This application is in development, untested, unstable, and not ready for general use.</b>
 </p>
-<br/>
 
-Tolstack is a tolerance analysis application for building and analyzing 1D geometric tolerance models. The goal of this tool is to make tolerance stackup analysis fast, easy, and error free. Built as a learning project with Rust using [`iced`](https://github.com/hecrj/iced).
-
-**This application is in development, untested, unstable, and not ready for general use.**
 
 ## Overview
 
+Tolstack is a tolerance analysis application for building and analyzing 1D geometric tolerance models. The goal of this tool is to make tolerance stackup analysis fast, easy, and error free. Built as a learning project with Rust using [`iced`](https://github.com/hecrj/iced).
+
 ![Screenshot](docs/screenshot.png)
 
-[Tolerance analysis](https://en.wikipedia.org/wiki/Tolerance_analysis) is used in Mechanical Engineering to quantify the accumulated dimensional variation in assemblies of parts. This is used to define part tolerances, and later verify that manufacturer processes are statistically capable of producing parts to this tolerance spec. Generally, the goal is to specify the widest possible tolerances to minimize scrap ($$$) while ensuring any combination of parts within these tolerances still fit together and function. GD&T (ASME Y14.5) is commonly used as the languge to express three-dimensional tolerances.
+### Tolerance Analysis
 
-### 1D Tolerance Analysis
+[Tolerance analysis](https://en.wikipedia.org/wiki/Tolerance_analysis) is used in Mechanical Engineering to quantify the accumulated dimensional variation in assemblies of parts. This is used to define part tolerances, and later verify that manufacturing processes are statistically capable of producing parts to this tolerance spec. Generally, the goal is to specify the widest possible tolerances to minimize scrap ($$$) while ensuring any combination of parts within these tolerances still fit together and function. GD&T (ASME Y14.5) is commonly used as the languge to express three-dimensional tolerances.
 
 This application does not attempt to model all of the tolerances in your assembly, rather, this is a tool to help you model and understand critical tolerance stacks in one dimension. This greatly simplifies the modelling process and generally makes for much clearer, actionable, output. To construct a 1D model, you will need to:
 
@@ -23,9 +23,11 @@ This application does not attempt to model all of the tolerances in your assembl
 4. Determine the chain of dimensions needed to define the stackup that results in your target measurement.
 5. Using this chain of dimensions, record the dimensions and tolerances as projected on your axis, making sure the signs are correct.
 
-Analyzing 1D tolerance stackups is useful for answering questions like:
+### Use Cases
+
+One-dimensional tolerance analysis is useful for answering questions like:
 * Will this sandwich of plastic parts and PCBs fit into my enclosure 99.99% of the time?
-* When I depress this button, will I make electrical contact with the switch before I bottom out?
+* When I depress this button, will I make electrical contact with the switch before it bottoms out?
 * Knowing the dimensional tolerances of some purchased components, what tolerances must I set for the assembly to function?
 
 ## Build Instructions
