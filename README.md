@@ -71,7 +71,7 @@ This application does not attempt to model all of the tolerances in your assembl
   - [ ] RSS tolerance analysis
   - [X] Worst case tolerance calculation
 - [ ] Unit tests
-  - [ ] Basic tolerance stack with linear + float, varify output
+  - [ ] Basic tolerance stack with linear + float, verify output
 
 ### v0.20
 
