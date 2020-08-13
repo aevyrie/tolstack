@@ -75,6 +75,19 @@ impl Named for NamedWidth {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NamedHeight(String);
+impl Named for NamedHeight {
+    type List = HeightList;
+    type NamedItem = NamedHeight;
+    fn new_unvalidated(name: &str) -> Self {
+        NamedHeight(name.to_string())
+    }
+    fn name(&self) -> &str {
+        &self.0
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NamedTextSize(String);
 impl Named for NamedTextSize {
     type List = TextSizeList;
@@ -231,6 +244,38 @@ impl NamedList for WidthList {
 
     fn new() -> Self {
         WidthList {
+            map: HashMap::new(),
+        }
+    }
+
+    fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
+        match self.map.get(&lookup.0) {
+            Some(width) => *width,
+            None => 0,
+        }
+    }
+
+    fn is_valid_name<T: Named>(&self, lookup: &T) -> bool {
+        self.map.contains_key(lookup.name())
+    }
+
+    fn add(&mut self, name: &str, value: Self::Stored) -> Self {
+        self.map.insert(name.to_string(), value);
+        self.clone()
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HeightList {
+    map: HashMap<String, u16>,
+}
+impl NamedList for HeightList {
+    type NamedItem = NamedHeight;
+    type Value = u16;
+    type Stored = u16;
+
+    fn new() -> Self {
+        HeightList {
             map: HashMap::new(),
         }
     }
@@ -519,6 +564,7 @@ pub struct IcedStyleSheet {
     pub header_button_external_spacing: NamedSpacing,
     pub header_button_text_size: NamedTextSize,
     pub header_button_padding: NamedPadding,
+    pub header_button_height: NamedHeight,
     pub header_button_style: StyledButton,
     pub header_menu_container: StyledContainer,
 
@@ -567,6 +613,8 @@ pub struct IcedStyleSheet {
 
     // General Buttons
     pub button_action: StyledButton,
+    pub button_active: StyledButton,
+    pub button_inactive: StyledButton,
     pub button_constructive: StyledButton,
     pub button_destructive: StyledButton,
 
@@ -574,6 +622,7 @@ pub struct IcedStyleSheet {
     pub color: ColorList,
     pub radius: RadiusList,
     pub width: WidthList,
+    pub height: HeightList,
     pub text_size: TextSizeList,
     pub padding: PaddingList,
     pub spacing: SpacingList,
@@ -621,11 +670,38 @@ impl Default for IcedStyleSheet {
                 },
             )
             .add(
-                "panel",
+                "active",
+                SerializableColor {
+                    r: 240,
+                    g: 240,
+                    b: 240,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "inactive",
                 SerializableColor {
                     r: 245,
                     g: 245,
                     b: 245,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "highlight",
+                SerializableColor {
+                    r: 250,
+                    g: 250,
+                    b: 250,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "panel",
+                SerializableColor {
+                    r: 243,
+                    g: 242,
+                    b: 241,
                     a: 1.0,
                 },
             )
@@ -668,18 +744,18 @@ impl Default for IcedStyleSheet {
             .add(
                 "entry",
                 SerializableColor {
-                    r: 230,
-                    g: 230,
-                    b: 230,
+                    r: 248,
+                    g: 248,
+                    b: 248,
                     a: 1.0,
                 },
             )
             .add(
                 "entry_border",
                 SerializableColor {
-                    r: 200,
-                    g: 200,
-                    b: 200,
+                    r: 230,
+                    g: 230,
+                    b: 230,
                     a: 1.0,
                 },
             );
@@ -692,6 +768,9 @@ impl Default for IcedStyleSheet {
             .add("none", 0)
             .add("thin", 1)
             .add("bold", 3);
+        let height = HeightList::new()
+            .add("ribbon_tall", 100)
+            .add("ribbon_short", 40);
         let text_size = TextSizeList::new()
             .add("h1", 32)
             .add("h2", 24)
@@ -710,33 +789,35 @@ impl Default for IcedStyleSheet {
             .add("huge", 40);
         let vector = VectorList::new()
             .add("none", (0.0, 0.0))
-            .add("bottom", (0.0, 1.0));
+            .add("bottom", (0.0, 1.0))
+            .add("top", (0.0, -1.0));
 
         // Construct an IcedStyleSheet, note that `Named` objects use a class list for validatation
         IcedStyleSheet {
             //Project Label
             project_label_color: NamedColor::new("text", &color),
-            project_label_text_size: NamedTextSize::new("h1", &text_size),
+            project_label_text_size: NamedTextSize::new("h2", &text_size),
             project_label_spacing: NamedSpacing::new("near", &spacing),
 
             //Editable Label
             editablelabel_label_color: NamedColor::new("text", &color),
-            editablelabel_label_text_size: NamedTextSize::new("h1", &text_size),
+            editablelabel_label_text_size: NamedTextSize::new("h2", &text_size),
 
             //Header
-            header_spacing: NamedSpacing::new("far", &spacing),
+            header_spacing: NamedSpacing::new("near", &spacing),
             header_button_external_spacing: NamedSpacing::new("near", &spacing),
             header_button_internal_spacing: NamedSpacing::new("near", &spacing),
             header_button_text_size: NamedTextSize::new("h3", &text_size),
-            header_button_padding: NamedPadding::new("wide", &padding),
+            header_button_padding: NamedPadding::new("narrow", &padding),
+            header_button_height: NamedHeight::new("ribbon_tall", &height),
             header_button_style: StyledButton {
                 active_shadow_offset: NamedVector::new("none", &vector),
                 active_background: NamedColor::new("panel", &color),
                 active_border_radius: NamedRadius::new("none", &radius),
-                active_border_width: NamedWidth::new("none", &width),
+                active_border_width: NamedWidth::new("thin", &width),
                 active_border_color: NamedColor::new("panel_border", &color),
                 active_text_color: NamedColor::new("text", &color),
-                hover_shadow_offset: NamedVector::new("none", &vector),
+                hover_shadow_offset: NamedVector::new("bottom", &vector),
                 hover_background: NamedColor::new("panel_border", &color),
                 hover_border_radius: NamedRadius::new("none", &radius),
                 hover_border_width: NamedWidth::new("none", &width),
@@ -748,7 +829,7 @@ impl Default for IcedStyleSheet {
                 background: NamedColor::new("panel", &color),
                 border_color: NamedColor::new("panel_border", &color),
                 border_radius: NamedRadius::new("none", &radius),
-                border_width: NamedWidth::new("none", &width),
+                border_width: NamedWidth::new("thin", &width),
             },
 
             //Home Container
@@ -833,6 +914,34 @@ impl Default for IcedStyleSheet {
                 hover_border_color: NamedColor::new("primary", &color),
                 hover_text_color: NamedColor::new("text", &color),
             },
+            button_active: StyledButton {
+                active_shadow_offset: NamedVector::new("none", &vector),
+                active_background: NamedColor::new("active", &color),
+                active_border_radius: NamedRadius::new("small", &radius),
+                active_border_width: NamedWidth::new("none", &width),
+                active_border_color: NamedColor::new("primary", &color),
+                active_text_color: NamedColor::new("text", &color),
+                hover_shadow_offset: NamedVector::new("bottom", &vector),
+                hover_background: NamedColor::new("highlight", &color),
+                hover_border_radius: NamedRadius::new("small", &radius),
+                hover_border_width: NamedWidth::new("none", &width),
+                hover_border_color: NamedColor::new("primary", &color),
+                hover_text_color: NamedColor::new("text_light", &color),
+            },
+            button_inactive: StyledButton {
+                active_shadow_offset: NamedVector::new("none", &vector),
+                active_background: NamedColor::new("inactive", &color),
+                active_border_radius: NamedRadius::new("small", &radius),
+                active_border_width: NamedWidth::new("none", &width),
+                active_border_color: NamedColor::new("primary", &color),
+                active_text_color: NamedColor::new("text", &color),
+                hover_shadow_offset: NamedVector::new("bottom", &vector),
+                hover_background: NamedColor::new("highlight", &color),
+                hover_border_radius: NamedRadius::new("small", &radius),
+                hover_border_width: NamedWidth::new("none", &width),
+                hover_border_color: NamedColor::new("primary", &color),
+                hover_text_color: NamedColor::new("text_light", &color),
+            },
             button_constructive: StyledButton {
                 active_shadow_offset: NamedVector::new("bottom", &vector),
                 active_background: NamedColor::new("constructive", &color),
@@ -866,6 +975,7 @@ impl Default for IcedStyleSheet {
             color,
             radius,
             width,
+            height,
             text_size,
             padding,
             spacing,
@@ -885,6 +995,10 @@ impl IcedStyleSheet {
 
     pub fn width(&self, name: &NamedWidth) -> u16 {
         self.width.resolve(name)
+    }
+
+    pub fn height(&self, name: &NamedHeight) -> iced::Length {
+        iced::Length::Units(self.height.resolve(name))
     }
 
     pub fn text_size(&self, name: &NamedTextSize) -> u16 {
@@ -909,6 +1023,19 @@ impl IcedStyleSheet {
 
     pub fn button(&self, button: &StyledButton) -> IcedButtonStyle {
         IcedButtonStyle::new(button, self)
+    }
+
+    pub fn toggle_button(
+        &self,
+        active: bool,
+        button_active: &StyledButton,
+        button_inactive: &StyledButton,
+    ) -> IcedButtonStyle {
+        if active {
+            IcedButtonStyle::new(button_active, self)
+        } else {
+            IcedButtonStyle::new(button_inactive, self)
+        }
     }
 
     fn path() -> std::path::PathBuf {
@@ -1057,6 +1184,9 @@ pub enum Button {
     Constructive,
     Neutral,
 }
+
+impl Button {}
+
 impl button::StyleSheet for Button {
     fn active(&self) -> button::Style {
         match self {
