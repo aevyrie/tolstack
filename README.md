@@ -17,11 +17,16 @@ Tolstack is a tolerance analysis application for building and analyzing 1D geome
 
 This application does not attempt to model all of the tolerances in your assembly, rather, this is a tool to help you model and understand critical tolerance stacks in one dimension. This greatly simplifies the modelling process and generally makes for much clearer, actionable, output. To construct a 1D model, you will need to:
 
-1. Define your target measurement - for what measurement do you need to analyze the tolerance stackup?
-2. Define an axis to project your dimensions and tolerances onto (often times you can just project onto a plane).
+1. Determine the target measurement you want to evaluate.
+2. Define an axis to project this measurement onto (often times you can just project onto a plane).
 3. Define the positive and negative directions along your axis - this is very important!
-4. Determine the chain of dimensions needed to define the stackup that results in your targer measurement.
+4. Determine the chain of dimensions needed to define the stackup that results in your target measurement.
 5. Using this chain of dimensions, record the dimensions and tolerances as projected on your axis, making sure the signs are correct.
+
+Analyzing 1D tolerance stackups is useful for answering questions like:
+* Will this sandwich of plastic parts and PCBs fit into my enclosure 99.99% of the time?
+* When I depress this button, will I make electrical contact with the switch before I bottom out?
+* Knowing the dimensional tolerances of some purchased components, what tolerances must I set for the assembly to function?
 
 ## Build Instructions
 
