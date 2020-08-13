@@ -5,7 +5,7 @@
 
 Tolstack is a tolerance analysis application for building and analyzing 1D geometric tolerance models. The goal of this tool is to make tolerance stackup analysis fast, easy, and error free. Built as a learning project with Rust using [`iced`](https://github.com/hecrj/iced).
 
-**This application is in development and not ready for use.**
+**This application is in development, untested, unstable, and not ready for general use.**
 
 ## Overview
 
