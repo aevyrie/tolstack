@@ -9,9 +9,25 @@ Tolstack is a tolerance analysis application for building and analyzing 1D geome
 
 ## Overview
 
+### Use Cases
+
+One-dimensional tolerance analysis is useful for answering questions like:
+* Will this sandwich of plastic parts and PCBs fit into my enclosure 99.99% of the time?
+* When I depress this button, will I make electrical contact with the switch before it bottoms out?
+* Knowing the dimensional tolerances of some purchased components, what tolerances must I set for the assembly to function?
+
+### Features
+
+* Build one-dimensional tolerance stackups in a visual editor
+* Evaluate and tune your tolerances with:
+  * Monte Carlo analysis
+  * RSS analysis
+  * Worst case tolerance analysis
+* Export results to CSV
+
 ![Screenshot](docs/screenshot.png)
 
-### Tolerance Analysis
+## Background
 
 [Tolerance analysis](https://en.wikipedia.org/wiki/Tolerance_analysis) is used in Mechanical Engineering to quantify the accumulated dimensional variation in assemblies of parts. This is used to define part tolerances, and later verify that manufacturing processes are statistically capable of producing parts to this tolerance spec. Generally, the goal is to specify the widest possible tolerances to minimize scrap ($$$) while ensuring any combination of parts within these tolerances still fit together and function. GD&T (ASME Y14.5) is commonly used as the languge to express three-dimensional tolerances.
 
@@ -23,39 +39,11 @@ This application does not attempt to model all of the tolerances in your assembl
 4. Determine the chain of dimensions needed to define the stackup that results in your target measurement.
 5. Using this chain of dimensions, record the dimensions and tolerances as projected on your axis, making sure the signs are correct.
 
-### Use Cases
-
-One-dimensional tolerance analysis is useful for answering questions like:
-* Will this sandwich of plastic parts and PCBs fit into my enclosure 99.99% of the time?
-* When I depress this button, will I make electrical contact with the switch before it bottoms out?
-* Knowing the dimensional tolerances of some purchased components, what tolerances must I set for the assembly to function?
-
 ## Build Instructions
 
 1. Clone the repository.
 2. Install Rust via [Rustup](https://www.rust-lang.org/tools/install).
 3. From the root directory, run `cargo run --release` to build and launch the application with compiler optimizations.
-
-## Features
-
-### Tolerance Stack Model
-
-* `Linear`: Linear dimensions (point A to B with some tolerance)
-* `Float`: Represents a connection between parts with a hole/pin pair
-* Supports unequal bilateral tolerances (+0.2/-0.1)
-
-### Analysis
-
-* Monte Carlo simulation
-* Worst case stackup
-* WIP: ~~RSS~~
-* WIP: ~~Hole-pin connections in parallel~~
-
-### Output
-
-* Auto saving
-* WIP: ~~Manually save/load JSON project files~~
-* WIP: ~~Export results to CSV~~
 
 ## Roadmap
 
@@ -85,7 +73,7 @@ One-dimensional tolerance analysis is useful for answering questions like:
   - [ ] RSS tolerance analysis
   - [X] Worst case tolerance calculation
 - [ ] Unit tests
-  - [ ] Basic tolerance stack with linear + float, verify output
+  - [ ] Tolerance stack with linear + float, verify output
 
 ### v0.2
 
