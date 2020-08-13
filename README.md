@@ -1,7 +1,7 @@
 <p align="center">
   <img src="docs/logo.png" width="498">
   <br/><br/>
-  <b>WARNING: This application is in development, untested, unstable, and not ready for general use.</b>
+  <b>🚨 This application is in development, untested, unstable, and not ready for general use. 🚨</b>
   <br/><br/>
 </p>
 
