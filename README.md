@@ -69,8 +69,9 @@ This application does not attempt to model all of the tolerances in your assembl
   - [ ] Autosave toggle
   - [X] Save/Open project
   - [ ] Save As project
-  - [ ] Export calculation data to CSV
+  - [ ] Export
   - [ ] Button icons
+- [ ] CSV Export (results struct)
 - [X] Stylesheets
   - [X] Hot-reload via serde monitoring json file
 - [ ] Analysis features
@@ -91,6 +92,10 @@ This application does not attempt to model all of the tolerances in your assembl
   - [ ] Add distribution options
     - [ ] `Linear`: Normal, Normal Clipped (OOS rejected), Flat
     - [ ] `Float` : Normal, Normal Clipped (OOS rejected), Flat
+- [ ] CSV export improvements
+  - [ ] "Report" style output with rows/cols to show the tolerance stack input
+  - [ ] Results summary
+  - [ ] Use formulas to show work for RSS and worst case. (excel evaluates `"=SUM(1,2)"` in a CSV!)
 - [ ] Appearance
   - [ ] Zoom multiplier (apply to all values by storing in stylesheet?)
   - [ ] Dark/light mode
