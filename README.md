@@ -17,6 +17,11 @@ A tolerance analysis application for building and analyzing 1D geometric toleran
 
 This application does not attempt to model all of the tolerances in your assembly, rather, this is a tool to help you model and understand critical tolerance stacks in one dimension. This greatly simplifies the modelling process and generally makes for much clearer, actionable, output.
 
+## Build Instructions
+
+1. Clone the repository.
+2. Install Rust via [Rustup](https://www.rust-lang.org/tools/install).
+3. From the root directory, run `cargo run --release` to build and launch the application with compiler optimizations.
 
 ## Features
 
@@ -29,25 +34,19 @@ Tolerance Stack Model
 Analysis
 
 * Monte Carlo simulation
-* Todo: ~~RSS, worst case~~
-* Todo: ~~Hole.pin connections in parallel~~
+* Worst case stackup
+* WIP: ~~RSS~~
+* WIP: ~~Hole-pin connections in parallel~~
 
 Output
 
 * Auto saving
-* WIP: Manually save/load JSON project files
-* Todo: ~~Export simulation output data to CSV for plotting~~
-* Todo: ~~Generate CSV report~~
+* WIP: ~~Manually save/load JSON project files~~
+* WIP: ~~Export results to CSV~~
 
-## Build Instructions
+## Roadmap
 
-1. Clone the repository.
-2. Install Rust via [Rustup](https://www.rust-lang.org/tools/install).
-3. From the root directory, run `cargo run --release` to build and launch the application with compiler optimizations.
-
-## Todo
-
-#### Short Term
+### v0.10
 
 - [x] GUI for building tolerance model
 - [X] Make computation function async
@@ -60,44 +59,53 @@ Output
 - [X] Add sigma input on tolerance entries
 - [X] Add hole/pin diameter input on `Float` entries
 - [X] Show tolerance summary on entries in idle state
-- [ ] Implement ribbon or menu bar
+- [ ] Ribbon menu bar
   - [ ] Autosave toggle
   - [X] Save/Open project
   - [ ] Save As project
   - [ ] Export calculation data to CSV
+  - [ ] Button icons
+- [X] Stylesheets
+  - [X] Hot-reload via serde monitoring json file
+- [ ] Analysis features
+  - [ ] RSS tolerance analysis
+  - [X] Worst case tolerance calculation
+- [ ] Unit tests
+  - [ ] Basic tolerance stack with linear + float, varify output
+
+### v0.20
+
+- [ ] Undo/Redo
+- [ ] Calculation results history
+  - [ ] Scrollable calculation result area
+  - [ ] Add export results button on the result entries
+  - [ ] Calculation progress
+  - [ ] Serialize calculation results with save
+- [ ] Tolerance model improvements
+  - [ ] Add distribution options
+    - [ ] `Linear`: Normal, Normal Clipped (OOS rejected), Flat
+    - [ ] `Float` : Normal, Normal Clipped (OOS rejected), Flat
+- [ ] Appearance
   - [ ] Zoom multiplier (apply to all values by storing in stylesheet?)
   - [ ] Dark/light mode
-- [X] Implement standardized styling
-  - [X] Hot-reload via serde monitoring json file
-- [ ] Implement save/load dialog
-  - [X] Save
-  - [ ] Save As
-  - [X] Open
-- [ ] Scrollable calculation result area
-  - [ ] Add export results button on the result entries
-  - [ ] Save out selected results as CSV
-  - [ ] Calculation progress
-- [ ] Analysis features
-  - [ ] Implement RSS tolerance analysis
-  - [X] Implement worst case tolerance calculation
-  - [ ] Add distribution options
-    - [ ] `Linear`: Normal, Normal Clipped (OOS rejected), Normal Skewed, Flat
-    - [ ] `Float`: Reject connections with more than n units of interference
-  - [ ] Add unit selection (mm/in) on a per-tolerance and project basis
-  - [ ] Compute per-measurment sensitivity, display as absolute or percentage of total
-  - [ ] Compare calculation results side-by-side showing the full stack
+
+### Unscheduled
+
+- [ ] Add unit selection (mm/in) on a per-tolerance and project basis
+- [ ] Compute per-measurment sensitivity, display as absolute or percentage of total
+- [ ] Compare calculation results side-by-side showing the full stack
 - [ ] Sidebar with multiple tolstacks in a project
+- [ ] Float interference control
 - [ ] Report number of `Float` tolerances that result in a diametric interference
+- [ ] `Float` : Reject connections with more than n units of interference
 
 #### Long Term
 
 - [ ] Implement concept of parts and joints - connections between parts
   - [ ] Allow joints to be in parallel, e.g. two or more pins connecting two parts
   - [ ] Parts can start and end a number of parallel joints
-  - [ ] Implement butt joints, pos/neg determine butt direction
 - [ ] Generate plots in GUI
 - [ ] Tolerance stack visualization
 - [ ] Make threading more intelligent, detect num_cpus, revisit perf, thread pooling?
-- [ ] Test coverage
 - [ ] Go 2D?
 - [ ] Constraint solver?
