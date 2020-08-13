@@ -25,6 +25,8 @@ One-dimensional tolerance analysis is useful for answering questions like:
   * Worst case tolerance analysis
 * Export results to CSV
 
+### Screenshot
+
 ![Screenshot](docs/screenshot.png)
 
 ## Background
