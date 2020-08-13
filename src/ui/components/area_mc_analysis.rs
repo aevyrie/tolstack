@@ -75,6 +75,18 @@ impl MonteCarloAnalysis {
                     .push(Text::new(format!("{}", simulation.results.iterations)))
                     .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
+            .push(
+                Row::new()
+                    .push(Text::new("Worst Case Lower:"))
+                    .push(Text::new(format!("{}", simulation.results.worst_case_lower)))
+                    .spacing(iss.spacing(&iss.mc_results_row_spacing)),
+            )
+            .push(
+                Row::new()
+                    .push(Text::new("Worst Case Upper:"))
+                    .push(Text::new(format!("{}", simulation.results.worst_case_upper)))
+                    .spacing(iss.spacing(&iss.mc_results_row_spacing)),
+            )
             .spacing(iss.spacing(&iss.mc_results_col_spacing));
 
         let results_summary = Container::new(
@@ -140,6 +152,7 @@ impl MonteCarloAnalysis {
         // Each computation contains an owned simulation state, this allows multiple
         //  computations to be spawned independently, and run asynchronously
         let time_start = Instant::now();
+        //todo - change unwrap to a match to prevent panic
         let result = monte_carlo::run(&simulation).await.unwrap();
         let duration = time_start.elapsed();
         println!("Simulation Duration: {:.3?}", duration,);

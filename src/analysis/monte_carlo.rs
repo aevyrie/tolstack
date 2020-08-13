@@ -22,6 +22,7 @@ pub struct Parameters {
     pub n_iterations: usize,
 }
 
+//todo remove pub and add a getter
 /// Structure used to hold the output of a simulaion
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct Results {
@@ -29,16 +30,12 @@ pub struct Results {
     pub tolerance: f64,
     pub stddev: f64,
     pub iterations: usize,
+    pub worst_case_upper: f64,
+    pub worst_case_lower: f64,
 }
 impl Results {
     pub fn new() -> Self {
-        // TODO: change this to use the Defaults derive
-        Results {
-            mean: 0.0,
-            tolerance: 0.0,
-            stddev: 0.0,
-            iterations: 0,
-        }
+        Results::default()
     }
 }
 
@@ -114,11 +111,37 @@ pub async fn run(state: &State) -> Result<Results, Box<dyn Error>> {
     }
     let result_tol = result_stddev * state.parameters.assy_sigma;
 
+    let worst_case_dim = state.tolerance_loop.iter().fold(0.0, |acc, tol| {
+        return acc + match tol {
+            Tolerance::Linear(linear) => linear.distance.dim,
+            Tolerance::Float(float) => f64::max(0.0, f64::abs(f64::abs(float.hole.dim) - f64::abs(float.pin.dim))),
+        };
+    });
+
+    let worst_case_pos = state.tolerance_loop.iter().fold(0.0, |acc, tol| {
+        return acc + f64::abs(match tol {
+            Tolerance::Linear(linear) => linear.distance.tol_pos,
+            Tolerance::Float(float) => f64::max(0.0, f64::abs(f64::abs(float.hole.tol_pos) - f64::abs(float.pin.tol_neg))),
+        });
+    });
+
+    let worst_case_neg = state.tolerance_loop.iter().fold(0.0, |acc, tol| {
+        return acc + f64::abs(match tol {
+            Tolerance::Linear(linear) => linear.distance.tol_neg,
+            Tolerance::Float(float) => f64::max(0.0, f64::abs(f64::abs(float.hole.tol_pos) - f64::abs(float.pin.tol_neg))),
+        });
+    });
+
+    let worst_case_upper = worst_case_dim + worst_case_pos;
+    let worst_case_lower = worst_case_dim - worst_case_neg;
+
     Ok(Results {
         mean: result_mean,
         tolerance: result_tol,
         stddev: result_stddev,
         iterations: real_iters,
+        worst_case_upper,
+        worst_case_lower,
     })
 }
 
