@@ -1,0 +1,6 @@
+[book]
+authors = ["Aevyrie Roessler"]
+language = "en"
+multilingual = false
+src = "src"
+title = "TolStack User Guide"
