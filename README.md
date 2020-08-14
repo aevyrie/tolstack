@@ -15,7 +15,7 @@ TolStack is a tolerance analysis application for building and analyzing 1D geome
 ### Use Cases
 
 One-dimensional tolerance analysis is useful for answering questions like:
-* Will this sandwich of plastic parts and PCBs fit into my enclosure 99.99% of the time?
+* Will this stack of plastic parts and PCBs fit into my enclosure 99.99% of the time?
 * When I depress this button, will I make electrical contact with the switch before it bottoms out?
 * Knowing the dimensional tolerances of some purchased components, what tolerances must I set for the assembly to function?
 
