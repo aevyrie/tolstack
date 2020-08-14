@@ -1,4 +1,4 @@
-use crate::ui::{components::*, style};
+use crate::ui::{components::*, style, icons};
 use iced::{
     button, Align, Button, Column, Container, Element, HorizontalAlignment, Length, Row, Text,
 };
@@ -76,6 +76,7 @@ impl Header {
             button_open,
             Row::new()
                 .spacing(iss.spacing(&iss.header_button_internal_spacing))
+                .push(icons::load().size(iss.text_size(&iss.tol_edit_button_text_size)),)
                 .push(Text::new("Open").size(iss.text_size(&iss.header_button_text_size))),
         )
         .on_press(Message::OpenFile)
@@ -86,6 +87,7 @@ impl Header {
             button_save,
             Row::new()
                 .spacing(iss.spacing(&iss.header_button_internal_spacing))
+                .push(icons::save().size(iss.text_size(&iss.tol_edit_button_text_size)),)
                 .push(Text::new("Save").size(iss.text_size(&iss.header_button_text_size))),
         )
         .on_press(Message::SaveFile)

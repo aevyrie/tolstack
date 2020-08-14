@@ -14,7 +14,7 @@ fn icon(unicode: char) -> Text {
 }
 
 pub fn edit() -> Text {
-    icon('\u{F303}')
+    icon('\u{e803}')
 }
 
 pub fn delete() -> Text {
@@ -22,5 +22,13 @@ pub fn delete() -> Text {
 }
 
 pub fn check() -> Text {
-    icon('\u{2713}')
+    icon('\u{e806}')
+}
+
+pub fn save() -> Text {
+    icon('\u{e800}')
+}
+
+pub fn load() -> Text {
+    icon('\u{f115}')
 }
