@@ -17,8 +17,7 @@ mod io {
 }
 
 use io::saved_state::*;
-use ui::components::*;
-use ui::{style, style::*};
+use ui::{components::*, style, style::*};
 
 use colored::*;
 use iced::{

@@ -563,6 +563,7 @@ pub struct IcedStyleSheet {
     pub header_button_internal_spacing: NamedSpacing,
     pub header_button_external_spacing: NamedSpacing,
     pub header_button_text_size: NamedTextSize,
+    pub header_button_icon_size: NamedTextSize,
     pub header_button_padding: NamedPadding,
     pub header_button_height: NamedHeight,
     pub header_button_style: StyledButton,
@@ -775,7 +776,9 @@ impl Default for IcedStyleSheet {
             .add("h1", 32)
             .add("h2", 24)
             .add("h3", 20)
-            .add("p", 16);
+            .add("p", 16)
+            .add("icon_huge", 25)
+            .add("icon_medium", 20);
         let padding = PaddingList::new()
             .add("tiny", 1)
             .add("narrow", 10)
@@ -808,6 +811,7 @@ impl Default for IcedStyleSheet {
             header_button_external_spacing: NamedSpacing::new("near", &spacing),
             header_button_internal_spacing: NamedSpacing::new("near", &spacing),
             header_button_text_size: NamedTextSize::new("h3", &text_size),
+            header_button_icon_size: NamedTextSize::new("icon_huge", &text_size),
             header_button_padding: NamedPadding::new("narrow", &padding),
             header_button_height: NamedHeight::new("ribbon_tall", &height),
             header_button_style: StyledButton {

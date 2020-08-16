@@ -74,20 +74,25 @@ impl Header {
 
         let button_open = Button::new(
             button_open,
-            Row::new()
+            Column::new()
                 .spacing(iss.spacing(&iss.header_button_internal_spacing))
-                .push(icons::load().size(iss.text_size(&iss.tol_edit_button_text_size)),)
-                .push(Text::new("Open").size(iss.text_size(&iss.header_button_text_size))),
+                .push(Container::new(
+                    icons::load().size(iss.text_size(&iss.header_button_icon_size)),
+                ).center_x().center_y().height(Length::Fill).width(Length::Fill))
+                .push(Container::new(
+                    Text::new("Open").width(Length::Fill).size(iss.text_size(&iss.header_button_text_size))
+                ).center_x().center_y().width(Length::Fill)),
         )
         .on_press(Message::OpenFile)
         .style(iss.button(&iss.header_button_style))
-        .height(iss.height(&iss.header_button_height));
+        .height(iss.height(&iss.header_button_height))
+        .width(Length::Units(70));
 
         let button_save = Button::new(
             button_save,
-            Row::new()
+            Column::new()
                 .spacing(iss.spacing(&iss.header_button_internal_spacing))
-                .push(icons::save().size(iss.text_size(&iss.tol_edit_button_text_size)),)
+                .push(icons::save().size(iss.text_size(&iss.header_button_icon_size)),)
                 .push(Text::new("Save").size(iss.text_size(&iss.header_button_text_size))),
         )
         .on_press(Message::SaveFile)
