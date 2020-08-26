@@ -50,6 +50,13 @@ This application does not attempt to model all of the tolerances in your assembl
 2. Clone the repository with `git clone https://github.com/aevyrie/tolstack.git`
 3. From the `tolstack` directory, run `cargo run --release` to build and launch the application with compiler optimizations.
 
+### Hardware Requirements and Software Dependencies
+
+* Make sure your graphics drivers are up to date!
+* Linux/Windows: You will need a modern graphics card that supports Vulkan
+  * Integrated graphics (Intel HDxxx) requires vulkan support, check [here](https://www.intel.com/content/www/us/en/support/articles/000005524/graphics.html)
+* MacOS: the backend uses Metal, check [here](https://en.wikipedia.org/wiki/Metal_(API)#Supported_GPUs) for requirements
+
 ## Roadmap
 
 ### v0.1
