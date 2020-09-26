@@ -78,13 +78,19 @@ impl MonteCarloAnalysis {
             .push(
                 Row::new()
                     .push(Text::new("Worst Case Lower:"))
-                    .push(Text::new(format!("{}", simulation.results.worst_case_lower)))
+                    .push(Text::new(format!(
+                        "{}",
+                        simulation.results.worst_case_lower
+                    )))
                     .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
             .push(
                 Row::new()
                     .push(Text::new("Worst Case Upper:"))
-                    .push(Text::new(format!("{}", simulation.results.worst_case_upper)))
+                    .push(Text::new(format!(
+                        "{}",
+                        simulation.results.worst_case_upper
+                    )))
                     .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
             .spacing(iss.spacing(&iss.mc_results_col_spacing));

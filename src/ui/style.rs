@@ -75,12 +75,12 @@ impl Named for NamedWidth {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NamedHeight(String);
-impl Named for NamedHeight {
-    type List = HeightList;
-    type NamedItem = NamedHeight;
+pub struct NamedDimension(String);
+impl Named for NamedDimension {
+    type List = DimensionList;
+    type NamedItem = NamedDimension;
     fn new_unvalidated(name: &str) -> Self {
-        NamedHeight(name.to_string())
+        NamedDimension(name.to_string())
     }
     fn name(&self) -> &str {
         &self.0
@@ -266,16 +266,16 @@ impl NamedList for WidthList {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct HeightList {
+pub struct DimensionList {
     map: HashMap<String, u16>,
 }
-impl NamedList for HeightList {
-    type NamedItem = NamedHeight;
+impl NamedList for DimensionList {
+    type NamedItem = NamedDimension;
     type Value = u16;
     type Stored = u16;
 
     fn new() -> Self {
-        HeightList {
+        DimensionList {
             map: HashMap::new(),
         }
     }
@@ -507,7 +507,6 @@ impl button::StyleSheet for IcedButtonStyle {
     }
 
     fn hovered(&self) -> button::Style {
-        let active = self.active();
         button::Style {
             shadow_offset: self.hover_shadow_offset,
             background: self.hover_background,
@@ -565,7 +564,8 @@ pub struct IcedStyleSheet {
     pub header_button_text_size: NamedTextSize,
     pub header_button_icon_size: NamedTextSize,
     pub header_button_padding: NamedPadding,
-    pub header_button_height: NamedHeight,
+    pub header_button_height: NamedDimension,
+    pub header_button_width: NamedDimension,
     pub header_button_style: StyledButton,
     pub header_menu_container: StyledContainer,
 
@@ -623,7 +623,7 @@ pub struct IcedStyleSheet {
     pub color: ColorList,
     pub radius: RadiusList,
     pub width: WidthList,
-    pub height: HeightList,
+    pub dimension: DimensionList,
     pub text_size: TextSizeList,
     pub padding: PaddingList,
     pub spacing: SpacingList,
@@ -769,16 +769,17 @@ impl Default for IcedStyleSheet {
             .add("none", 0)
             .add("thin", 1)
             .add("bold", 3);
-        let height = HeightList::new()
-            .add("ribbon_tall", 100)
-            .add("ribbon_short", 40);
+        let dimension = DimensionList::new()
+            .add("height_ribbon_tall", 70)
+            .add("height_ribbon_short", 40)
+            .add("width_button_ribbon", 45);
         let text_size = TextSizeList::new()
             .add("h1", 32)
             .add("h2", 24)
             .add("h3", 20)
             .add("p", 16)
             .add("icon_huge", 25)
-            .add("icon_medium", 20);
+            .add("icon_medium", 18);
         let padding = PaddingList::new()
             .add("tiny", 1)
             .add("narrow", 10)
@@ -810,23 +811,24 @@ impl Default for IcedStyleSheet {
             header_spacing: NamedSpacing::new("near", &spacing),
             header_button_external_spacing: NamedSpacing::new("near", &spacing),
             header_button_internal_spacing: NamedSpacing::new("near", &spacing),
-            header_button_text_size: NamedTextSize::new("h3", &text_size),
-            header_button_icon_size: NamedTextSize::new("icon_huge", &text_size),
+            header_button_text_size: NamedTextSize::new("p", &text_size),
+            header_button_icon_size: NamedTextSize::new("icon_medium", &text_size),
             header_button_padding: NamedPadding::new("narrow", &padding),
-            header_button_height: NamedHeight::new("ribbon_tall", &height),
+            header_button_height: NamedDimension::new("height_ribbon_tall", &dimension),
+            header_button_width: NamedDimension::new("width_button_ribbon", &dimension),
             header_button_style: StyledButton {
                 active_shadow_offset: NamedVector::new("none", &vector),
                 active_background: NamedColor::new("panel", &color),
                 active_border_radius: NamedRadius::new("none", &radius),
-                active_border_width: NamedWidth::new("thin", &width),
+                active_border_width: NamedWidth::new("none", &width),
                 active_border_color: NamedColor::new("panel_border", &color),
                 active_text_color: NamedColor::new("text", &color),
-                hover_shadow_offset: NamedVector::new("bottom", &vector),
+                hover_shadow_offset: NamedVector::new("none", &vector),
                 hover_background: NamedColor::new("panel_border", &color),
-                hover_border_radius: NamedRadius::new("none", &radius),
+                hover_border_radius: NamedRadius::new("small", &radius),
                 hover_border_width: NamedWidth::new("none", &width),
-                hover_border_color: NamedColor::new("panel_border", &color),
-                hover_text_color: NamedColor::new("text_light", &color),
+                hover_border_color: NamedColor::new("text", &color),
+                hover_text_color: NamedColor::new("text", &color),
             },
             header_menu_container: StyledContainer {
                 text_color: NamedColor::new("text", &color),
@@ -899,7 +901,7 @@ impl Default for IcedStyleSheet {
                 text_color: NamedColor::new("text", &color),
                 background: NamedColor::new("panel", &color),
                 border_color: NamedColor::new("panel_border", &color),
-                border_radius: NamedRadius::new("large", &radius),
+                border_radius: NamedRadius::new("none", &radius),
                 border_width: NamedWidth::new("thin", &width),
             },
 
@@ -919,18 +921,18 @@ impl Default for IcedStyleSheet {
                 hover_text_color: NamedColor::new("text", &color),
             },
             button_active: StyledButton {
-                active_shadow_offset: NamedVector::new("none", &vector),
-                active_background: NamedColor::new("active", &color),
+                active_shadow_offset: NamedVector::new("top", &vector),
+                active_background: NamedColor::new("highlight", &color),
                 active_border_radius: NamedRadius::new("small", &radius),
                 active_border_width: NamedWidth::new("none", &width),
                 active_border_color: NamedColor::new("primary", &color),
                 active_text_color: NamedColor::new("text", &color),
-                hover_shadow_offset: NamedVector::new("bottom", &vector),
+                hover_shadow_offset: NamedVector::new("top", &vector),
                 hover_background: NamedColor::new("highlight", &color),
                 hover_border_radius: NamedRadius::new("small", &radius),
                 hover_border_width: NamedWidth::new("none", &width),
                 hover_border_color: NamedColor::new("primary", &color),
-                hover_text_color: NamedColor::new("text_light", &color),
+                hover_text_color: NamedColor::new("text", &color),
             },
             button_inactive: StyledButton {
                 active_shadow_offset: NamedVector::new("none", &vector),
@@ -940,7 +942,7 @@ impl Default for IcedStyleSheet {
                 active_border_color: NamedColor::new("primary", &color),
                 active_text_color: NamedColor::new("text", &color),
                 hover_shadow_offset: NamedVector::new("bottom", &vector),
-                hover_background: NamedColor::new("highlight", &color),
+                hover_background: NamedColor::new("primary", &color),
                 hover_border_radius: NamedRadius::new("small", &radius),
                 hover_border_width: NamedWidth::new("none", &width),
                 hover_border_color: NamedColor::new("primary", &color),
@@ -979,7 +981,7 @@ impl Default for IcedStyleSheet {
             color,
             radius,
             width,
-            height,
+            dimension: dimension,
             text_size,
             padding,
             spacing,
@@ -989,7 +991,7 @@ impl Default for IcedStyleSheet {
 }
 
 impl IcedStyleSheet {
-    pub fn color(&self, name: &NamedColor) -> iced_native::Color {
+    pub fn color(&self, name: &NamedColor) -> iced::Color {
         self.color.resolve(name)
     }
 
@@ -1001,8 +1003,8 @@ impl IcedStyleSheet {
         self.width.resolve(name)
     }
 
-    pub fn height(&self, name: &NamedHeight) -> iced::Length {
-        iced::Length::Units(self.height.resolve(name))
+    pub fn dimension(&self, name: &NamedDimension) -> iced::Length {
+        iced::Length::Units(self.dimension.resolve(name))
     }
 
     pub fn text_size(&self, name: &NamedTextSize) -> u16 {

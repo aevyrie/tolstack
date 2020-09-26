@@ -380,9 +380,7 @@ impl ToleranceEntry {
                         button_save,
                         Row::new()
                             .spacing(iss.spacing(&iss.tol_entry_button_spacing))
-                            .push(
-                                icons::save().size(iss.text_size(&iss.tol_edit_button_text_size)),
-                            )
+                            .push(icons::save().size(iss.text_size(&iss.tol_edit_button_text_size)))
                             .push(
                                 Text::new("Save")
                                     .size(iss.text_size(&iss.tol_edit_button_text_size)),
