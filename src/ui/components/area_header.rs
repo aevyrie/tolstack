@@ -155,11 +155,7 @@ impl Header {
     }
 }
 
-
-/*
-fn header_button<'a, E>(iss: &style::IcedStyleSheet, state: &button::State) -> E 
-    where E: Into<Element<'a, Message, Renderer>>,
-{
+fn header_button<'a>(state: &'a mut button::State, iss: &style::IcedStyleSheet) -> Button<'a, Message> {
     Button::new(
         state,
         Column::new()
@@ -184,6 +180,5 @@ fn header_button<'a, E>(iss: &style::IcedStyleSheet, state: &button::State) -> E
     .on_press(Message::SaveFile)
     .style(iss.button(&iss.header_button_style))
     .height(iss.dimension(&iss.header_button_height))
-    .width(iss.dimension(&iss.header_button_width));
+    .width(iss.dimension(&iss.header_button_width))
 }
-*/
