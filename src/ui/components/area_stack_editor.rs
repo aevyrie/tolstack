@@ -290,7 +290,7 @@ impl StackEditor {
         .padding(iss.padding(&iss.editor_scroll_area_padding_correction))
         .style(iss.container(&iss.editor_scroll_container));
         let filter_controls = filter
-            .view()
+            .view(&iss)
             .map(move |message| Message::FilterMessage(message));
         let tol_stack_area = Container::new(
             Container::new(

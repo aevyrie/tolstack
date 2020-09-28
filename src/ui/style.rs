@@ -664,9 +664,9 @@ impl Default for IcedStyleSheet {
             .add(
                 "background",
                 SerializableColor {
-                    r: 236,
-                    g: 236,
-                    b: 236,
+                    r: 230,
+                    g: 230,
+                    b: 230,
                     a: 1.0,
                 },
             )

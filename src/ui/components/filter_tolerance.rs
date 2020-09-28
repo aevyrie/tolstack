@@ -31,7 +31,7 @@ impl ToleranceFilter {
             }
         }
     }
-    pub fn view(&mut self) -> Element<Message> {
+    pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
         let ToleranceFilter {
             filter_value,
             all_button,
@@ -42,10 +42,12 @@ impl ToleranceFilter {
 
         let filter_button = |state, label, filter, current_filter| {
             let label = Text::new(label).size(16);
-            let button = Button::new(state, label).style(style::Button::Filter {
-                selected: filter == current_filter,
-            });
-
+            let active = filter == current_filter;
+            let button = Button::new(state, label).style(iss.toggle_button(
+                active,
+                &iss.button_active,
+                &iss.button_inactive,
+            ));
             button.on_press(Message::FilterChanged(filter)).padding(8)
         };
 
