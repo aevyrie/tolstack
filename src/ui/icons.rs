@@ -32,3 +32,7 @@ pub fn save() -> Text {
 pub fn load() -> Text {
     icon('\u{f115}')
 }
+
+pub fn export() -> Text {
+    icon('\u{e81d}')
+}

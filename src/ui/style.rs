@@ -727,9 +727,9 @@ impl Default for IcedStyleSheet {
             .add(
                 "text",
                 SerializableColor {
-                    r: 64,
-                    g: 61,
-                    b: 57,
+                    r: 20,
+                    g: 20,
+                    b: 20,
                     a: 1.0,
                 },
             )
@@ -772,12 +772,12 @@ impl Default for IcedStyleSheet {
         let dimension = DimensionList::new()
             .add("height_ribbon_tall", 70)
             .add("height_ribbon_short", 40)
-            .add("width_button_ribbon", 45);
+            .add("width_button_ribbon", 50);
         let text_size = TextSizeList::new()
             .add("h1", 32)
             .add("h2", 24)
             .add("h3", 20)
-            .add("p", 16)
+            .add("p", 15)
             .add("icon_huge", 25)
             .add("icon_medium", 18);
         let padding = PaddingList::new()

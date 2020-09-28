@@ -379,32 +379,24 @@ impl ToleranceEntry {
                     let view_button_save = Button::new(
                         button_save,
                         Row::new()
-                            .spacing(iss.spacing(&iss.tol_entry_button_spacing))
-                            .push(icons::save().size(iss.text_size(&iss.tol_edit_button_text_size)))
-                            .push(
-                                Text::new("Save")
-                                    .size(iss.text_size(&iss.tol_edit_button_text_size)),
-                            ),
+                            .spacing(10)
+                            .push(icons::check())
+                            .push(Text::new("Save")),
                     )
                     .on_press(Message::EntryFinishEditing)
-                    .padding(iss.padding(&iss.tol_entry_button_padding))
-                    .style(iss.button(&iss.button_constructive));
+                    .padding(10)
+                    .style(style::Button::Constructive);
 
                     let view_button_delete = Button::new(
                         button_delete,
                         Row::new()
-                            .spacing(iss.spacing(&iss.tol_entry_button_spacing))
-                            .push(
-                                icons::delete().size(iss.text_size(&iss.tol_edit_button_text_size)),
-                            )
-                            .push(
-                                Text::new("Delete")
-                                    .size(iss.text_size(&iss.tol_edit_button_text_size)),
-                            ),
+                            .spacing(10)
+                            .push(icons::delete())
+                            .push(Text::new("Delete")),
                     )
                     .on_press(Message::EntryDelete)
-                    .padding(iss.padding(&iss.tol_entry_button_padding))
-                    .style(iss.button(&iss.button_destructive));
+                    .padding(10)
+                    .style(style::Button::Destructive);
 
                     let view_description = TextInput::new(
                         description,

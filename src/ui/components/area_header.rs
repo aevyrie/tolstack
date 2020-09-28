@@ -1,6 +1,7 @@
 use crate::ui::{components::*, icons, style};
 use iced::{
     button, Align, Button, Column, Container, Element, HorizontalAlignment, Length, Row, Text,
+    VerticalAlignment,
 };
 use iced_native::Renderer;
 
@@ -9,6 +10,7 @@ pub enum Message {
     LabelMessage(editable_label::Message),
     OpenFile,
     SaveFile,
+    ExportCSV,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -16,6 +18,7 @@ pub struct Header {
     pub title: EditableLabel,
     button_open: button::State,
     button_save: button::State,
+    button_export: button::State,
 }
 impl Header {
     pub fn new() -> Self {
@@ -23,6 +26,7 @@ impl Header {
             title: EditableLabel::new("New Project", "Add a project name..."),
             button_open: button::State::new(),
             button_save: button::State::new(),
+            button_export: button::State::new(),
         }
     }
     pub fn update(&mut self, message: Message) {
@@ -30,18 +34,16 @@ impl Header {
             title,
             button_open,
             button_save,
+            button_export,
         } = self;
         match message {
             Message::LabelMessage(label_message) => {
                 // Pass the message into the title
                 title.update(label_message);
             }
-            Message::OpenFile => {
-                // This message is captured in main.rs
-            }
-            Message::SaveFile => (
-                // This message is captured in main.rs
-            ),
+            Message::OpenFile => (),  // This message is captured in main.rs
+            Message::SaveFile => (),  // This message is captured in main.rs
+            Message::ExportCSV => (), // This message is captured in main.rs
         }
     }
     pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
@@ -49,6 +51,7 @@ impl Header {
             title,
             button_open,
             button_save,
+            button_export,
         } = self;
         let project_label = Text::new("Project: ")
             .width(Length::Shrink)
@@ -73,63 +76,20 @@ impl Header {
                 .center_x()
                 .center_y();
 
-        let button_open = Button::new(
-            button_open,
-            Column::new()
-                .spacing(iss.spacing(&iss.header_button_internal_spacing))
-                .push(
-                    Container::new(icons::load().size(iss.text_size(&iss.header_button_icon_size)))
-                        .center_x()
-                        .center_y()
-                        .height(Length::Fill)
-                        .width(Length::Fill),
-                )
-                .push(
-                    Container::new(
-                        Text::new("Open")
-                            .width(Length::Fill)
-                            .size(iss.text_size(&iss.header_button_text_size)),
-                    )
-                    .center_x()
-                    .center_y()
-                    .width(Length::Fill),
-                ),
-        )
-        .on_press(Message::OpenFile)
-        .style(iss.button(&iss.header_button_style))
-        .height(iss.dimension(&iss.header_button_height))
-        .width(iss.dimension(&iss.header_button_width));
+        let button_open =
+            header_button(button_open, "Open\n", icons::load(), iss).on_press(Message::OpenFile);
 
-        let button_save = Button::new(
-            button_save,
-            Column::new()
-                .spacing(iss.spacing(&iss.header_button_internal_spacing))
-                .push(
-                    Container::new(icons::save().size(iss.text_size(&iss.header_button_icon_size))).center_x()
-                        .center_y()
-                        .height(Length::Fill)
-                        .width(Length::Fill),
-                )
-                .push(
-                    Container::new(
-                        Text::new("Save")
-                            .width(Length::Fill)
-                            .size(iss.text_size(&iss.header_button_text_size)),
-                    )
-                    .center_x()
-                    .center_y()
-                    .width(Length::Fill),
-                ),
-        )
-        .on_press(Message::SaveFile)
-        .style(iss.button(&iss.header_button_style))
-        .height(iss.dimension(&iss.header_button_height))
-        .width(iss.dimension(&iss.header_button_width));
+        let button_save =
+            header_button(button_save, "Save\n", icons::save(), iss).on_press(Message::SaveFile);
+
+        let button_export = header_button(button_export, "Export CSV", icons::export(), iss)
+            .on_press(Message::ExportCSV);
 
         let ribbon = Container::new(
             Row::new()
                 .push(button_open)
                 .push(button_save)
+                .push(button_export)
                 .width(Length::Fill)
                 .spacing(iss.spacing(&iss.header_button_external_spacing)),
         )
@@ -155,29 +115,36 @@ impl Header {
     }
 }
 
-fn header_button<'a>(state: &'a mut button::State, iss: &style::IcedStyleSheet) -> Button<'a, Message> {
+fn header_button<'a>(
+    state: &'a mut button::State,
+    text: &str,
+    icon: Text,
+    iss: &style::IcedStyleSheet,
+) -> Button<'a, Message> {
     Button::new(
         state,
         Column::new()
             .spacing(iss.spacing(&iss.header_button_internal_spacing))
             .push(
-                Container::new(icons::save().size(iss.text_size(&iss.header_button_icon_size))).center_x()
+                Container::new(icon.size(iss.text_size(&iss.header_button_icon_size)))
+                    .center_x()
                     .center_y()
-                    .height(Length::Fill)
+                    //.height(Length::Fill)
                     .width(Length::Fill),
             )
             .push(
                 Container::new(
-                    Text::new("Save")
+                    Text::new(text)
                         .width(Length::Fill)
-                        .size(iss.text_size(&iss.header_button_text_size)),
+                        .size(iss.text_size(&iss.header_button_text_size))
+                        .horizontal_alignment(HorizontalAlignment::Center)
+                        .vertical_alignment(VerticalAlignment::Center),
                 )
                 .center_x()
                 .center_y()
                 .width(Length::Fill),
             ),
     )
-    .on_press(Message::SaveFile)
     .style(iss.button(&iss.header_button_style))
     .height(iss.dimension(&iss.header_button_height))
     .width(iss.dimension(&iss.header_button_width))

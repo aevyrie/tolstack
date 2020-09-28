@@ -13,10 +13,11 @@ mod analysis {
 
 mod io {
     pub mod dialogs;
+    pub mod export_csv;
     pub mod saved_state;
 }
 
-use io::saved_state::*;
+use io::{export_csv, saved_state::*};
 use ui::{components::*, style, style::*};
 
 use colored::*;
@@ -58,6 +59,7 @@ enum Message {
     //
     Loaded(Result<SavedState, io::saved_state::LoadError>),
     Saved(Result<(), io::saved_state::SaveError>),
+    ExportComplete(Result<(), io::export_csv::SaveError>),
     //
     StyleUpdateAvailable(bool),
     LoadedStyle(Result<style::IcedStyleSheet, style::LoadError>),
@@ -160,6 +162,17 @@ impl Application for TolStack {
                             Message::Saved,
                         )
                     }
+
+                    Message::HeaderMessage(area_header::Message::ExportCSV) => {
+                        return Command::perform(
+                            export_csv::serialize_csv(
+                                state.monte_carlo_analysis.simulation.results.export(),
+                            ),
+                            Message::ExportComplete,
+                        )
+                    }
+
+                    Message::ExportComplete(_) => {}
 
                     Message::HeaderMessage(message) => state.header.update(message),
 

@@ -7,7 +7,6 @@ use std::path::Path;
 use std::sync::mpsc;
 use std::thread;
 
-use csv::Writer;
 use num::clamp;
 use rand::prelude::*;
 use rand_distr::StandardNormal;
@@ -36,6 +35,15 @@ pub struct Results {
 impl Results {
     pub fn new() -> Self {
         Results::default()
+    }
+    pub fn export(&self) -> Vec<f64> {
+        let mut result = Vec::new();
+        result.push(self.mean);
+        result.push(self.tolerance);
+        result.push(self.stddev);
+        result.push(self.worst_case_lower);
+        result.push(self.worst_case_upper);
+        result
     }
 }
 
@@ -107,7 +115,6 @@ pub async fn run(state: &State) -> Result<Results, Box<dyn Error>> {
             result_mean * (n as f64 / (n as f64 + 1.0)) + stack_mean * (1.0 / (n as f64 + 1.0));
         result_stddev =
             result_stddev * (n as f64 / (n as f64 + 1.0)) + stack_stddev * (1.0 / (n as f64 + 1.0));
-        serialize_csv(stack, "data.csv")?;
     }
     let result_tol = result_stddev * state.parameters.assy_sigma;
 
@@ -328,15 +335,6 @@ impl DimTolSampling for DimTol {
     fn compute_multiplier(&mut self) {
         self.tol_multiplier = (self.tol_pos + self.tol_neg) / 2.0 / self.sigma;
     }
-}
-
-pub fn serialize_csv(data: Vec<f64>, filename: &str) -> Result<(), Box<dyn Error>> {
-    let mut wtr = Writer::from_path(filename)?;
-    for entry in data {
-        wtr.serialize(entry)?;
-    }
-    wtr.flush()?;
-    Ok(())
 }
 
 pub fn file_write(path: &Path, data: String) -> Result<(), Box<dyn Error>> {

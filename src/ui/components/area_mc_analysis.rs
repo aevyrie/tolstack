@@ -11,7 +11,7 @@ pub enum Message {
 #[derive(Debug, Default, Clone)]
 pub struct MonteCarloAnalysis {
     pub entry_form: NewMonteCarloAnalysis,
-    simulation: monte_carlo::State,
+    pub simulation: monte_carlo::State,
     pub input_stack: Vec<entry_tolerance::ToleranceEntry>,
 }
 impl MonteCarloAnalysis {
