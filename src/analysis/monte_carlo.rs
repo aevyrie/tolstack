@@ -6,7 +6,7 @@ use std::thread;
 
 use num::clamp;
 use rand::prelude::*;
-use rand_distr::StandardNormal;
+use rand_distr::{StandardNormal, Uniform};
 use statistical::*;
 
 pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
@@ -80,6 +80,16 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
     })
 }
 
+impl Tolerance {
+    #[inline(always)]
+    pub fn mc_tolerance(&self) -> f64 {
+        match self {
+            Tolerance::Linear(val) => val.mc_tolerance(),
+            Tolerance::Float(val) => val.mc_tolerance(),
+        }
+    }
+}
+
 /// Generate a sample for each object in the tolerance collection, n_iterations times. Then sum
 /// the results for each iteration, resulting in stackup for that iteration of the simulation.
 pub fn compute_stackup(tol_collection: Vec<Tolerance>, n_iterations: usize) -> Vec<f64> {
@@ -100,11 +110,7 @@ pub fn compute_stackup(tol_collection: Vec<Tolerance>, n_iterations: usize) -> V
                 // Make `result` thread local for better performance.
                 let mut result: Vec<f64> = Vec::new();
                 for _i in 0..n_iterations / n_threads {
-                    result.push(match tol_struct {
-                        // I thought this would result in branching, but it didn't impact perf.
-                        Tolerance::Linear(val) => val.mc_tolerance(),
-                        Tolerance::Float(val) => val.mc_tolerance(),
-                    });
+                    result.push(tol_struct.mc_tolerance());
                 }
                 tx_local.send(result).unwrap();
             });
@@ -142,7 +148,10 @@ pub trait MonteCarlo: Send + Sync + 'static {
 }
 impl MonteCarlo for LinearTL {
     fn mc_tolerance(&self) -> f64 {
-        self.distance.sample()
+        self.distance.dim
+            + self
+                .distance
+                .sample_mc(DistributionParam::Normal, BoundingParam::DiscardOutOfSpec)
     }
     //fn get_name(&self) -> &str {
     //    &self.name
@@ -153,8 +162,12 @@ impl MonteCarlo for LinearTL {
 }
 impl MonteCarlo for FloatTL {
     fn mc_tolerance(&self) -> f64 {
-        let hole_sample = self.hole.rand_bound_norm();
-        let pin_sample = self.pin.rand_bound_norm();
+        let hole_sample = self
+            .hole
+            .sample_mc(DistributionParam::Uniform, BoundingParam::DiscardOutOfSpec);
+        let pin_sample = self
+            .pin
+            .sample_mc(DistributionParam::Uniform, BoundingParam::DiscardOutOfSpec);
         let hole_pin_slop = (hole_sample - pin_sample) / 2.0;
         if hole_pin_slop <= 0.0 {
             0.0
@@ -170,67 +183,32 @@ impl MonteCarlo for FloatTL {
     //    &self.name
     //}
 }
-impl MonteCarlo for CompoundFloatTL {
-    fn mc_tolerance(&self) -> f64 {
-        let ds = self.datum_start.sample();
-        let de = self.datum_end.sample();
-        let datum_hole = if self.datum_start.dim > self.datum_end.dim {
-            ds
-        } else {
-            de
-        };
-        let datum_pin = if self.datum_start.dim < self.datum_end.dim {
-            ds
-        } else {
-            de
-        };
-        let clearance_dia = datum_hole - datum_pin;
 
-        let mut min_clearance_l = clearance_dia;
-        let mut min_clearance_r = clearance_dia;
-
-        //for float_pair in self.float_list.iter() {
-        let hole_sample = self.float_list.hole.sample();
-        let pin_sample = self.float_list.pin.sample();
-        let hole_spacing_sample = self.float_list.hole_spacing.sample();
-        let pin_spacing_sample = self.float_list.pin_spacing.sample();
-        let clearance_dia = hole_sample - pin_sample;
-        let misalignment = hole_spacing_sample - pin_spacing_sample;
-        let clearance_r = clearance_dia + misalignment;
-        let clearance_l = clearance_dia - misalignment;
-        min_clearance_r = clamp(clearance_r, 0.0, min_clearance_r);
-        min_clearance_l = clamp(clearance_l, 0.0, min_clearance_l);
-        //}
-
-        let mut bias = (min_clearance_r - min_clearance_l) / 2.0;
-        let bias_dir = if self.datum_start.dim > self.datum_end.dim {
-            1.0
-        } else {
-            -1.0
-        };
-        bias *= bias_dir;
-
-        DimTol::new(bias, min_clearance_r, min_clearance_l, self.sigma).sample()
-    }
-    fn compute_multiplier(&mut self) {
-        self.datum_start.compute_multiplier();
-        self.datum_end.compute_multiplier();
-        self.float_list.hole.compute_multiplier();
-        self.float_list.pin.compute_multiplier();
-        self.float_list.hole_spacing.compute_multiplier();
-        self.float_list.pin_spacing.compute_multiplier();
-    }
-    //fn get_name(&self) -> &str {
-    //    &self.name
-    //}
+pub enum DistributionParam {
+    Normal,
+    Uniform,
 }
 
-trait DimTolSampling {
-    fn rand_bound_norm(&self) -> f64;
-    fn sample(&self) -> f64;
-    fn compute_multiplier(&mut self);
+pub enum BoundingParam {
+    DiscardOutOfSpec,
+    KeepAll,
 }
-impl DimTolSampling for DimTol {
+
+impl DimTol {
+    /// Generate a random sample of a given dimension
+    fn sample_mc(&self, distribution: DistributionParam, bounding: BoundingParam) -> f64 {
+        match distribution {
+            DistributionParam::Normal => match bounding {
+                BoundingParam::DiscardOutOfSpec => self.rand_bound_norm(),
+                BoundingParam::KeepAll => self.rand_unbound_norm(),
+            },
+            DistributionParam::Uniform => match bounding {
+                BoundingParam::DiscardOutOfSpec => self.rand_bound_uniform(),
+                BoundingParam::KeepAll => self.rand_unbounded_uniform(),
+            },
+        }
+    }
+
     /// Generate a normally distributed random value, discarding values outside of limits
     fn rand_bound_norm(&self) -> f64 {
         let mut sample: f64 = thread_rng().sample(StandardNormal);
@@ -242,9 +220,26 @@ impl DimTolSampling for DimTol {
         }
         sample
     }
-    /// Generate a random sample of a given dimension
-    fn sample(&self) -> f64 {
-        self.dim + self.rand_bound_norm()
+    fn rand_unbound_norm(&self) -> f64 {
+        let mut sample: f64 = thread_rng().sample(StandardNormal);
+        sample *= self.tol_multiplier;
+        sample
+    }
+    fn rand_bound_uniform(&self) -> f64 {
+        let mut sample: f64 = thread_rng().sample(Uniform::new_inclusive(-1.0, 1.0));
+        sample *= self.tol_multiplier * self.sigma;
+        // TODO: limit number of checks and error out if needed to escape infinite loop
+        while sample < -self.tol_neg || sample > self.tol_pos {
+            sample = thread_rng().sample(StandardNormal);
+            // Multiply by sigma to cancel out the sigma in the multiplier
+            sample *= self.tol_multiplier * self.sigma;
+        }
+        sample
+    }
+    fn rand_unbounded_uniform(&self) -> f64 {
+        let mut sample: f64 = thread_rng().sample(Uniform::new_inclusive(-1.0, 1.0));
+        sample *= self.tol_multiplier * self.sigma;
+        sample
     }
 
     /// Precompute constant in monte carlo equation
