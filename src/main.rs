@@ -109,12 +109,14 @@ impl Application for TolStack {
 
     // Update logic - how to react to messages sent through the application
     fn update(&mut self, message: Message) -> Command<Message> {
-        println!(
-            "\n\n{}{}\n{:#?}",
-            chrono::offset::Local::now(),
-            " MESSAGE RECEIVED:".yellow(),
-            message
-        );
+        if cfg!(debug_assertions) {
+            println!(
+                "\n\n{}{}\n{:#?}",
+                chrono::offset::Local::now(),
+                " MESSAGE RECEIVED:".yellow(),
+                message
+            );
+        }
         match self {
             TolStack::Loading => {
                 match message {
