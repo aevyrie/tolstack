@@ -1,97 +1,15 @@
 use super::structures::*;
 
 use std::error::Error;
-use std::fs::File;
-use std::io::prelude::*;
-use std::path::Path;
 use std::sync::mpsc;
 use std::thread;
 
 use num::clamp;
 use rand::prelude::*;
 use rand_distr::StandardNormal;
-use serde_derive::*;
-use serde_json;
 use statistical::*;
 
-/// Structure used to hold simulation input parameters
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
-pub struct Parameters {
-    pub assy_sigma: f64,
-    pub n_iterations: usize,
-}
-
-//todo remove pub and add a getter
-/// Structure used to hold the output of a simulaion
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
-pub struct Results {
-    pub mean: f64,
-    pub tolerance: f64,
-    pub stddev: f64,
-    pub iterations: usize,
-    pub worst_case_upper: f64,
-    pub worst_case_lower: f64,
-}
-impl Results {
-    pub fn new() -> Self {
-        Results::default()
-    }
-    pub fn export(&self) -> Vec<f64> {
-        let mut result = Vec::new();
-        result.push(self.mean);
-        result.push(self.tolerance);
-        result.push(self.stddev);
-        result.push(self.worst_case_lower);
-        result.push(self.worst_case_upper);
-        result
-    }
-}
-
-/// Holds the working state of the simulation, including inputs and outputs
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct State {
-    pub parameters: Parameters,
-    pub tolerance_loop: Vec<Tolerance>,
-    pub results: Results,
-}
-impl State {
-    pub fn new(parameters: Parameters) -> Self {
-        State {
-            parameters,
-            tolerance_loop: Vec::new(),
-            results: Results::new(),
-        }
-    }
-    pub fn serialize_json(&self, filename: &str) -> Result<(), Box<dyn Error>> {
-        let data = serde_json::to_string_pretty(self)?;
-        let filename_full = &[filename, ".json"].concat();
-        let path = Path::new(filename_full);
-        file_write(path, data)?;
-        Ok(())
-    }
-    pub fn add(&mut self, tolerance: Tolerance) {
-        self.tolerance_loop.push(tolerance);
-    }
-    pub fn clear_inputs(&mut self) {
-        self.tolerance_loop = Vec::new();
-    }
-    pub fn compute_multiplier(&mut self) {
-        for tol in &mut self.tolerance_loop {
-            tol.compute_multiplier();
-        }
-    }
-}
-impl Default for State {
-    fn default() -> Self {
-        let parameters = Parameters {
-            assy_sigma: 4.0,
-            n_iterations: 1000000,
-        };
-        State::new(parameters)
-    }
-}
-
-pub async fn run(state: &State) -> Result<Results, Box<dyn Error>> {
+pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
     // Divide the desired number of iterations into chunks. This is done [1] to avoid floating point
     //  errors (as the divisor gets large when averaging you lose precision) and [2] to prevent huge
     //  memory use for large numbers of iterations. This can also be used to tune performance.
@@ -100,8 +18,6 @@ pub async fn run(state: &State) -> Result<Results, Box<dyn Error>> {
     let real_iters = chunks * chunk_size;
     let mut result_mean = 0f64;
     let mut result_stddev = 0f64;
-
-    println!("{:#?}", state);
 
     for n in 0..chunks {
         // TODO: validate n_iterations is nicely divisible by chunk_size and n_threads.
@@ -154,7 +70,7 @@ pub async fn run(state: &State) -> Result<Results, Box<dyn Error>> {
     let worst_case_upper = worst_case_dim + worst_case_pos;
     let worst_case_lower = worst_case_dim - worst_case_neg;
 
-    Ok(Results {
+    Ok(McResults {
         mean: result_mean,
         tolerance: result_tol,
         stddev: result_stddev,
@@ -337,32 +253,8 @@ impl DimTolSampling for DimTol {
     }
 }
 
-pub fn file_write(path: &Path, data: String) -> Result<(), Box<dyn Error>> {
-    let display = path.display();
-
-    let mut file = match File::create(&path) {
-        Err(why) => panic!("Couldn't create {}: {}", display, why.description()),
-        Ok(file) => file,
-    };
-
-    match file.write_all(data.as_bytes()) {
-        Err(why) => panic!("Couldn't write to {}: {}", display, why.description()),
-        Ok(_) => println!("Saving data to {}", display),
-    }
-    Ok(())
-}
-
-pub fn deserialize_json(filename: &str) -> Result<State, Box<dyn Error>> {
-    let filename_full = &[filename, ".json"].concat();
-    let path = Path::new(filename_full);
-    let file = File::open(path)?;
-    let mut result: State = serde_json::from_reader(file)?;
-    result.compute_multiplier();
-    Ok(result)
-}
-
 /// Data for testing purposes
-pub fn data() -> State {
+pub fn test_data() -> State {
     let parameters = Parameters {
         assy_sigma: 4.0,
         n_iterations: 10000000,

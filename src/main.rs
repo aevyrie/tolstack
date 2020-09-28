@@ -8,6 +8,7 @@ mod ui {
 
 mod analysis {
     pub mod monte_carlo;
+    pub mod root_sum_square;
     pub mod structures;
 }
 
@@ -45,7 +46,7 @@ struct State {
     iss: style::IcedStyleSheet,
     header: Header,
     stack_editor: StackEditor,
-    monte_carlo_analysis: MonteCarloAnalysis,
+    analysis_state: AnalysisState,
     dirty: bool,
     saving: bool,
 }
@@ -125,7 +126,7 @@ impl Application for TolStack {
                         *self = TolStack::Loaded(State {
                             stack_editor: StackEditor::new().tolerances(state.tolerances),
                             header: Header::new().title(state.name),
-                            monte_carlo_analysis: MonteCarloAnalysis::new()
+                            analysis_state: AnalysisState::new()
                                 .set_inputs(state.n_iteration, state.assy_sigma),
                             ..State::default()
                         });
@@ -157,8 +158,8 @@ impl Application for TolStack {
                             SavedState {
                                 name: state.header.title.text.clone(),
                                 tolerances: state.stack_editor.tolerances.clone(),
-                                n_iteration: state.monte_carlo_analysis.entry_form.n_iteration,
-                                assy_sigma: state.monte_carlo_analysis.entry_form.assy_sigma,
+                                n_iteration: state.analysis_state.entry_form.n_iteration,
+                                assy_sigma: state.analysis_state.entry_form.assy_sigma,
                             }
                             .save(),
                             Message::Saved,
@@ -168,7 +169,7 @@ impl Application for TolStack {
                     Message::HeaderMessage(area_header::Message::ExportCSV) => {
                         return Command::perform(
                             export_csv::serialize_csv(
-                                state.monte_carlo_analysis.simulation.results.export(),
+                                state.analysis_state.model_state.results.export(),
                             ),
                             Message::ExportComplete,
                         )
@@ -187,14 +188,13 @@ impl Application for TolStack {
                     ) => {
                         // Clone the contents of the stack editor tolerance list into the monte
                         // carlo simulation's input tolerance list.
-                        state.monte_carlo_analysis.input_stack =
-                            state.stack_editor.tolerances.clone();
+                        state.analysis_state.input_stack = state.stack_editor.tolerances.clone();
                         // Pass this message into the child so the computation gets kicked off.
                         let calculate_message = area_mc_analysis::Message::NewMcAnalysisMessage(
                             form_new_mc_analysis::Message::Calculate,
                         );
                         return state
-                            .monte_carlo_analysis
+                            .analysis_state
                             .update(calculate_message)
                             .map(move |message| Message::MonteCarloAnalysisMessage(message));
                     }
@@ -202,7 +202,7 @@ impl Application for TolStack {
                     Message::MonteCarloAnalysisMessage(message) => {
                         // TODO collect commands and run at end instead of breaking at match arm.
                         return state
-                            .monte_carlo_analysis
+                            .analysis_state
                             .update(message)
                             .map(move |message| Message::MonteCarloAnalysisMessage(message));
                     }
@@ -242,7 +242,7 @@ impl Application for TolStack {
                         *state = State {
                             stack_editor: StackEditor::new().tolerances(save_state.tolerances),
                             header: Header::new().title(save_state.name),
-                            monte_carlo_analysis: MonteCarloAnalysis::new()
+                            analysis_state: AnalysisState::new()
                                 .set_inputs(save_state.n_iteration, save_state.assy_sigma),
                             ..State::default()
                         };
@@ -267,8 +267,8 @@ impl Application for TolStack {
                         SavedState {
                             name: state.header.title.text.clone(),
                             tolerances: state.stack_editor.tolerances.clone(),
-                            n_iteration: state.monte_carlo_analysis.entry_form.n_iteration,
-                            assy_sigma: state.monte_carlo_analysis.entry_form.assy_sigma,
+                            n_iteration: state.analysis_state.entry_form.n_iteration,
+                            assy_sigma: state.analysis_state.entry_form.assy_sigma,
                         }
                         .save(),
                         Message::Saved,
@@ -287,7 +287,7 @@ impl Application for TolStack {
                 iss,
                 header: _,
                 stack_editor: _,
-                monte_carlo_analysis: _,
+                analysis_state: _,
                 dirty: _,
                 saving: _,
             }) => iss.check_style_file().map(Message::StyleUpdateAvailable),
@@ -302,7 +302,7 @@ impl Application for TolStack {
                 iss,
                 header,
                 stack_editor,
-                monte_carlo_analysis,
+                analysis_state,
                 dirty: _,
                 saving: _,
             }) => {
@@ -314,12 +314,12 @@ impl Application for TolStack {
                     .view(&iss)
                     .map(move |message| Message::StackEditorMessage(message));
 
-                let monte_carlo_analysis = monte_carlo_analysis
+                let analysis_state = analysis_state
                     .view(&iss)
                     .map(move |message| Message::MonteCarloAnalysisMessage(message));
 
                 let content = Column::new()
-                    .push(Row::new().push(stack_editor).push(monte_carlo_analysis))
+                    .push(Row::new().push(stack_editor).push(analysis_state))
                     .padding(iss.padding(&iss.home_padding));
 
                 let gui = Container::new(Column::new().push(header).push(content))

@@ -9,7 +9,7 @@ pub enum Message {
     IterEdited(String),
     SigmaEdited(String),
     Calculate,
-    CalculateComplete(Option<monte_carlo::Results>),
+    CalculateComplete(Option<structures::McResults>),
 }
 
 #[derive(Debug, Default, Clone)]
