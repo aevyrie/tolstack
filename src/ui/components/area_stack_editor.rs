@@ -36,8 +36,10 @@ impl StackEditor {
                 match &message {
                     form_new_tolerance::Message::CreateTol(input_text, input_type) => {
                         if !input_text.is_empty() {
-                            tolerances
-                                .push(ToleranceEntry::new(input_text.clone(), input_type.clone()));
+                            tolerances.push(
+                                ToleranceEntry::new(input_text.clone(), input_type.clone())
+                                    .with_editing(),
+                            );
                         }
                     }
                     form_new_tolerance::Message::TolNameChanged(_) => {}

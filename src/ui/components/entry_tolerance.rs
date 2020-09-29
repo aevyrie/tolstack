@@ -42,7 +42,58 @@ pub enum FormState {
         tolerance_pin_neg: text_input::State,
         sigma: text_input::State,
     },
-    Compound {},
+}
+impl FormState {
+    pub fn new(form_type: Tolerance) -> Self {
+        match form_type {
+            Tolerance::Linear(_) => FormState::Linear {
+                button_save: button::State::new(),
+                button_delete: button::State::new(),
+                description: text_input::State::new(),
+                dimension: text_input::State::new(),
+                tolerance_pos: text_input::State::new(),
+                tolerance_neg: text_input::State::new(),
+                sigma: text_input::State::new(),
+            },
+            Tolerance::Float(_) => FormState::Float {
+                button_save: button::State::new(),
+                button_delete: button::State::new(),
+                description: text_input::State::new(),
+                diameter_hole: text_input::State::new(),
+                diameter_pin: text_input::State::new(),
+                tolerance_hole_pos: text_input::State::new(),
+                tolerance_hole_neg: text_input::State::new(),
+                tolerance_pin_pos: text_input::State::new(),
+                tolerance_pin_neg: text_input::State::new(),
+                sigma: text_input::State::new(),
+            },
+        }
+    }
+    pub fn new_focused(form_type: Tolerance) -> Self {
+        match form_type {
+            Tolerance::Linear(_) => FormState::Linear {
+                button_save: button::State::new(),
+                button_delete: button::State::new(),
+                description: text_input::State::focused(),
+                dimension: text_input::State::new(),
+                tolerance_pos: text_input::State::new(),
+                tolerance_neg: text_input::State::new(),
+                sigma: text_input::State::new(),
+            },
+            Tolerance::Float(_) => FormState::Float {
+                button_save: button::State::new(),
+                button_delete: button::State::new(),
+                description: text_input::State::focused(),
+                diameter_hole: text_input::State::new(),
+                diameter_pin: text_input::State::new(),
+                tolerance_hole_pos: text_input::State::new(),
+                tolerance_hole_neg: text_input::State::new(),
+                tolerance_pin_pos: text_input::State::new(),
+                tolerance_pin_neg: text_input::State::new(),
+                sigma: text_input::State::new(),
+            },
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -131,6 +182,13 @@ impl ToleranceEntry {
         }
     }
 
+    pub fn with_editing(mut self) -> Self {
+        self.state = State::Editing {
+            form_tolentry: FormState::new(self.analysis_model),
+        };
+        self
+    }
+
     pub fn update(&mut self, message: Message) {
         match message {
             Message::EntryActive(is_active) => {
@@ -141,32 +199,8 @@ impl ToleranceEntry {
                 }
             }
             Message::EntryEdit => {
-                self.state = match self.analysis_model {
-                    Tolerance::Linear(_) => State::Editing {
-                        form_tolentry: FormState::Linear {
-                            button_save: button::State::new(),
-                            button_delete: button::State::new(),
-                            description: text_input::State::focused(),
-                            dimension: text_input::State::new(),
-                            tolerance_pos: text_input::State::new(),
-                            tolerance_neg: text_input::State::new(),
-                            sigma: text_input::State::new(),
-                        },
-                    },
-                    Tolerance::Float(_) => State::Editing {
-                        form_tolentry: FormState::Float {
-                            button_save: button::State::new(),
-                            button_delete: button::State::new(),
-                            description: text_input::State::focused(),
-                            diameter_hole: text_input::State::new(),
-                            diameter_pin: text_input::State::new(),
-                            tolerance_hole_pos: text_input::State::new(),
-                            tolerance_hole_neg: text_input::State::new(),
-                            tolerance_pin_pos: text_input::State::new(),
-                            tolerance_pin_neg: text_input::State::new(),
-                            sigma: text_input::State::new(),
-                        },
-                    },
+                self.state = State::Editing {
+                    form_tolentry: FormState::new_focused(self.analysis_model),
                 };
             }
             Message::EntryFinishEditing => {
@@ -808,7 +842,6 @@ impl ToleranceEntry {
                         .style(iss.container(&iss.tol_entry_container))
                         .into()
                 }
-                FormState::Compound {} => Container::new(Row::new()).into(),
             },
         }
     }
