@@ -186,15 +186,16 @@ impl MonteCarlo for FloatTL {
     fn mc_tolerance(&self) -> f64 {
         let hole_sample = self
             .hole
-            .sample_mc(DistributionParam::Uniform, BoundingParam::KeepAll);
+            .sample_mc(DistributionParam::Normal, BoundingParam::KeepAll);
         let pin_sample = self
             .pin
-            .sample_mc(DistributionParam::Uniform, BoundingParam::KeepAll);
+            .sample_mc(DistributionParam::Normal, BoundingParam::KeepAll);
         let hole_pin_slop = (hole_sample - pin_sample) / 2.0;
         if hole_pin_slop <= 0.0 {
             0.0
         } else {
-            DimTol::new(0.0, hole_pin_slop, hole_pin_slop, self.sigma).rand_bound_norm()
+            DimTol::new(0.0, hole_pin_slop, hole_pin_slop, self.sigma)
+                .sample_mc(DistributionParam::Uniform, BoundingParam::KeepAll)
         }
     }
     fn compute_multiplier(&mut self) {
@@ -249,18 +250,17 @@ impl DimTol {
     }
     fn rand_bound_uniform(&self) -> f64 {
         let mut sample: f64 = thread_rng().sample(Uniform::new_inclusive(-1.0, 1.0));
-        sample *= self.tol_multiplier * self.sigma;
+        sample = (sample * (self.tol_neg + self.tol_pos)) - self.tol_neg;
         // TODO: limit number of checks and error out if needed to escape infinite loop
         while sample < -self.tol_neg || sample > self.tol_pos {
             sample = thread_rng().sample(StandardNormal);
-            // Multiply by sigma to cancel out the sigma in the multiplier
-            sample *= self.tol_multiplier * self.sigma;
+            sample = (sample * (self.tol_neg + self.tol_pos)) - self.tol_neg;
         }
         sample
     }
     fn rand_unbounded_uniform(&self) -> f64 {
         let mut sample: f64 = thread_rng().sample(Uniform::new_inclusive(-1.0, 1.0));
-        sample *= self.tol_multiplier * self.sigma;
+        sample = (sample * (self.tol_neg + self.tol_pos)) - self.tol_neg;
         sample
     }
 
