@@ -578,6 +578,7 @@ pub struct IcedStyleSheet {
     pub mc_results_col_spacing: NamedSpacing,
     pub mc_results_container_inner_padding: NamedPadding,
     pub mc_results_container_outer_padding: NamedPadding,
+    pub results: NamedTextSize,
 
     // area_stack_editor
     pub editor_tol_spacing: NamedSpacing,
@@ -853,6 +854,7 @@ impl Default for IcedStyleSheet {
             mc_results_col_spacing: NamedSpacing::new("far", &spacing),
             mc_results_container_inner_padding: NamedPadding::new("panel_inner", &padding),
             mc_results_container_outer_padding: NamedPadding::new("panel_outer", &padding),
+            results: NamedTextSize::new("p", &text_size),
 
             //area_stack_editor
             editor_tol_spacing: NamedSpacing::new("near", &spacing),

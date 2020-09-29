@@ -24,8 +24,27 @@ pub enum SaveError {
     FormatError,
 }
 
+impl Default for SavedState {
+    fn default() -> Self {
+        SavedState {
+            name: "New Project".into(),
+            tolerances: Vec::new(),
+            n_iteration: 100000,
+            assy_sigma: 4.0,
+        }
+    }
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 impl SavedState {
+    pub async fn new() -> Result<SavedState, LoadError> {
+        Ok(SavedState {
+            name: "New Project".into(),
+            tolerances: Vec::new(),
+            n_iteration: 100000,
+            assy_sigma: 4.0,
+        })
+    }
     fn path() -> std::path::PathBuf {
         let mut path =
             if let Some(project_dirs) = directories::ProjectDirs::from("rs", "", "TolStack") {

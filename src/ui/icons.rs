@@ -36,3 +36,7 @@ pub fn load() -> Text {
 pub fn export() -> Text {
     icon('\u{e81d}')
 }
+
+pub fn new() -> Text {
+    icon('\u{e810}')
+}

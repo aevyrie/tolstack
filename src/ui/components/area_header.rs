@@ -8,6 +8,7 @@ use iced_native::Renderer;
 #[derive(Debug, Clone)]
 pub enum Message {
     LabelMessage(editable_label::Message),
+    NewFile,
     OpenFile,
     SaveFile,
     ExportCSV,
@@ -16,6 +17,7 @@ pub enum Message {
 #[derive(Debug, Default, Clone)]
 pub struct Header {
     pub title: EditableLabel,
+    button_new: button::State,
     button_open: button::State,
     button_save: button::State,
     button_export: button::State,
@@ -24,6 +26,7 @@ impl Header {
     pub fn new() -> Self {
         Header {
             title: EditableLabel::new("New Project", "Add a project name..."),
+            button_new: button::State::new(),
             button_open: button::State::new(),
             button_save: button::State::new(),
             button_export: button::State::new(),
@@ -32,6 +35,7 @@ impl Header {
     pub fn update(&mut self, message: Message) {
         let Header {
             title,
+            button_new,
             button_open,
             button_save,
             button_export,
@@ -41,6 +45,7 @@ impl Header {
                 // Pass the message into the title
                 title.update(label_message);
             }
+            Message::NewFile => (),   // This message is captured in main.rs
             Message::OpenFile => (),  // This message is captured in main.rs
             Message::SaveFile => (),  // This message is captured in main.rs
             Message::ExportCSV => (), // This message is captured in main.rs
@@ -49,6 +54,7 @@ impl Header {
     pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
         let Header {
             title,
+            button_new,
             button_open,
             button_save,
             button_export,
@@ -76,6 +82,9 @@ impl Header {
                 .center_x()
                 .center_y();
 
+        let button_new =
+            header_button(button_new, "New\n", icons::new(), iss).on_press(Message::NewFile);
+
         let button_open =
             header_button(button_open, "Open\n", icons::load(), iss).on_press(Message::OpenFile);
 
@@ -87,6 +96,7 @@ impl Header {
 
         let ribbon = Container::new(
             Row::new()
+                .push(button_new)
                 .push(button_open)
                 .push(button_save)
                 .push(button_export)

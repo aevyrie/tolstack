@@ -81,7 +81,8 @@ impl Application for TolStack {
     fn new(_flags: ()) -> (TolStack, Command<Message>) {
         (
             TolStack::Loading,
-            Command::perform(SavedState::load(), Message::Loaded),
+            Command::perform(SavedState::new(), Message::Loaded),
+            //Command::perform(SavedState::load(), Message::Loaded),
         )
     }
 
@@ -130,10 +131,15 @@ impl Application for TolStack {
                                 .set_inputs(state.n_iteration, state.assy_sigma),
                             ..State::default()
                         });
-                        return Command::perform(
-                            style::IcedStyleSheet::load(),
-                            Message::LoadedStyle,
-                        );
+
+                        if cfg!(debug_assertions) {
+                            return Command::perform(
+                                style::IcedStyleSheet::load(),
+                                Message::LoadedStyle,
+                            );
+                        } else {
+                            return Command::none();
+                        }
                     }
 
                     Message::Loaded(Err(_)) => {
@@ -149,6 +155,9 @@ impl Application for TolStack {
                 let mut saved = false;
 
                 match message {
+                    Message::HeaderMessage(area_header::Message::NewFile) => {
+                        return Command::perform(SavedState::new(), Message::Loaded)
+                    }
                     Message::HeaderMessage(area_header::Message::OpenFile) => {
                         return Command::perform(SavedState::open(), Message::Loaded)
                     }
@@ -290,7 +299,13 @@ impl Application for TolStack {
                 analysis_state: _,
                 dirty: _,
                 saving: _,
-            }) => iss.check_style_file().map(Message::StyleUpdateAvailable),
+            }) => {
+                if cfg!(debug_assertions) {
+                    iss.check_style_file().map(Message::StyleUpdateAvailable)
+                } else {
+                    Subscription::none()
+                }
+            }
         }
     }
 
