@@ -26,18 +26,12 @@ impl NewMonteCarloAnalysis {
             Message::IterEdited(input) => {
                 if input.parse::<usize>().is_ok() {
                     let mut number = input.parse::<usize>().unwrap();
-                    if number < 100000 {
-                        number = 100000
-                    };
                     self.n_iteration = number;
                 }
             }
             Message::SigmaEdited(input) => {
                 if input.parse::<f64>().is_ok() {
                     let mut number = input.parse::<f64>().unwrap();
-                    if number <= 1.0 {
-                        number = 1.0
-                    };
                     self.assy_sigma = number;
                 }
             }

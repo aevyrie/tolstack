@@ -11,6 +11,7 @@ pub enum Message {
     NewFile,
     OpenFile,
     SaveFile,
+    SaveAsFile,
     ExportCSV,
 }
 
@@ -21,6 +22,7 @@ pub struct Header {
     button_open: button::State,
     button_save: button::State,
     button_export: button::State,
+    button_save_as: button::State,
 }
 impl Header {
     pub fn new() -> Self {
@@ -30,6 +32,7 @@ impl Header {
             button_open: button::State::new(),
             button_save: button::State::new(),
             button_export: button::State::new(),
+            button_save_as: button::State::new(),
         }
     }
     pub fn update(&mut self, message: Message) {
@@ -39,6 +42,7 @@ impl Header {
             button_open,
             button_save,
             button_export,
+            button_save_as,
         } = self;
         match message {
             Message::LabelMessage(label_message) => {
@@ -48,6 +52,7 @@ impl Header {
             Message::NewFile => (),   // This message is captured in main.rs
             Message::OpenFile => (),  // This message is captured in main.rs
             Message::SaveFile => (),  // This message is captured in main.rs
+            Message::SaveAsFile => (), // This message is captured in main.rs
             Message::ExportCSV => (), // This message is captured in main.rs
         }
     }
@@ -58,6 +63,7 @@ impl Header {
             button_open,
             button_save,
             button_export,
+            button_save_as
         } = self;
         let project_label = Text::new("Project: ")
             .width(Length::Shrink)
@@ -91,6 +97,9 @@ impl Header {
         let button_save =
             header_button(button_save, "Save\n", icons::save(), iss).on_press(Message::SaveFile);
 
+        let button_save_as =
+            header_button(button_save_as, "Save As\n", icons::save(), iss).on_press(Message::SaveAsFile);
+
         let button_export = header_button(button_export, "Export CSV", icons::export(), iss)
             .on_press(Message::ExportCSV);
 
@@ -99,6 +108,7 @@ impl Header {
                 .push(button_new)
                 .push(button_open)
                 .push(button_save)
+                .push(button_save_as)
                 .push(button_export)
                 .width(Length::Fill)
                 .spacing(iss.spacing(&iss.header_button_external_spacing)),

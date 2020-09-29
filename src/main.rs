@@ -27,7 +27,7 @@ use iced::{
     Settings, Subscription, Text,
 };
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 fn main() {
     let mut settings = Settings::default();
@@ -49,6 +49,7 @@ struct State {
     analysis_state: AnalysisState,
     dirty: bool,
     saving: bool,
+    file_path: Option<PathBuf>,
 }
 // Messages - events for users to change the application state
 #[derive(Debug, Clone)]
@@ -58,8 +59,8 @@ enum Message {
     StackEditorMessage(area_stack_editor::Message),
     MonteCarloAnalysisMessage(area_mc_analysis::Message),
     //
-    Loaded(Result<SavedState, io::saved_state::LoadError>),
-    Saved(Result<(), io::saved_state::SaveError>),
+    Loaded(Result<(Option<PathBuf>, SavedState), io::saved_state::LoadError>),
+    Saved(Result<Option<PathBuf>, io::saved_state::SaveError>),
     ExportComplete(Result<(), io::export_csv::SaveError>),
     //
     StyleUpdateAvailable(bool),
@@ -101,11 +102,26 @@ impl Application for TolStack {
                 }
             }
         };
+        let path_str = match self {
+            TolStack::Loading => String::from(""),
+            TolStack::Loaded(state) => {
+                match &state.file_path {
+                    Some(path) => {
+                        match path.to_str() {
+                            Some(str) => format!(" - {}",String::from(str)),
+                            None => String::from(""),
+                        }
+                    }
+                    None => String::from("")
+                }
+            }
+        };
 
         format!(
-            "{}{} - TolStack Tolerance Analysis",
+            "{}{}{} - TolStack Tolerance Analysis",
             project_name,
-            if dirty { "*" } else { "" }
+            if dirty { "*" } else { "" },
+            path_str,
         )
     }
 
@@ -123,12 +139,13 @@ impl Application for TolStack {
             TolStack::Loading => {
                 match message {
                     // Take the loaded state and assign to the working state
-                    Message::Loaded(Ok(state)) => {
+                    Message::Loaded(Ok((path, state))) => {
                         *self = TolStack::Loaded(State {
                             stack_editor: StackEditor::new().tolerances(state.tolerances),
                             header: Header::new().title(state.name),
                             analysis_state: AnalysisState::new()
                                 .set_inputs(state.n_iteration, state.assy_sigma),
+                            file_path: path,
                             ..State::default()
                         });
 
@@ -163,16 +180,33 @@ impl Application for TolStack {
                     }
 
                     Message::HeaderMessage(area_header::Message::SaveFile) => {
-                        return Command::perform(
-                            SavedState {
-                                name: state.header.title.text.clone(),
-                                tolerances: state.stack_editor.tolerances.clone(),
-                                n_iteration: state.analysis_state.entry_form.n_iteration,
-                                assy_sigma: state.analysis_state.entry_form.assy_sigma,
+                        let save_data = SavedState {
+                            name: state.header.title.text.clone(),
+                            tolerances: state.stack_editor.tolerances.clone(),
+                            n_iteration: state.analysis_state.entry_form.n_iteration,
+                            assy_sigma: state.analysis_state.entry_form.assy_sigma,
+                        };
+
+                        match &state.file_path {
+                            Some(path) => {
+                                return Command::perform(
+                                    save_data.save(path.clone()),
+                                    Message::Saved,
+                                )
                             }
-                            .save(),
-                            Message::Saved,
-                        )
+                            None => return Command::perform(save_data.save_as(), Message::Saved),
+                        };
+                    }
+
+                    Message::HeaderMessage(area_header::Message::SaveAsFile) => {
+                        let save_data = SavedState {
+                            name: state.header.title.text.clone(),
+                            tolerances: state.stack_editor.tolerances.clone(),
+                            n_iteration: state.analysis_state.entry_form.n_iteration,
+                            assy_sigma: state.analysis_state.entry_form.assy_sigma,
+                        };
+
+                        return Command::perform(save_data.save_as(), Message::Saved)
                     }
 
                     Message::HeaderMessage(area_header::Message::ExportCSV) => {
@@ -242,17 +276,23 @@ impl Application for TolStack {
 
                     Message::StyleSaved(_) => {}
 
-                    Message::Saved(_) => {
-                        state.saving = false;
-                        saved = true;
+                    Message::Saved(save_result) => {
+                        if let Ok(path_result) = save_result {
+                            state.saving = false;
+                            saved = true;
+                            if let Some(path) = path_result {
+                                state.file_path = Some(path);
+                            }
+                        }
                     }
 
-                    Message::Loaded(Ok(save_state)) => {
+                    Message::Loaded(Ok((path, save_state))) => {
                         *state = State {
                             stack_editor: StackEditor::new().tolerances(save_state.tolerances),
                             header: Header::new().title(save_state.name),
                             analysis_state: AnalysisState::new()
                                 .set_inputs(save_state.n_iteration, save_state.assy_sigma),
+                            file_path: path,
                             ..State::default()
                         };
                     }
@@ -269,19 +309,22 @@ impl Application for TolStack {
                 }
 
                 if state.dirty && !state.saving {
-                    state.dirty = false;
-                    state.saving = true;
-
-                    Command::perform(
-                        SavedState {
-                            name: state.header.title.text.clone(),
-                            tolerances: state.stack_editor.tolerances.clone(),
-                            n_iteration: state.analysis_state.entry_form.n_iteration,
-                            assy_sigma: state.analysis_state.entry_form.assy_sigma,
-                        }
-                        .save(),
-                        Message::Saved,
-                    )
+                    if let Some(path) = &state.file_path {
+                        state.dirty = false;
+                        state.saving = true;
+                        Command::perform(
+                            SavedState {
+                                name: state.header.title.text.clone(),
+                                tolerances: state.stack_editor.tolerances.clone(),
+                                n_iteration: state.analysis_state.entry_form.n_iteration,
+                                assy_sigma: state.analysis_state.entry_form.assy_sigma,
+                            }
+                            .save(path.clone()),
+                            Message::Saved,
+                        )
+                    } else {
+                        Command::none()
+                    }
                 } else {
                     Command::none()
                 }
@@ -299,6 +342,7 @@ impl Application for TolStack {
                 analysis_state: _,
                 dirty: _,
                 saving: _,
+                file_path: _,
             }) => {
                 if cfg!(debug_assertions) {
                     iss.check_style_file().map(Message::StyleUpdateAvailable)
@@ -320,6 +364,7 @@ impl Application for TolStack {
                 analysis_state,
                 dirty: _,
                 saving: _,
+                file_path: _,
             }) => {
                 let header = header
                     .view(&iss)

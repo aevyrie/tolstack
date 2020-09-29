@@ -1,6 +1,7 @@
 use super::dialogs;
 use crate::ui::components::entry_tolerance::ToleranceEntry;
 use serde_derive::*;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SavedState {
@@ -37,13 +38,16 @@ impl Default for SavedState {
 
 #[cfg(not(target_arch = "wasm32"))]
 impl SavedState {
-    pub async fn new() -> Result<SavedState, LoadError> {
-        Ok(SavedState {
-            name: "New Project".into(),
-            tolerances: Vec::new(),
-            n_iteration: 100000,
-            assy_sigma: 4.0,
-        })
+    pub async fn new() -> Result<(Option<std::path::PathBuf>, SavedState), LoadError> {
+        Ok((
+            None,
+            SavedState {
+                name: "New Project".into(),
+                tolerances: Vec::new(),
+                n_iteration: 100000,
+                assy_sigma: 4.0,
+            },
+        ))
     }
     fn path() -> std::path::PathBuf {
         let mut path =
@@ -74,17 +78,16 @@ impl SavedState {
         serde_json::from_str(&contents).map_err(|_| LoadError::FormatError)
     }
 
-    pub async fn save(self) -> Result<(), SaveError> {
+    pub async fn save(self, path: PathBuf) -> Result<Option<PathBuf>, SaveError> {
         use async_std::prelude::*;
         let json = serde_json::to_string_pretty(&self).map_err(|_| SaveError::FormatError)?;
-        let path = Self::path();
         if let Some(dir) = path.parent() {
             async_std::fs::create_dir_all(dir)
                 .await
                 .map_err(|_| SaveError::DirectoryError)?;
         }
         {
-            let mut file = async_std::fs::File::create(path)
+            let mut file = async_std::fs::File::create(&path)
                 .await
                 .map_err(|_| SaveError::FileError)?;
             file.write_all(json.as_bytes())
@@ -95,10 +98,11 @@ impl SavedState {
         // This is a simple way to save at most once every couple seconds
         async_std::task::sleep(std::time::Duration::from_secs(2)).await;
 
-        Ok(())
+        Ok(Some(path))
     }
 
-    pub async fn open() -> Result<SavedState, LoadError> {
+    pub async fn open() -> Result<(Option<PathBuf>, SavedState), LoadError> {
+        use async_std::prelude::*;
         let path = match dialogs::open().await {
             Ok(path) => path,
             Err(error) => {
@@ -106,12 +110,8 @@ impl SavedState {
                 return Err(LoadError::FileError);
             }
         };
-
-        use async_std::prelude::*;
-
         let mut contents = String::new();
-
-        let mut file = async_std::fs::File::open(path)
+        let mut file = async_std::fs::File::open(&path)
             .await
             .map_err(|_| LoadError::FileError)?;
 
@@ -119,6 +119,37 @@ impl SavedState {
             .await
             .map_err(|_| LoadError::FileError)?;
 
-        serde_json::from_str(&contents).map_err(|_| LoadError::FormatError)
+        match serde_json::from_str(&contents).map_err(|_| LoadError::FormatError) {
+            Ok(data) => Ok((Some(path), data)),
+            Err(e) => Err(e),
+        }
+    }
+
+    pub async fn save_as(self) -> Result<Option<PathBuf>, SaveError> {
+        use async_std::prelude::*;
+        let path = match dialogs::save_as().await {
+            Ok(path) => path,
+            Err(error) => {
+                println!("{:?}", error);
+                return Err(SaveError::FileError);
+            }
+        };
+        let path = path.with_extension("json");
+        let json = serde_json::to_string_pretty(&self).map_err(|_| SaveError::FormatError)?;
+        if let Some(dir) = path.parent() {
+            async_std::fs::create_dir_all(dir)
+                .await
+                .map_err(|_| SaveError::DirectoryError)?;
+        }
+        {
+            let mut file = async_std::fs::File::create(&path)
+                .await
+                .map_err(|_| SaveError::FileError)?;
+            file.write_all(json.as_bytes())
+                .await
+                .map_err(|_| SaveError::WriteError)?;
+        }
+
+        Ok(Some(path))
     }
 }
