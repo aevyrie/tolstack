@@ -67,19 +67,31 @@ impl AnalysisState {
             .push(
                 Row::new()
                     .push(Text::new("Mean:"))
-                    .push(Text::new(format!("{:.3}", mc_results.mean)))
+                    .push(Text::new(format!("{:.2}", mc_results.mean)))
                     .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
             .push(
                 Row::new()
-                    .push(Text::new("Tolerance:"))
-                    .push(Text::new(format!("{:.3}", mc_results.tolerance)))
+                    .push(Text::new("Tolerance (+):"))
+                    .push(Text::new(format!("{:.2}", mc_results.tolerance_pos)))
                     .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
             .push(
                 Row::new()
-                    .push(Text::new("Standard Deviation:"))
-                    .push(Text::new(format!("{:.3}", mc_results.stddev)))
+                    .push(Text::new("Tolerance (-):"))
+                    .push(Text::new(format!("{:.2}", mc_results.tolerance_neg)))
+                    .spacing(iss.spacing(&iss.mc_results_row_spacing)),
+            )
+            .push(
+                Row::new()
+                    .push(Text::new("Standard Deviation (+):"))
+                    .push(Text::new(format!("{:.2}", mc_results.stddev_pos)))
+                    .spacing(iss.spacing(&iss.mc_results_row_spacing)),
+            )
+            .push(
+                Row::new()
+                    .push(Text::new("Standard Deviation (-):"))
+                    .push(Text::new(format!("{:.2}", mc_results.stddev_neg)))
                     .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
             .push(
@@ -91,31 +103,31 @@ impl AnalysisState {
             .push(
                 Row::new()
                     .push(Text::new("Worst Case Lower:"))
-                    .push(Text::new(format!("{:.3}", mc_results.worst_case_lower)))
+                    .push(Text::new(format!("{:.2}", mc_results.worst_case_lower)))
                     .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
             .push(
                 Row::new()
                     .push(Text::new("Worst Case Upper:"))
-                    .push(Text::new(format!("{:.3}", mc_results.worst_case_upper)))
+                    .push(Text::new(format!("{:.2}", mc_results.worst_case_upper)))
                     .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
             .push(
                 Row::new()
                     .push(Text::new("RSS Mean:"))
-                    .push(Text::new(format!("{:.3}", rss_results.mean())))
+                    .push(Text::new(format!("{:.2}", rss_results.mean())))
                     .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
             .push(
                 Row::new()
-                    .push(Text::new("RSS Tolerance+:"))
-                    .push(Text::new(format!("{:.3}", rss_results.tolerance_pos())))
+                    .push(Text::new("RSS Tolerance (+):"))
+                    .push(Text::new(format!("{:.2}", rss_results.tolerance_pos())))
                     .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
             .push(
                 Row::new()
-                    .push(Text::new("RSS Tolerance-:"))
-                    .push(Text::new(format!("{:.3}", rss_results.tolerance_neg())))
+                    .push(Text::new("RSS Tolerance (-):"))
+                    .push(Text::new(format!("{:.2}", rss_results.tolerance_neg())))
                     .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
             .spacing(iss.spacing(&iss.mc_results_col_spacing));

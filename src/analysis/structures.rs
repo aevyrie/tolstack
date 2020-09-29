@@ -133,8 +133,10 @@ impl AnalysisResults {
             if let Some(rss_result) = &self.rss {
                 let mut result = Vec::new();
                 result.push(mc_result.mean);
-                result.push(mc_result.tolerance);
-                result.push(mc_result.stddev);
+                result.push(mc_result.tolerance_pos);
+                result.push(mc_result.tolerance_neg);
+                result.push(mc_result.stddev_pos);
+                result.push(mc_result.stddev_neg);
                 result.push(mc_result.worst_case_lower);
                 result.push(mc_result.worst_case_upper);
                 result.push(rss_result.mean);
@@ -170,8 +172,10 @@ impl Default for AnalysisResults {
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct McResults {
     pub mean: f64,
-    pub tolerance: f64,
-    pub stddev: f64,
+    pub tolerance_pos: f64,
+    pub tolerance_neg: f64,
+    pub stddev_pos: f64,
+    pub stddev_neg: f64,
     pub iterations: usize,
     pub worst_case_upper: f64,
     pub worst_case_lower: f64,

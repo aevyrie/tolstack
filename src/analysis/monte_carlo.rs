@@ -17,22 +17,42 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
     let chunks = state.parameters.n_iterations / chunk_size;
     let real_iters = chunks * chunk_size;
     let mut result_mean = 0f64;
-    let mut result_stddev = 0f64;
+    let mut result_stddev_pos = 0f64;
+    let mut result_stddev_neg = 0f64;
 
     for n in 0..chunks {
         // TODO: validate n_iterations is nicely divisible by chunk_size and n_threads.
         // Gather samples into a stack that is `chunk_size` long for each Tolerance
         let stack = compute_stackup(state.tolerance_loop.clone(), chunk_size);
         // Sum each
-        let stack_mean = mean(&stack);
-        let stack_stddev = standard_deviation(&stack, Some(stack_mean));
+        let stack_mean: f64 = mean(&stack);
+        let stack_stddev_pos = standard_deviation(
+            &stack
+                .iter()
+                .cloned()
+                .filter(|x| x > &&stack_mean)
+                .collect::<Vec<f64>>(),
+            Some(stack_mean),
+        );
+        let stack_stddev_neg = standard_deviation(
+            &stack
+                .iter()
+                .cloned()
+                .filter(|x| x < &&stack_mean)
+                .collect::<Vec<f64>>(),
+            Some(stack_mean),
+        );
+
         // Weighted average
         result_mean =
             result_mean * (n as f64 / (n as f64 + 1.0)) + stack_mean * (1.0 / (n as f64 + 1.0));
-        result_stddev =
-            result_stddev * (n as f64 / (n as f64 + 1.0)) + stack_stddev * (1.0 / (n as f64 + 1.0));
+        result_stddev_pos = result_stddev_pos * (n as f64 / (n as f64 + 1.0))
+            + stack_stddev_pos * (1.0 / (n as f64 + 1.0));
+        result_stddev_neg = result_stddev_neg * (n as f64 / (n as f64 + 1.0))
+            + stack_stddev_neg * (1.0 / (n as f64 + 1.0));
     }
-    let result_tol = result_stddev * state.parameters.assy_sigma;
+    let result_tol_pos = result_stddev_pos * state.parameters.assy_sigma;
+    let result_tol_neg = result_stddev_neg * state.parameters.assy_sigma;
 
     let worst_case_dim = state.tolerance_loop.iter().fold(0.0, |acc, tol| {
         return acc
@@ -72,8 +92,10 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
 
     Ok(McResults {
         mean: result_mean,
-        tolerance: result_tol,
-        stddev: result_stddev,
+        tolerance_pos: result_tol_pos,
+        tolerance_neg: result_tol_neg,
+        stddev_pos: result_stddev_pos,
+        stddev_neg: result_stddev_neg,
         iterations: real_iters,
         worst_case_upper,
         worst_case_lower,
@@ -151,7 +173,7 @@ impl MonteCarlo for LinearTL {
         self.distance.dim
             + self
                 .distance
-                .sample_mc(DistributionParam::Normal, BoundingParam::DiscardOutOfSpec)
+                .sample_mc(DistributionParam::Normal, BoundingParam::KeepAll)
     }
     //fn get_name(&self) -> &str {
     //    &self.name
@@ -164,10 +186,10 @@ impl MonteCarlo for FloatTL {
     fn mc_tolerance(&self) -> f64 {
         let hole_sample = self
             .hole
-            .sample_mc(DistributionParam::Uniform, BoundingParam::DiscardOutOfSpec);
+            .sample_mc(DistributionParam::Uniform, BoundingParam::KeepAll);
         let pin_sample = self
             .pin
-            .sample_mc(DistributionParam::Uniform, BoundingParam::DiscardOutOfSpec);
+            .sample_mc(DistributionParam::Uniform, BoundingParam::KeepAll);
         let hole_pin_slop = (hole_sample - pin_sample) / 2.0;
         if hole_pin_slop <= 0.0 {
             0.0
