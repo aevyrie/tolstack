@@ -1,8 +1,6 @@
 //use crate::analysis::*;
 use crate::ui::style;
-use iced::{
-    button, text_input, Align, Button, Column, Element, Length, Row, Text, TextInput,
-};
+use iced::{button, text_input, Align, Button, Column, Element, Length, Row, Text, TextInput};
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -35,8 +33,7 @@ impl NewMonteCarloAnalysis {
                     self.assy_sigma = number;
                 }
             }
-            Message::Calculate => {}
-            //Message::CalculateComplete(_) => {}
+            Message::Calculate => {} //Message::CalculateComplete(_) => {}
         }
     }
     pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {

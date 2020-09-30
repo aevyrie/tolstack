@@ -48,3 +48,7 @@ pub fn add() -> Text {
 pub fn duplicate() -> Text {
     icon('\u{f0c5}')
 }
+
+pub fn help() -> Text {
+    icon('\u{f128}')
+}

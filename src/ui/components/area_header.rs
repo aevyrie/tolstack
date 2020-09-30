@@ -14,6 +14,7 @@ pub enum Message {
     ExportCSV,
     AddTolLinear,
     AddTolFloat,
+    Help,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -26,6 +27,7 @@ pub struct Header {
     button_save_as: button::State,
     button_add_tol_linear: button::State,
     button_add_tol_float: button::State,
+    button_help: button::State,
 }
 impl Header {
     pub fn new() -> Self {
@@ -38,6 +40,7 @@ impl Header {
             button_save_as: button::State::new(),
             button_add_tol_linear: button::State::new(),
             button_add_tol_float: button::State::new(),
+            button_help: button::State::new(),
         }
     }
     pub fn update(&mut self, message: Message) {
@@ -50,6 +53,7 @@ impl Header {
             button_save_as: _,
             button_add_tol_linear: _,
             button_add_tol_float: _,
+            button_help: _,
         } = self;
         match message {
             Message::LabelMessage(label_message) => {
@@ -69,6 +73,7 @@ impl Header {
             button_save_as,
             button_add_tol_linear,
             button_add_tol_float,
+            button_help,
         } = self;
         let project_label = Text::new("Project: ")
             .width(Length::Shrink)
@@ -116,6 +121,9 @@ impl Header {
             header_button(button_add_tol_float, "Add Float\n", icons::add(), iss)
                 .on_press(Message::AddTolFloat);
 
+        let button_help =
+            header_button(button_help, "Help\n", icons::help(), iss).on_press(Message::Help);
+
         let ribbon = Container::new(
             Row::new()
                 .push(button_new)
@@ -125,6 +133,7 @@ impl Header {
                 .push(button_export)
                 .push(button_add_tol_linear)
                 .push(button_add_tol_float)
+                .push(button_help)
                 .width(Length::Fill)
                 .spacing(iss.spacing(&iss.header_button_external_spacing)),
         )

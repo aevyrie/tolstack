@@ -67,6 +67,8 @@ enum Message {
     StyleUpdateAvailable(bool),
     LoadedStyle(Result<style::IcedStyleSheet, style::LoadError>),
     StyleSaved(Result<(), style::SaveError>),
+    //
+    HelpOpened,
 }
 
 // Loading state wrapper
@@ -223,7 +225,7 @@ impl Application for TolStack {
                                 Tolerance::Linear(LinearTL::default()),
                             ),
                         )),
-                    
+
                     Message::HeaderMessage(area_header::Message::AddTolFloat) => state
                         .stack_editor
                         .update(area_stack_editor::Message::NewEntryMessage(
@@ -232,6 +234,12 @@ impl Application for TolStack {
                                 Tolerance::Float(FloatTL::default()),
                             ),
                         )),
+
+                    Message::HeaderMessage(area_header::Message::Help) => {
+                        return Command::perform(help(), |_| Message::HelpOpened);
+                    }
+
+                    Message::HelpOpened => {}
 
                     Message::ExportComplete(_) => {}
 
@@ -423,4 +431,8 @@ fn loading_message() -> Element<'static, Message> {
     .center_y()
     .center_x()
     .into()
+}
+
+async fn help() {
+    webbrowser::open("https://aevyrie.github.io/tolstack/book/getting-started").unwrap();
 }
