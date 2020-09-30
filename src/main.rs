@@ -229,17 +229,19 @@ impl Application for TolStack {
                             form_new_mc_analysis::Message::Calculate,
                         ),
                     ) => {
-                        // Clone the contents of the stack editor tolerance list into the monte
-                        // carlo simulation's input tolerance list.
-                        state.analysis_state.input_stack = state.stack_editor.tolerances.clone();
-                        // Pass this message into the child so the computation gets kicked off.
-                        let calculate_message = area_mc_analysis::Message::NewMcAnalysisMessage(
-                            form_new_mc_analysis::Message::Calculate,
-                        );
-                        return state
-                            .analysis_state
-                            .update(calculate_message)
-                            .map(move |message| Message::MonteCarloAnalysisMessage(message));
+                        if state.stack_editor.tolerances.len() > 0 {
+                            // Clone the contents of the stack editor tolerance list into the monte
+                            // carlo simulation's input tolerance list.
+                            state.analysis_state.input_stack = state.stack_editor.tolerances.clone();
+                            // Pass this message into the child so the computation gets kicked off.
+                            let calculate_message = area_mc_analysis::Message::NewMcAnalysisMessage(
+                                form_new_mc_analysis::Message::Calculate,
+                            );
+                            return state
+                                .analysis_state
+                                .update(calculate_message)
+                                .map(move |message| Message::MonteCarloAnalysisMessage(message));
+                        }
                     }
 
                     Message::MonteCarloAnalysisMessage(message) => {
