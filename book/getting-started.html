@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Introduction - TolStack User Guide</title>
+        <title>Getting Started - TolStack User Guide</title>
         
         
 
@@ -93,7 +93,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="algorithm-details.html"><strong aria-hidden="true">3.</strong> Algorithm Details</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="getting-started.html" class="active"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="algorithm-details.html"><strong aria-hidden="true">3.</strong> Algorithm Details</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -159,63 +159,20 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1><a class="header" href="#introduction" id="introduction">Introduction</a></h1>
-<h2><a class="header" href="#overview" id="overview">Overview</a></h2>
-<p>TolStack is a tolerance analysis application for building and analyzing 1D geometric tolerance models. The goal of this tool is to make tolerance stackup analysis fast, easy, and error free. Built as a learning project with Rust using <a href="https://github.com/hecrj/iced"><code>iced</code></a>.</p>
-<h3><a class="header" href="#use-cases" id="use-cases">Use Cases</a></h3>
-<p>One-dimensional tolerance analysis is useful for answering questions like:</p>
-<ul>
-<li>Will this stack of plastic parts and PCBs fit into my enclosure 99.99% of the time?</li>
-<li>When I depress this button, will I make electrical contact with the switch before it bottoms out?</li>
-<li>Knowing the given tolerances of my purchased components, what part tolerances do I need to function?</li>
-</ul>
-<h3><a class="header" href="#features" id="features">Features</a></h3>
-<ul>
-<li>Build one-dimensional tolerance stackups in a visual editor</li>
-<li>Evaluate and tune your tolerances with:
-<ul>
-<li>Monte Carlo analysis</li>
-<li>RSS analysis</li>
-<li>Worst case tolerance analysis</li>
-</ul>
-</li>
-<li>Export results to CSV</li>
-</ul>
-<h2><a class="header" href="#background" id="background">Background</a></h2>
-<p><a href="https://en.wikipedia.org/wiki/Tolerance_analysis">Tolerance analysis</a> is used in Mechanical Engineering to quantify the accumulated dimensional variation in assemblies of parts. This is used to define part tolerances, and later verify that manufacturing processes are statistically capable of producing parts to this tolerance spec. Generally, the goal is to specify the widest possible tolerances to minimize scrap ($$$) while ensuring any combination of parts within these tolerances still fit together and function. GD&amp;T (ASME Y14.5) is commonly used as the languge to express three-dimensional tolerances.</p>
-<p>This application does not attempt to model all of the tolerances in your assembly, rather, this is a tool to help you model and understand critical tolerance stacks in one dimension. This greatly simplifies the modelling process and generally makes for much clearer, actionable, output. To construct a 1D model, you will need to:</p>
-<ol>
-<li>Determine the target measurement you want to evaluate.</li>
-<li>Define an axis to project this measurement onto (often times you can just project onto a plane).</li>
-<li>Define the positive and negative directions along your axis - this is very important!</li>
-<li>Determine the chain of dimensions needed to define the stackup that results in your target measurement.</li>
-<li>Using this chain of dimensions, record the dimensions and tolerances as projected on your axis, making sure the signs are correct.</li>
-</ol>
-<h2><a class="header" href="#build-instructions" id="build-instructions">Build Instructions</a></h2>
-<ol>
-<li>Install Rust via <a href="https://www.rust-lang.org/tools/install">Rustup</a>.</li>
-<li>Clone the repository with <code>git clone https://github.com/aevyrie/tolstack.git</code></li>
-<li>From the <code>tolstack</code> directory, run <code>cargo run --release</code> to build and launch the application with compiler optimizations.</li>
-</ol>
-<h3><a class="header" href="#hardware-requirements-and-software-dependencies" id="hardware-requirements-and-software-dependencies">Hardware Requirements and Software Dependencies</a></h3>
-<ul>
-<li>Make sure your graphics drivers are up to date!</li>
-<li>Linux/Windows: You will need a modern graphics card that supports Vulkan
-<ul>
-<li>Integrated graphics (Intel HDxxx) requires vulkan support, check <a href="https://www.intel.com/content/www/us/en/support/articles/000005524/graphics.html">here</a></li>
-</ul>
-</li>
-<li>MacOS: the backend uses Metal, check <a href="https://en.wikipedia.org/wiki/Metal_(API)#Supported_GPUs">here</a> for requirements</li>
-</ul>
+                        <h1><a class="header" href="#getting-started" id="getting-started">Getting Started</a></h1>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
+                            <a rel="prev" href="introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
 
                         
-                            <a rel="next" href="getting-started.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="algorithm-details.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -227,9 +184,13 @@
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
+                    <a rel="prev" href="introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
 
                 
-                    <a rel="next" href="getting-started.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="algorithm-details.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
