@@ -25,13 +25,8 @@ pub async fn serialize_csv(data: Vec<f64>) -> Result<(), SaveError> {
 }
 
 fn path() -> std::path::PathBuf {
-    let mut path = if let Some(project_dirs) = directories::ProjectDirs::from("rs", "", "TolStack")
-    {
-        project_dirs.data_dir().into()
-    } else {
-        std::env::current_dir().unwrap_or(std::path::PathBuf::new())
-    };
     let now = chrono::offset::Local::now();
+    let mut path = std::env::temp_dir();
     path.push(format!(
         "tolstack_export_{}_{}_{}_{}_{}_{}.csv",
         now.year(),
