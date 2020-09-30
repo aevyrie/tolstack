@@ -4,7 +4,6 @@ use std::error::Error;
 use std::sync::mpsc;
 use std::thread;
 
-use num::clamp;
 use rand::prelude::*;
 use rand_distr::{StandardNormal, Uniform};
 use statistical::*;
@@ -154,6 +153,7 @@ pub fn compute_stackup(tol_collection: Vec<Tolerance>, n_iterations: usize) -> V
     result
 }
 
+#[allow(dead_code)]
 impl Tolerance {
     fn compute_multiplier(&mut self) {
         match self {
@@ -212,6 +212,7 @@ pub enum DistributionParam {
     Uniform,
 }
 
+#[allow(dead_code)]
 pub enum BoundingParam {
     DiscardOutOfSpec,
     KeepAll,
@@ -271,6 +272,7 @@ impl DimTol {
 }
 
 /// Data for testing purposes
+#[allow(dead_code)]
 pub fn test_data() -> State {
     let parameters = Parameters {
         assy_sigma: 4.0,

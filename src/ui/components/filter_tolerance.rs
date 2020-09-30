@@ -20,10 +20,10 @@ impl ToleranceFilter {
     pub fn update(&mut self, message: Message) {
         let ToleranceFilter {
             filter_value,
-            all_button,
-            linear_button,
-            float_button,
-            compound_button,
+            all_button: _,
+            linear_button: _,
+            float_button: _,
+            compound_button: _,
         } = self;
         match message {
             Message::FilterChanged(filter) => {
@@ -37,7 +37,7 @@ impl ToleranceFilter {
             all_button,
             linear_button,
             float_button,
-            compound_button,
+            compound_button: _,
         } = self;
 
         let filter_button = |state, label, filter, current_filter| {

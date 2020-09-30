@@ -1,11 +1,8 @@
-use chrono;
-use colored::*;
-use iced::{button, container, futures, Background, Color, Subscription, Vector};
+use iced::{button, container, futures, Background, Color, Vector};
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use serde_derive::*;
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
-use std::time::Instant;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
 pub enum LoadError {
@@ -29,6 +26,7 @@ pub struct SerializableColor {
     a: f32,
 }
 
+#[allow(dead_code)]
 impl SerializableColor {
     fn from_rgba(r: u8, g: u8, b: u8, a: f32) -> Self {
         SerializableColor { r, b, g, a }
@@ -992,6 +990,7 @@ impl Default for IcedStyleSheet {
     }
 }
 
+#[allow(dead_code)]
 impl IcedStyleSheet {
     pub fn color(&self, name: &NamedColor) -> iced::Color {
         self.color.resolve(name)
@@ -1184,6 +1183,7 @@ where
     }
 }
 
+#[allow(dead_code)]
 pub enum Button {
     Filter { selected: bool },
     Choice { selected: bool },
@@ -1266,6 +1266,7 @@ impl button::StyleSheet for Button {
     }
 }
 
+#[allow(dead_code)]
 pub enum Container {
     Entry,
     Background,

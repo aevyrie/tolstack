@@ -18,8 +18,9 @@ mod io {
     pub mod saved_state;
 }
 
+use analysis::structures::*;
 use io::{export_csv, saved_state::*};
-use ui::{components::*, style, style::*};
+use ui::{components::*, style};
 
 use colored::*;
 use iced::{
@@ -104,17 +105,13 @@ impl Application for TolStack {
         };
         let path_str = match self {
             TolStack::Loading => String::from(""),
-            TolStack::Loaded(state) => {
-                match &state.file_path {
-                    Some(path) => {
-                        match path.to_str() {
-                            Some(str) => format!(" - {}",String::from(str)),
-                            None => String::from(""),
-                        }
-                    }
-                    None => String::from("")
-                }
-            }
+            TolStack::Loaded(state) => match &state.file_path {
+                Some(path) => match path.to_str() {
+                    Some(str) => format!(" - {}", String::from(str)),
+                    None => String::from(""),
+                },
+                None => String::from(""),
+            },
         };
 
         format!(
@@ -206,7 +203,7 @@ impl Application for TolStack {
                             assy_sigma: state.analysis_state.entry_form.assy_sigma,
                         };
 
-                        return Command::perform(save_data.save_as(), Message::Saved)
+                        return Command::perform(save_data.save_as(), Message::Saved);
                     }
 
                     Message::HeaderMessage(area_header::Message::ExportCSV) => {
@@ -217,6 +214,24 @@ impl Application for TolStack {
                             Message::ExportComplete,
                         )
                     }
+
+                    Message::HeaderMessage(area_header::Message::AddTolLinear) => state
+                        .stack_editor
+                        .update(area_stack_editor::Message::NewEntryMessage(
+                            form_new_tolerance::Message::CreateTol(
+                                String::from("New Linear Tolerance"),
+                                Tolerance::Linear(LinearTL::default()),
+                            ),
+                        )),
+                    
+                    Message::HeaderMessage(area_header::Message::AddTolFloat) => state
+                        .stack_editor
+                        .update(area_stack_editor::Message::NewEntryMessage(
+                            form_new_tolerance::Message::CreateTol(
+                                String::from("New Float Tolerance"),
+                                Tolerance::Float(FloatTL::default()),
+                            ),
+                        )),
 
                     Message::ExportComplete(_) => {}
 
@@ -232,7 +247,8 @@ impl Application for TolStack {
                         if state.stack_editor.tolerances.len() > 0 {
                             // Clone the contents of the stack editor tolerance list into the monte
                             // carlo simulation's input tolerance list.
-                            state.analysis_state.input_stack = state.stack_editor.tolerances.clone();
+                            state.analysis_state.input_stack =
+                                state.stack_editor.tolerances.clone();
                             // Pass this message into the child so the computation gets kicked off.
                             let calculate_message = area_mc_analysis::Message::NewMcAnalysisMessage(
                                 form_new_mc_analysis::Message::Calculate,

@@ -22,7 +22,7 @@ impl AnalysisState {
         let AnalysisState {
             entry_form,
             model_state,
-            input_stack,
+            input_stack: _,
         } = self;
         match message {
             Message::NewMcAnalysisMessage(form_new_mc_analysis::Message::Calculate) => {
@@ -48,7 +48,7 @@ impl AnalysisState {
         let AnalysisState {
             entry_form,
             model_state,
-            input_stack,
+            input_stack: _,
         } = self;
         let mc_default = structures::McResults::default();
         let rss_default = structures::RssResults::default();

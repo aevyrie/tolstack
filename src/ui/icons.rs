@@ -40,3 +40,11 @@ pub fn export() -> Text {
 pub fn new() -> Text {
     icon('\u{e810}')
 }
+
+pub fn add() -> Text {
+    icon('\u{e80c}')
+}
+
+pub fn duplicate() -> Text {
+    icon('\u{f0c5}')
+}

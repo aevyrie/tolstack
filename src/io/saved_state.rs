@@ -49,34 +49,6 @@ impl SavedState {
             },
         ))
     }
-    fn path() -> std::path::PathBuf {
-        let mut path =
-            if let Some(project_dirs) = directories::ProjectDirs::from("rs", "", "TolStack") {
-                project_dirs.data_dir().into()
-            } else {
-                std::env::current_dir().unwrap_or(std::path::PathBuf::new())
-            };
-
-        path.push("tolstack.json");
-
-        path
-    }
-
-    pub async fn load() -> Result<SavedState, LoadError> {
-        use async_std::prelude::*;
-
-        let mut contents = String::new();
-
-        let mut file = async_std::fs::File::open(Self::path())
-            .await
-            .map_err(|_| LoadError::FileError)?;
-
-        file.read_to_string(&mut contents)
-            .await
-            .map_err(|_| LoadError::FileError)?;
-
-        serde_json::from_str(&contents).map_err(|_| LoadError::FormatError)
-    }
 
     pub async fn save(self, path: PathBuf) -> Result<Option<PathBuf>, SaveError> {
         use async_std::prelude::*;

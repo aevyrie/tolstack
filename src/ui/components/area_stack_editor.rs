@@ -29,7 +29,7 @@ impl StackEditor {
             entry_form,
             filter,
             tolerances,
-            scroll_state,
+            scroll_state: _,
         } = self;
         match message {
             Message::NewEntryMessage(message) => {
@@ -66,7 +66,7 @@ impl StackEditor {
                     entry_tolerance::Message::EntryFinishEditing => match tolerances.get_mut(i) {
                         Some(entry) => match &entry.input {
                             FormValues::Linear {
-                                description,
+                                description: _,
                                 dimension,
                                 tolerance_pos,
                                 tolerance_neg,
@@ -126,7 +126,7 @@ impl StackEditor {
                                 }
                             }
                             FormValues::Float {
-                                description,
+                                description: _,
                                 diameter_hole,
                                 diameter_pin,
                                 tolerance_hole_pos,
@@ -235,10 +235,10 @@ impl StackEditor {
     }
     pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
         let StackEditor {
-            entry_form,
+            entry_form: _,
             filter,
             tolerances,
-            scroll_state,
+            scroll_state: _,
         } = self;
 
         let filtered_tols = tolerances

@@ -1,9 +1,5 @@
 /// Contains structures used to define tolerances in a tolerance loop.
 use serde_derive::*;
-use std::error::Error;
-use std::fs::File;
-use std::io::prelude::*;
-use std::path::Path;
 
 #[derive(Copy, Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
 pub struct DimTol {
@@ -65,47 +61,6 @@ pub struct FloatTL {
 impl FloatTL {
     pub fn new(hole: DimTol, pin: DimTol, sigma: f64) -> Self {
         FloatTL { hole, pin, sigma }
-    }
-}
-
-#[derive(Copy, Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
-pub struct CompoundFloatTL {
-    pub datum_start: DimTol,
-    pub datum_end: DimTol,
-    pub float_list: OffsetFloat,
-    pub sigma: f64,
-}
-impl CompoundFloatTL {
-    pub fn new(
-        datumtime_start: DimTol,
-        datumend: DimTol,
-        floatlist: OffsetFloat,
-        sigma: f64,
-    ) -> Self {
-        CompoundFloatTL {
-            datum_start: datumtime_start,
-            datum_end: datumend,
-            float_list: floatlist,
-            sigma,
-        }
-    }
-}
-
-#[derive(Copy, Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
-pub struct OffsetFloat {
-    pub hole: DimTol,
-    pub pin: DimTol,
-    pub hole_spacing: DimTol,
-    pub pin_spacing: DimTol,
-}
-impl OffsetFloat {
-    pub fn new(hole: DimTol, pin: DimTol, hole_spacing: DimTol, pin_spacing: DimTol) -> Self {
-        OffsetFloat {
-            hole,
-            pin,
-            hole_spacing,
-            pin_spacing,
-        }
     }
 }
 
@@ -222,27 +177,6 @@ impl State {
             tolerance_loop: Vec::new(),
             results: AnalysisResults::default(),
         }
-    }
-    pub fn serialize_json(&self, filename: &str) -> Result<(), Box<dyn Error>> {
-        let data = serde_json::to_string_pretty(self)?;
-        let filename_full = &[filename, ".json"].concat();
-        let path = Path::new(filename_full);
-        Self::file_write(path, data)?;
-        Ok(())
-    }
-    pub fn file_write(path: &Path, data: String) -> Result<(), Box<dyn Error>> {
-        let display = path.display();
-
-        let mut file = match File::create(&path) {
-            Err(why) => panic!("Couldn't create {}: {}", display, why.to_string()),
-            Ok(file) => file,
-        };
-
-        match file.write_all(data.as_bytes()) {
-            Err(why) => panic!("Couldn't write to {}: {}", display, why.to_string()),
-            Ok(_) => println!("Saving data to {}", display),
-        }
-        Ok(())
     }
     pub fn add(&mut self, tolerance: Tolerance) {
         self.tolerance_loop.push(tolerance);

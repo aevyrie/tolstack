@@ -850,7 +850,7 @@ impl ToleranceEntry {
 enum NumericString {
     Number,
     Positive,
-    Negative,
+    //Negative,
 }
 impl NumericString {
     pub fn eval(old: &str, input: &str, criteria: Self) -> String {
@@ -860,7 +860,7 @@ impl NumericString {
                 if match criteria {
                     NumericString::Number => true,
                     NumericString::Positive => numeric_input >= 0.0,
-                    NumericString::Negative => numeric_input < 0.0,
+                    //NumericString::Negative => numeric_input < 0.0,
                 } {
                     input.to_string()
                 } else {
@@ -874,7 +874,7 @@ impl NumericString {
             false => {
                 if match criteria {
                     NumericString::Number => input == "" || input == "-" || input == ".",
-                    NumericString::Negative => input == "" || input == "-" || input == ".",
+                    //NumericString::Negative => input == "" || input == "-" || input == ".",
                     NumericString::Positive => input == "" || input == ".",
                 } {
                     input.to_string()

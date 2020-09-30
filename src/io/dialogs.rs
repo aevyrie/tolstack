@@ -6,7 +6,7 @@ pub async fn open() -> Result<PathBuf, io::Error> {
     let result: nfd::Response =
         match async { return nfd::open_file_dialog(Some("json"), None) }.await {
             Ok(result) => result,
-            Err(e) => {
+            Err(_) => {
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidData,
                     "Unable to unwrap data from new file dialog",
@@ -47,7 +47,7 @@ pub async fn save_as() -> Result<PathBuf, io::Error> {
     let result: nfd::Response =
         match async { return nfd::open_save_dialog(Some("json"), None) }.await {
             Ok(result) => result,
-            Err(e) => {
+            Err(_) => {
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidData,
                     "Unable to unwrap data from new file dialog",

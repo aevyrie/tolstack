@@ -3,7 +3,6 @@ use iced::{
     button, Align, Button, Column, Container, Element, HorizontalAlignment, Length, Row, Text,
     VerticalAlignment,
 };
-use iced_native::Renderer;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -13,6 +12,8 @@ pub enum Message {
     SaveFile,
     SaveAsFile,
     ExportCSV,
+    AddTolLinear,
+    AddTolFloat,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -23,6 +24,8 @@ pub struct Header {
     button_save: button::State,
     button_export: button::State,
     button_save_as: button::State,
+    button_add_tol_linear: button::State,
+    button_add_tol_float: button::State,
 }
 impl Header {
     pub fn new() -> Self {
@@ -33,27 +36,27 @@ impl Header {
             button_save: button::State::new(),
             button_export: button::State::new(),
             button_save_as: button::State::new(),
+            button_add_tol_linear: button::State::new(),
+            button_add_tol_float: button::State::new(),
         }
     }
     pub fn update(&mut self, message: Message) {
         let Header {
             title,
-            button_new,
-            button_open,
-            button_save,
-            button_export,
-            button_save_as,
+            button_new: _,
+            button_open: _,
+            button_save: _,
+            button_export: _,
+            button_save_as: _,
+            button_add_tol_linear: _,
+            button_add_tol_float: _,
         } = self;
         match message {
             Message::LabelMessage(label_message) => {
                 // Pass the message into the title
                 title.update(label_message);
             }
-            Message::NewFile => (),   // This message is captured in main.rs
-            Message::OpenFile => (),  // This message is captured in main.rs
-            Message::SaveFile => (),  // This message is captured in main.rs
-            Message::SaveAsFile => (), // This message is captured in main.rs
-            Message::ExportCSV => (), // This message is captured in main.rs
+            _ => (), // This message is captured in main.rs
         }
     }
     pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
@@ -63,7 +66,9 @@ impl Header {
             button_open,
             button_save,
             button_export,
-            button_save_as
+            button_save_as,
+            button_add_tol_linear,
+            button_add_tol_float,
         } = self;
         let project_label = Text::new("Project: ")
             .width(Length::Shrink)
@@ -97,11 +102,19 @@ impl Header {
         let button_save =
             header_button(button_save, "Save\n", icons::save(), iss).on_press(Message::SaveFile);
 
-        let button_save_as =
-            header_button(button_save_as, "Save As\n", icons::save(), iss).on_press(Message::SaveAsFile);
+        let button_save_as = header_button(button_save_as, "Save As\n", icons::duplicate(), iss)
+            .on_press(Message::SaveAsFile);
 
         let button_export = header_button(button_export, "Export CSV", icons::export(), iss)
             .on_press(Message::ExportCSV);
+
+        let button_add_tol_linear =
+            header_button(button_add_tol_linear, "Add Linear\n", icons::add(), iss)
+                .on_press(Message::AddTolLinear);
+
+        let button_add_tol_float =
+            header_button(button_add_tol_float, "Add Float\n", icons::add(), iss)
+                .on_press(Message::AddTolFloat);
 
         let ribbon = Container::new(
             Row::new()
@@ -110,6 +123,8 @@ impl Header {
                 .push(button_save)
                 .push(button_save_as)
                 .push(button_export)
+                .push(button_add_tol_linear)
+                .push(button_add_tol_float)
                 .width(Length::Fill)
                 .spacing(iss.spacing(&iss.header_button_external_spacing)),
         )

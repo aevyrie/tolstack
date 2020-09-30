@@ -1,7 +1,7 @@
-use crate::analysis::*;
+//use crate::analysis::*;
 use crate::ui::style;
 use iced::{
-    button, text_input, Align, Button, Column, Command, Element, Length, Row, Text, TextInput,
+    button, text_input, Align, Button, Column, Element, Length, Row, Text, TextInput,
 };
 
 #[derive(Debug, Clone)]
@@ -9,7 +9,7 @@ pub enum Message {
     IterEdited(String),
     SigmaEdited(String),
     Calculate,
-    CalculateComplete(Option<structures::McResults>),
+    //CalculateComplete(Option<structures::McResults>),
 }
 
 #[derive(Debug, Default, Clone)]
@@ -25,18 +25,18 @@ impl NewMonteCarloAnalysis {
         match message {
             Message::IterEdited(input) => {
                 if input.parse::<usize>().is_ok() {
-                    let mut number = input.parse::<usize>().unwrap();
+                    let number = input.parse::<usize>().unwrap();
                     self.n_iteration = number;
                 }
             }
             Message::SigmaEdited(input) => {
                 if input.parse::<f64>().is_ok() {
-                    let mut number = input.parse::<f64>().unwrap();
+                    let number = input.parse::<f64>().unwrap();
                     self.assy_sigma = number;
                 }
             }
             Message::Calculate => {}
-            Message::CalculateComplete(_) => {}
+            //Message::CalculateComplete(_) => {}
         }
     }
     pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {

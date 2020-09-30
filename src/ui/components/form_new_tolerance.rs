@@ -42,7 +42,7 @@ impl NewToleranceEntry {
             tolerance_text_value,
             state_linear_button,
             state_float_button,
-            state_compound_button,
+            state_compound_button: _,
             state_tolerance_text,
         } = self;
 
