@@ -617,6 +617,7 @@ pub struct IcedStyleSheet {
     pub button_inactive: StyledButton,
     pub button_constructive: StyledButton,
     pub button_destructive: StyledButton,
+    pub button_icon: StyledButton,
 
     // Named propery lists
     pub color: ColorList,
@@ -633,6 +634,15 @@ impl Default for IcedStyleSheet {
     fn default() -> Self {
         // Define classes first so they can be referenced in the IcedStyleSheet construction
         let color = ColorList::new()
+            .add(
+                "none",
+                SerializableColor {
+                    r: 0,
+                    g: 0,
+                    b: 0,
+                    a: 0.0,
+                },
+            )
             .add(
                 "primary",
                 SerializableColor {
@@ -776,14 +786,14 @@ impl Default for IcedStyleSheet {
             .add("h1", 32)
             .add("h2", 24)
             .add("h3", 20)
-            .add("p", 15)
+            .add("p", 14)
             .add("icon_huge", 25)
             .add("icon_medium", 18);
         let padding = PaddingList::new()
-            .add("tiny", 1)
+            .add("tiny", 2)
             .add("narrow", 10)
             .add("wide", 20)
-            .add("extra_wide", 30)
+            .add("extra_wide", 50)
             .add("panel_outer", 10)
             .add("panel_inner", 30);
         let spacing = SpacingList::new()
@@ -845,7 +855,7 @@ impl Default for IcedStyleSheet {
                 border_radius: NamedRadius::new("none", &radius),
                 border_width: NamedWidth::new("none", &width),
             },
-            home_padding: NamedPadding::new("narrow", &padding),
+            home_padding: NamedPadding::new("extra_wide", &padding),
 
             //area_mc_analysis
             mc_results_row_spacing: NamedSpacing::new("far", &spacing),
@@ -858,7 +868,7 @@ impl Default for IcedStyleSheet {
             editor_tol_spacing: NamedSpacing::new("near", &spacing),
             editor_content_spacing: NamedSpacing::new("far", &spacing),
             editor_title_text_size: NamedTextSize::new("h2", &text_size),
-            editor_scroll_area_padding: NamedPadding::new("narrow", &padding),
+            editor_scroll_area_padding: NamedPadding::new("wide", &padding),
             editor_scroll_area_padding_correction: NamedPadding::new("tiny", &padding),
             editor_scroll_container: StyledContainer {
                 text_color: NamedColor::new("text", &color),
@@ -902,7 +912,7 @@ impl Default for IcedStyleSheet {
                 background: NamedColor::new("panel", &color),
                 border_color: NamedColor::new("panel_border", &color),
                 border_radius: NamedRadius::new("none", &radius),
-                border_width: NamedWidth::new("thin", &width),
+                border_width: NamedWidth::new("none", &width),
             },
 
             // General Buttons
@@ -975,6 +985,20 @@ impl Default for IcedStyleSheet {
                 hover_border_width: NamedWidth::new("none", &width),
                 hover_border_color: NamedColor::new("primary", &color),
                 hover_text_color: NamedColor::new("text", &color),
+            },
+            button_icon: StyledButton {
+                active_shadow_offset: NamedVector::new("none", &vector),
+                active_background: NamedColor::new("none", &color),
+                active_border_radius: NamedRadius::new("none", &radius),
+                active_border_width: NamedWidth::new("none", &width),
+                active_border_color: NamedColor::new("none", &color),
+                active_text_color: NamedColor::new("text", &color),
+                hover_shadow_offset: NamedVector::new("none", &vector),
+                hover_background: NamedColor::new("none", &color),
+                hover_border_radius: NamedRadius::new("none", &radius),
+                hover_border_width: NamedWidth::new("none", &width),
+                hover_border_color: NamedColor::new("none", &color),
+                hover_text_color: NamedColor::new("primary", &color),
             },
 
             // Classes placed at end to avoid needing a .clone()

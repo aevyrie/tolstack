@@ -11,6 +11,7 @@ pub enum Message {
     EntryMessage(usize, entry_tolerance::Message),
     FilterMessage(filter_tolerance::Message),
     NewEntryMessage(form_new_tolerance::Message),
+    LabelMessage(editable_label::Message),
 }
 
 #[derive(Debug, Default, Clone)]
@@ -19,10 +20,18 @@ pub struct StackEditor {
     filter: ToleranceFilter,
     pub tolerances: Vec<ToleranceEntry>,
     scroll_state: scrollable::State,
+    pub title: EditableLabel,
 }
 impl StackEditor {
     pub fn new() -> Self {
-        StackEditor::default()
+        StackEditor {
+            title: EditableLabel::new("New Stack", "Add a name..."),
+            ..Default::default()
+        }
+    }
+    pub fn title(&mut self, title: String) -> Self {
+        self.title.text = title;
+        self.clone()
     }
     pub fn update(&mut self, message: Message) {
         let StackEditor {
@@ -30,6 +39,7 @@ impl StackEditor {
             filter,
             tolerances,
             scroll_state: _,
+            title,
         } = self;
         match message {
             Message::NewEntryMessage(message) => {
@@ -231,6 +241,11 @@ impl StackEditor {
                     tol.update(message);
                 }
             }
+
+            Message::LabelMessage(label_message) => {
+                // Pass the message into the title
+                title.update(label_message);
+            }
         }
     }
     pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
@@ -239,6 +254,7 @@ impl StackEditor {
             filter,
             tolerances,
             scroll_state: _,
+            title,
         } = self;
 
         let filtered_tols = tolerances
@@ -274,43 +290,46 @@ impl StackEditor {
         let content = Column::new()
             .spacing(iss.spacing(&iss.editor_tol_spacing))
             .push(tolerances);
+
+        /*
         let stack_title = Text::new("Tolerance Stack")
             .width(Length::Fill)
             .size(iss.text_size(&iss.editor_title_text_size))
             .horizontal_alignment(HorizontalAlignment::Left);
+        */
+
+        let stack_title = title
+            .view(&iss)
+            .map(move |message| Message::LabelMessage(message));
+
         let scrollable_content = Container::new(
             Scrollable::new(&mut self.scroll_state)
                 .height(Length::Fill)
-                .width(Length::Shrink)
+                .width(Length::Fill)
                 .push(
-                    Container::new(content)
-                        .width(Length::Shrink)
-                        .center_x()
-                        .padding(iss.padding(&iss.editor_scroll_area_padding)),
+                    Container::new(content).padding(iss.padding(&iss.editor_scroll_area_padding)),
                 ),
         )
         .padding(iss.padding(&iss.editor_scroll_area_padding_correction))
-        .style(iss.container(&iss.editor_scroll_container));
+        .style(iss.container(&iss.editor_scroll_container))
+        .height(Length::Fill);
+
         let filter_controls = filter
             .view(&iss)
             .map(move |message| Message::FilterMessage(message));
+
         let tol_stack_area = Container::new(
-            Container::new(
-                Column::new()
-                    .push(
-                        Row::new()
-                            .push(stack_title)
-                            .push(filter_controls)
-                            .padding(iss.padding(&iss.editor_header_padding))
-                            .align_items(Align::Center),
-                    )
-                    .push(scrollable_content),
-            )
-            .style(iss.container(&iss.panel_container))
-            .padding(iss.padding(&iss.editor_container_inner_padding))
-            .width(Length::Shrink),
+            Column::new()
+                .push(
+                    Row::new()
+                        .push(stack_title)
+                        .push(filter_controls)
+                        .align_items(Align::Center),
+                )
+                .push(scrollable_content)
+                .spacing(iss.spacing(&iss.editor_content_spacing))
+                .max_width(1000),
         )
-        .padding(iss.padding(&iss.editor_container_outer_padding))
         .width(Length::Fill)
         .center_x();
 
@@ -327,12 +346,7 @@ impl StackEditor {
         .width(Length::Fill)
         .center_x();
 
-        let tol_chain_input = Column::new()
-            .push(new_tol_area)
-            .push(tol_stack_area)
-            .width(Length::FillPortion(3));
-
-        tol_chain_input.into()
+        tol_stack_area.into()
     }
     pub fn tolerances(&mut self, tolerances: Vec<ToleranceEntry>) -> Self {
         self.tolerances = tolerances;
@@ -343,7 +357,7 @@ impl StackEditor {
 fn empty_message(message: &str) -> Element<'static, Message> {
     Container::new(
         Text::new(message)
-            .width(Length::Fill)
+            //.width(Length::Fill)
             .size(25)
             .horizontal_alignment(HorizontalAlignment::Center)
             .color([0.7, 0.7, 0.7]),
@@ -351,5 +365,6 @@ fn empty_message(message: &str) -> Element<'static, Message> {
     .width(Length::Fill)
     .height(Length::Units(200))
     .center_y()
+    .center_x()
     .into()
 }

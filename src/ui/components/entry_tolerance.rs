@@ -419,7 +419,7 @@ impl ToleranceEntry {
                     )
                     .on_press(Message::EntryFinishEditing)
                     .padding(10)
-                    .style(style::Button::Constructive);
+                    .style(iss.button(&iss.button_constructive));
 
                     let view_button_delete = Button::new(
                         button_delete,
@@ -430,7 +430,7 @@ impl ToleranceEntry {
                     )
                     .on_press(Message::EntryDelete)
                     .padding(10)
-                    .style(style::Button::Destructive);
+                    .style(iss.button(&iss.button_destructive));
 
                     let view_description = TextInput::new(
                         description,
@@ -600,7 +600,7 @@ impl ToleranceEntry {
                     )
                     .on_press(Message::EntryFinishEditing)
                     .padding(10)
-                    .style(style::Button::Constructive);
+                    .style(iss.button(&iss.button_constructive));
 
                     let view_button_delete = Button::new(
                         button_delete,
@@ -611,7 +611,7 @@ impl ToleranceEntry {
                     )
                     .on_press(Message::EntryDelete)
                     .padding(10)
-                    .style(style::Button::Destructive);
+                    .style(iss.button(&iss.button_destructive));
 
                     let view_description = TextInput::new(
                         description,

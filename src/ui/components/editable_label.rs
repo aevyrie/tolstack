@@ -68,8 +68,7 @@ impl EditableLabel {
             State::Idle { edit_button } => {
                 let label = Text::new(self.text.clone())
                     .width(Length::Shrink)
-                    .size(iss.text_size(&iss.editablelabel_label_text_size))
-                    .color(iss.color(&iss.editablelabel_label_color))
+                    .size(iss.text_size(&iss.editor_title_text_size))
                     .horizontal_alignment(HorizontalAlignment::Left);
 
                 let row_contents = Row::new()
@@ -77,13 +76,13 @@ impl EditableLabel {
                     .align_items(Align::Center)
                     .push(label)
                     .push(
-                        Button::new(edit_button, icons::edit())
+                        Button::new(edit_button, icons::edit().size(20))
                             .on_press(Message::Edit)
                             .padding(10)
-                            .style(style::Button::Icon),
+                            .style(iss.button(&iss.button_icon)),
                     );
 
-                Container::new(row_contents).into()
+                Container::new(row_contents).width(Length::Fill).into()
             }
             State::Editing { text_input } => {
                 let text_input = TextInput::new(
@@ -94,14 +93,13 @@ impl EditableLabel {
                 )
                 .on_submit(Message::FinishEditing)
                 .padding(10)
-                .width(Length::Fill);
+                .width(Length::Units(500));
 
                 let row_contents = Row::new()
-                    .padding(10)
                     .spacing(20)
                     .align_items(Align::Center)
                     .push(text_input);
-                Container::new(row_contents).into()
+                Container::new(row_contents).width(Length::Fill).into()
             }
         }
     }

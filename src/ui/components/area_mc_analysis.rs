@@ -186,12 +186,11 @@ impl AnalysisState {
                         .padding(iss.padding(&iss.mc_results_container_inner_padding))
                         .height(Length::Fill),
                 )
-                .padding(iss.padding(&iss.mc_results_container_outer_padding))
                 .height(Length::Fill)
                 .center_x(),
             )
             .height(Length::Fill)
-            .width(Length::FillPortion(2));
+            .width(Length::Fill);
 
         tol_chain_output.into()
     }

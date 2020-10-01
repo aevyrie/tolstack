@@ -50,9 +50,9 @@ impl SavedState {
         ))
     }
 
-    pub async fn save(self, path: PathBuf) -> Result<Option<PathBuf>, SaveError> {
+    pub async fn save(state: SavedState, path: PathBuf) -> Result<Option<PathBuf>, SaveError> {
         use async_std::prelude::*;
-        let json = serde_json::to_string_pretty(&self).map_err(|_| SaveError::FormatError)?;
+        let json = serde_json::to_string_pretty(&state).map_err(|_| SaveError::FormatError)?;
         if let Some(dir) = path.parent() {
             async_std::fs::create_dir_all(dir)
                 .await
@@ -66,9 +66,6 @@ impl SavedState {
                 .await
                 .map_err(|_| SaveError::WriteError)?;
         }
-
-        // This is a simple way to save at most once every couple seconds
-        async_std::task::sleep(std::time::Duration::from_secs(2)).await;
 
         Ok(Some(path))
     }
@@ -97,7 +94,7 @@ impl SavedState {
         }
     }
 
-    pub async fn save_as(self) -> Result<Option<PathBuf>, SaveError> {
+    pub async fn save_as(state: SavedState) -> Result<Option<PathBuf>, SaveError> {
         use async_std::prelude::*;
         let path = match dialogs::save_as().await {
             Ok(path) => path,
@@ -107,7 +104,7 @@ impl SavedState {
             }
         };
         let path = path.with_extension("json");
-        let json = serde_json::to_string_pretty(&self).map_err(|_| SaveError::FormatError)?;
+        let json = serde_json::to_string_pretty(&state).map_err(|_| SaveError::FormatError)?;
         if let Some(dir) = path.parent() {
             async_std::fs::create_dir_all(dir)
                 .await
@@ -125,3 +122,4 @@ impl SavedState {
         Ok(Some(path))
     }
 }
+

@@ -6,7 +6,6 @@ use iced::{
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    LabelMessage(editable_label::Message),
     NewFile,
     OpenFile,
     SaveFile,
@@ -19,7 +18,6 @@ pub enum Message {
 
 #[derive(Debug, Default, Clone)]
 pub struct Header {
-    pub title: EditableLabel,
     button_new: button::State,
     button_open: button::State,
     button_save: button::State,
@@ -32,7 +30,6 @@ pub struct Header {
 impl Header {
     pub fn new() -> Self {
         Header {
-            title: EditableLabel::new("New Project", "Add a project name..."),
             button_new: button::State::new(),
             button_open: button::State::new(),
             button_save: button::State::new(),
@@ -45,7 +42,6 @@ impl Header {
     }
     pub fn update(&mut self, message: Message) {
         let Header {
-            title,
             button_new: _,
             button_open: _,
             button_save: _,
@@ -56,16 +52,11 @@ impl Header {
             button_help: _,
         } = self;
         match message {
-            Message::LabelMessage(label_message) => {
-                // Pass the message into the title
-                title.update(label_message);
-            }
             _ => (), // This message is captured in main.rs
         }
     }
     pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
         let Header {
-            title,
             button_new,
             button_open,
             button_save,
@@ -80,23 +71,6 @@ impl Header {
             .size(iss.text_size(&iss.project_label_text_size))
             .color(iss.color(&iss.project_label_color))
             .horizontal_alignment(HorizontalAlignment::Left);
-
-        let project_title: Row<_> = Row::new()
-            .push(project_label)
-            .push(
-                title
-                    .view(&iss)
-                    .map(move |message| Message::LabelMessage(message)),
-            )
-            .align_items(Align::Center)
-            .spacing(iss.spacing(&iss.project_label_spacing))
-            .into();
-
-        let project_title_container =
-            Container::new(Row::new().push(project_title).width(Length::Shrink))
-                .width(Length::Fill)
-                .center_x()
-                .center_y();
 
         let button_new =
             header_button(button_new, "New\n", icons::new(), iss).on_press(Message::NewFile);
@@ -143,19 +117,15 @@ impl Header {
 
         let header = Column::new()
             .push(ribbon)
-            .push(
-                Container::new(Column::new().push(project_title_container).max_width(800))
-                    .width(Length::Fill)
-                    .padding(10)
-                    .center_x(),
-            )
+            //.push(
+            //    Container::new(Column::new().push(project_title_container).max_width(800))
+            //        .width(Length::Fill)
+            //        .padding(10)
+            //        .center_x(),
+            //)
             .spacing(iss.spacing(&iss.header_spacing));
 
         header.into()
-    }
-    pub fn title(&mut self, title: String) -> Self {
-        self.title.text = title;
-        self.clone()
     }
 }
 
