@@ -122,4 +122,3 @@ impl SavedState {
         Ok(Some(path))
     }
 }
-
