@@ -419,10 +419,10 @@ impl Application for TolStack {
                 analysis_state: _,
                 dirty,
                 saving,
-                file_path: _,
+                file_path,
             }) => {
-                let auto_save = if *dirty && !saving && last_save.elapsed().as_secs() > 5 {
-                    time::every(std::time::Duration::from_secs(5)).map(|_| Message::AutoSave)
+                let auto_save = if *dirty && !saving && file_path.is_some() && last_save.elapsed().as_secs() > 5 {
+                     time::every(std::time::Duration::from_secs(5)).map(|_| Message::AutoSave)
                 } else {
                     Subscription::none()
                 };
