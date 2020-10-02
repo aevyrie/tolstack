@@ -94,7 +94,7 @@ impl NewMonteCarloAnalysis {
                             //.push(icons::check())
                             .push(Text::new("Run Simulation")),
                     )
-                    .style(iss.button(&iss.button_constructive))
+                    .style(iss.button(&iss.button_action))
                     .padding(10)
                     .on_press(Message::Calculate),
                 ),
