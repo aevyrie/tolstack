@@ -1,6 +1,6 @@
 use crate::analysis::structures::*;
 use crate::ui::components::*;
-use crate::ui::style;
+use crate::ui::{icons, style};
 use iced::{
     scrollable, Align, Column, Container, Element, HorizontalAlignment, Length, Row, Scrollable,
     Text,
@@ -62,12 +62,12 @@ impl StackEditor {
                     }
                     entry_tolerance::Message::EntryMoveUp => {
                         if i > 0 {
-                            tolerances.swap(i, i-1)
+                            tolerances.swap(i, i - 1)
                         }
                     }
                     entry_tolerance::Message::EntryMoveDown => {
-                        if i < tolerances.len()-1 {
-                            tolerances.swap(i, i+1)
+                        if i < tolerances.len() - 1 {
+                            tolerances.swap(i, i + 1)
                         }
                     }
                     entry_tolerance::Message::EntryFinishEditing => match tolerances.get_mut(i) {
@@ -266,11 +266,24 @@ impl StackEditor {
                 .fold(
                     Column::new().spacing(iss.spacing(&iss.editor_tol_spacing)),
                     |column, (i, tol)| {
-                        column.push(tol.view(&iss).map(move |message| {
-                            // Take the message from the tolerance .view() and map it
-                            // to an `area_stack_editor` Message as an `EntryMessage`
-                            StackEditorAreaMessage::EntryMessage(i, message)
-                        }))
+                        column.push(
+                            //TODO add visualization here by creating a row, pushing the tol, then pushing the visualization for that row
+                            Row::new()
+                                .push(
+                                    Container::new(tol.view(&iss).map(move |message| {
+                                        // Take the message from the tolerance .view() and map it
+                                        // to an `area_stack_editor` Message as an `EntryMessage`
+                                        StackEditorAreaMessage::EntryMessage(i, message)
+                                    }))
+                                    .width(Length::FillPortion(2)),
+                                )
+                                .push(
+                                    Container::new(Text::new("Stack visualization"))
+                                        .width(Length::FillPortion(1)),
+                                )
+                                .spacing(iss.spacing(&iss.editor_tol_spacing))
+                                .align_items(Align::Center),
+                        )
                     },
                 )
                 .into()
@@ -324,7 +337,7 @@ impl StackEditor {
                 )
                 .push(scrollable_content)
                 .spacing(iss.spacing(&iss.editor_content_spacing))
-                .max_width(1000),
+                .max_width(1500),
         )
         .width(Length::Fill)
         .center_x();

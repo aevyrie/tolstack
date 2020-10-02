@@ -390,10 +390,7 @@ impl ToleranceEntry {
                     Row::new()
                         //.push(Text::new("Edit")
                         //    .size(iss.text_size(&iss.tol_entry_button_text_size)))
-                        .push(
-                            icons::edit()
-                                .size(iss.text_size(&iss.tol_entry_button_text_size)),
-                        )
+                        .push(icons::edit().size(iss.text_size(&iss.tol_entry_button_text_size)))
                         .spacing(iss.spacing(&iss.tol_entry_button_spacing)),
                 )
                 .on_press(Message::EntryEdit)
@@ -406,8 +403,7 @@ impl ToleranceEntry {
                         //.push(Text::new("Edit")
                         //    .size(iss.text_size(&iss.tol_entry_button_text_size)))
                         .push(
-                            icons::up_arrow()
-                                .size(iss.text_size(&iss.tol_entry_button_text_size)),
+                            icons::up_arrow().size(iss.text_size(&iss.tol_entry_button_text_size)),
                         )
                         .spacing(iss.spacing(&iss.tol_entry_button_spacing)),
                 )
@@ -429,7 +425,6 @@ impl ToleranceEntry {
                 .on_press(Message::EntryMoveDown)
                 .padding(iss.padding(&iss.tol_entry_button_padding))
                 .style(iss.button(&iss.button_inactive));
-
 
                 let row_contents = Row::new()
                     .padding(iss.padding(&iss.tol_entry_padding))
