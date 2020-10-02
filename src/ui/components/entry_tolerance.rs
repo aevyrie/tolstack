@@ -8,13 +8,21 @@ use serde_derive::*;
 
 #[derive(Debug, Clone)]
 pub enum State {
-    Idle { button_edit: button::State },
-    Editing { form_tolentry: FormState },
+    Idle {
+        button_edit: button::State,
+        button_move_up: button::State,
+        button_move_down: button::State,
+    },
+    Editing {
+        form_tolentry: FormState,
+    },
 }
 impl Default for State {
     fn default() -> Self {
         State::Idle {
             button_edit: button::State::new(),
+            button_move_up: button::State::new(),
+            button_move_down: button::State::new(),
         }
     }
 }
@@ -103,6 +111,8 @@ pub enum Message {
     EntryEdit,
     EntryDelete,
     EntryFinishEditing,
+    EntryMoveUp,
+    EntryMoveDown,
     // Shared Field messages
     EditedDescription(String),
     // Linear entry messages
@@ -176,9 +186,7 @@ impl ToleranceEntry {
             analysis_model: tolerance,
             active: false,
             valid: false,
-            state: State::Idle {
-                button_edit: button::State::new(),
-            },
+            state: State::default(),
         }
     }
 
@@ -208,12 +216,12 @@ impl ToleranceEntry {
                     FormValues::Linear { description, .. } => !description.is_empty(),
                     FormValues::Float { description, .. } => !description.is_empty(),
                 } {
-                    self.state = State::Idle {
-                        button_edit: button::State::new(),
-                    }
+                    self.state = State::default()
                 }
             }
             Message::EntryDelete => {}
+            Message::EntryMoveUp => {}
+            Message::EntryMoveDown => {}
             Message::EditedDescription(input) => {
                 match &mut self.input {
                     FormValues::Linear { description, .. } => *description = input,
@@ -329,7 +337,11 @@ impl ToleranceEntry {
 
     pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
         match &mut self.state {
-            State::Idle { button_edit } => {
+            State::Idle {
+                button_edit,
+                button_move_up,
+                button_move_down,
+            } => {
                 let checkbox = Checkbox::new(
                     self.active,
                     match &self.input {
@@ -373,28 +385,61 @@ impl ToleranceEntry {
                 })
                 .size(iss.text_size(&iss.tol_entry_summary_text_size));
 
+                let edit_button = Button::new(
+                    button_edit,
+                    Row::new()
+                        //.push(Text::new("Edit")
+                        //    .size(iss.text_size(&iss.tol_entry_button_text_size)))
+                        .push(
+                            icons::edit()
+                                .size(iss.text_size(&iss.tol_entry_button_text_size)),
+                        )
+                        .spacing(iss.spacing(&iss.tol_entry_button_spacing)),
+                )
+                .on_press(Message::EntryEdit)
+                .padding(iss.padding(&iss.tol_entry_button_padding))
+                .style(iss.button(&iss.button_action));
+
+                let up_button = Button::new(
+                    button_move_up,
+                    Row::new()
+                        //.push(Text::new("Edit")
+                        //    .size(iss.text_size(&iss.tol_entry_button_text_size)))
+                        .push(
+                            icons::up_arrow()
+                                .size(iss.text_size(&iss.tol_entry_button_text_size)),
+                        )
+                        .spacing(iss.spacing(&iss.tol_entry_button_spacing)),
+                )
+                .on_press(Message::EntryMoveUp)
+                .padding(iss.padding(&iss.tol_entry_button_padding))
+                .style(iss.button(&iss.button_inactive));
+
+                let down_button = Button::new(
+                    button_move_down,
+                    Row::new()
+                        //.push(Text::new("Edit")
+                        //    .size(iss.text_size(&iss.tol_entry_button_text_size)))
+                        .push(
+                            icons::down_arrow()
+                                .size(iss.text_size(&iss.tol_entry_button_text_size)),
+                        )
+                        .spacing(iss.spacing(&iss.tol_entry_button_spacing)),
+                )
+                .on_press(Message::EntryMoveDown)
+                .padding(iss.padding(&iss.tol_entry_button_padding))
+                .style(iss.button(&iss.button_inactive));
+
+
                 let row_contents = Row::new()
                     .padding(iss.padding(&iss.tol_entry_padding))
                     .spacing(iss.spacing(&iss.tol_entry_spacing))
                     .align_items(Align::Center)
                     .push(checkbox)
                     .push(summary)
-                    .push(
-                        Button::new(
-                            button_edit,
-                            Row::new()
-                                //.push(Text::new("Edit")
-                                //    .size(iss.text_size(&iss.tol_entry_button_text_size)))
-                                .push(
-                                    icons::edit()
-                                        .size(iss.text_size(&iss.tol_entry_button_text_size)),
-                                )
-                                .spacing(iss.spacing(&iss.tol_entry_button_spacing)),
-                        )
-                        .on_press(Message::EntryEdit)
-                        .padding(iss.padding(&iss.tol_entry_button_padding))
-                        .style(iss.button(&iss.button_action)),
-                    );
+                    .push(edit_button)
+                    .push(up_button)
+                    .push(down_button);
 
                 Container::new(row_contents)
                     .style(iss.container(&iss.tol_entry_container))

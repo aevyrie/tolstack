@@ -60,6 +60,16 @@ impl StackEditor {
                     entry_tolerance::Message::EntryDelete => {
                         tolerances.remove(i);
                     }
+                    entry_tolerance::Message::EntryMoveUp => {
+                        if i > 0 {
+                            tolerances.swap(i, i-1)
+                        }
+                    }
+                    entry_tolerance::Message::EntryMoveDown => {
+                        if i < tolerances.len()-1 {
+                            tolerances.swap(i, i+1)
+                        }
+                    }
                     entry_tolerance::Message::EntryFinishEditing => match tolerances.get_mut(i) {
                         Some(entry) => match &entry.input {
                             FormValues::Linear {
