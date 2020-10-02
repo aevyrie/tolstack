@@ -52,3 +52,11 @@ pub fn duplicate() -> Text {
 pub fn help() -> Text {
     icon('\u{f128}')
 }
+
+pub fn up_arrow() -> Text {
+    icon('\u{e816}')
+}
+
+pub fn down_arrow() -> Text {
+    icon('\u{e813}')
+}
