@@ -3,7 +3,7 @@ use crate::ui::{components::*, style};
 use iced::{Column, Command, Container, Element, Length, Row, Text};
 
 #[derive(Debug, Clone)]
-pub enum Message {
+pub enum AnalysisAreaMessage {
     NewMcAnalysisMessage(form_new_mc_analysis::Message),
     CalculateComplete(Option<structures::AnalysisResults>),
 }
@@ -18,33 +18,34 @@ impl AnalysisState {
     pub fn new() -> Self {
         AnalysisState::default()
     }
-    pub fn update(&mut self, message: Message) -> Command<Message> {
+    pub fn update(&mut self, message: AnalysisAreaMessage) -> Command<AnalysisAreaMessage> {
         let AnalysisState {
             entry_form,
             model_state,
             input_stack: _,
         } = self;
         match message {
-            Message::NewMcAnalysisMessage(form_new_mc_analysis::Message::Calculate) => {
+            AnalysisAreaMessage::NewMcAnalysisMessage(form_new_mc_analysis::Message::Calculate) => {
                 let simulation_input = self.build_stack();
                 if let Some(stack) = simulation_input {
                     return Command::perform(
                         AnalysisState::compute(stack),
-                        Message::CalculateComplete,
+                        AnalysisAreaMessage::CalculateComplete,
                     );
                 }
             }
-            Message::NewMcAnalysisMessage(message) => {
+            AnalysisAreaMessage::NewMcAnalysisMessage(message) => {
                 entry_form.update(message);
             }
-            Message::CalculateComplete(result) => match result {
-                Some(result) => model_state.results = result,
-                None => {}
-            },
+            AnalysisAreaMessage::CalculateComplete(result) => {
+                if let Some(result) = result {
+                    model_state.results = result
+                }
+            }
         }
         Command::none()
     }
-    pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
+    pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<AnalysisAreaMessage> {
         let AnalysisState {
             entry_form,
             model_state,
@@ -170,7 +171,7 @@ impl AnalysisState {
                 .push(
                     entry_form
                         .view(&iss)
-                        .map(move |message| Message::NewMcAnalysisMessage(message)),
+                        .map(move |message| AnalysisAreaMessage::NewMcAnalysisMessage(message)),
                 )
                 .push(results_body)
                 .height(Length::Fill)

@@ -50,7 +50,7 @@ fn main() {
         icon: Some(icon),
     };
     settings.antialiasing = true;
-    TolStack::run(settings);
+    TolStack::run(settings).unwrap();
 }
 
 // The state of the application
@@ -83,9 +83,9 @@ impl Default for State {
 #[derive(Debug, Clone)]
 enum Message {
     // Subcomponent messages
-    HeaderMessage(area_header::Message),
-    StackEditorMessage(area_stack_editor::Message),
-    MonteCarloAnalysisMessage(area_mc_analysis::Message),
+    Header(HeaderAreaMessage),
+    StackEditor(StackEditorAreaMessage),
+    Analysis(AnalysisAreaMessage),
     //
     AutoSave,
     Loaded(Result<(Option<PathBuf>, SavedState), io::saved_state::LoadError>),
@@ -126,7 +126,7 @@ impl Application for TolStack {
         let project_name = match self {
             TolStack::Loading => String::from("Loading..."),
             TolStack::Loaded(state) => {
-                if state.stack_editor.title.text.len() == 0 {
+                if state.stack_editor.title.text.is_empty() {
                     String::from("New Stack")
                 } else {
                     state.stack_editor.title.text.clone()
@@ -219,14 +219,14 @@ impl Application for TolStack {
                             return Command::none();
                         }
                     }
-                    Message::HeaderMessage(area_header::Message::NewFile) => {
+                    Message::Header(area_header::HeaderAreaMessage::NewFile) => {
                         return Command::perform(SavedState::new(), Message::Loaded)
                     }
-                    Message::HeaderMessage(area_header::Message::OpenFile) => {
+                    Message::Header(area_header::HeaderAreaMessage::OpenFile) => {
                         return Command::perform(SavedState::open(), Message::Loaded)
                     }
 
-                    Message::HeaderMessage(area_header::Message::SaveFile) => {
+                    Message::Header(area_header::HeaderAreaMessage::SaveFile) => {
                         let save_data = SavedState {
                             name: state.stack_editor.title.text.clone(),
                             tolerances: state.stack_editor.tolerances.clone(),
@@ -250,7 +250,7 @@ impl Application for TolStack {
                         };
                     }
 
-                    Message::HeaderMessage(area_header::Message::SaveAsFile) => {
+                    Message::Header(area_header::HeaderAreaMessage::SaveAsFile) => {
                         let save_data = SavedState {
                             name: state.stack_editor.title.text.clone(),
                             tolerances: state.stack_editor.tolerances.clone(),
@@ -261,7 +261,7 @@ impl Application for TolStack {
                         return Command::perform(SavedState::save_as(save_data), Message::Saved);
                     }
 
-                    Message::HeaderMessage(area_header::Message::ExportCSV) => {
+                    Message::Header(area_header::HeaderAreaMessage::ExportCSV) => {
                         return Command::perform(
                             export_csv::serialize_csv(
                                 state.analysis_state.model_state.results.export(),
@@ -270,31 +270,27 @@ impl Application for TolStack {
                         )
                     }
 
-                    Message::HeaderMessage(area_header::Message::AddTolLinear) => {
+                    Message::Header(area_header::HeaderAreaMessage::AddTolLinear) => {
                         state.dirty = true;
-                        state
-                            .stack_editor
-                            .update(area_stack_editor::Message::NewEntryMessage(
-                                form_new_tolerance::Message::CreateTol(
-                                    String::from("New Linear Tolerance"),
-                                    Tolerance::Linear(LinearTL::default()),
-                                ),
-                            ))
+                        state.stack_editor.update(
+                            area_stack_editor::StackEditorAreaMessage::NewEntryMessage((
+                                String::from("New Linear Tolerance"),
+                                Tolerance::Linear(LinearTL::default()),
+                            )),
+                        )
                     }
 
-                    Message::HeaderMessage(area_header::Message::AddTolFloat) => {
+                    Message::Header(area_header::HeaderAreaMessage::AddTolFloat) => {
                         state.dirty = true;
-                        state
-                            .stack_editor
-                            .update(area_stack_editor::Message::NewEntryMessage(
-                                form_new_tolerance::Message::CreateTol(
-                                    String::from("New Float Tolerance"),
-                                    Tolerance::Float(FloatTL::default()),
-                                ),
-                            ))
+                        state.stack_editor.update(
+                            area_stack_editor::StackEditorAreaMessage::NewEntryMessage((
+                                String::from("New Float Tolerance"),
+                                Tolerance::Float(FloatTL::default()),
+                            )),
+                        )
                     }
 
-                    Message::HeaderMessage(area_header::Message::Help) => {
+                    Message::Header(area_header::HeaderAreaMessage::Help) => {
                         return Command::perform(help(), |_| Message::HelpOpened);
                     }
 
@@ -302,19 +298,21 @@ impl Application for TolStack {
 
                     Message::ExportComplete(_) => {}
 
-                    Message::StackEditorMessage(message) => {
+                    Message::StackEditor(message) => {
                         match message {
-                            area_stack_editor::Message::LabelMessage(
+                            area_stack_editor::StackEditorAreaMessage::LabelMessage(
                                 editable_label::Message::FinishEditing,
                             ) => state.dirty = true,
-                            area_stack_editor::Message::EntryMessage(_, _) => state.dirty = true,
+                            area_stack_editor::StackEditorAreaMessage::EntryMessage(_, _) => {
+                                state.dirty = true
+                            }
                             _ => {}
                         }
                         state.stack_editor.update(message)
                     }
 
-                    Message::MonteCarloAnalysisMessage(
-                        area_mc_analysis::Message::NewMcAnalysisMessage(
+                    Message::Analysis(
+                        area_mc_analysis::AnalysisAreaMessage::NewMcAnalysisMessage(
                             form_new_mc_analysis::Message::Calculate,
                         ),
                     ) => {
@@ -331,22 +329,20 @@ impl Application for TolStack {
                             state.analysis_state.input_stack =
                                 state.stack_editor.tolerances.clone();
                             // Pass this message into the child so the computation gets kicked off.
-                            let calculate_message = area_mc_analysis::Message::NewMcAnalysisMessage(
-                                form_new_mc_analysis::Message::Calculate,
-                            );
+                            let calculate_message =
+                                area_mc_analysis::AnalysisAreaMessage::NewMcAnalysisMessage(
+                                    form_new_mc_analysis::Message::Calculate,
+                                );
                             return state
                                 .analysis_state
                                 .update(calculate_message)
-                                .map(move |message| Message::MonteCarloAnalysisMessage(message));
+                                .map(Message::Analysis);
                         }
                     }
 
-                    Message::MonteCarloAnalysisMessage(message) => {
+                    Message::Analysis(message) => {
                         // TODO collect commands and run at end instead of breaking at match arm.
-                        return state
-                            .analysis_state
-                            .update(message)
-                            .map(move |message| Message::MonteCarloAnalysisMessage(message));
+                        return state.analysis_state.update(message).map(Message::Analysis);
                     }
 
                     Message::StyleUpdateAvailable(_) => {
@@ -425,25 +421,23 @@ impl Application for TolStack {
                 saving,
                 file_path: _,
             }) => {
-                let auto_save =
-                    if *dirty && !saving && last_save.elapsed().as_secs() > 5 {
-                        time::every(std::time::Duration::from_secs(5)).map(|_| Message::AutoSave)
-                    } else {
-                        Subscription::none()
-                    };
+                let auto_save = if *dirty && !saving && last_save.elapsed().as_secs() > 5 {
+                    time::every(std::time::Duration::from_secs(5)).map(|_| Message::AutoSave)
+                } else {
+                    Subscription::none()
+                };
                 let style_reload = if cfg!(debug_assertions) {
                     iss.check_style_file().map(Message::StyleUpdateAvailable)
                 } else {
                     Subscription::none()
                 };
-                let combined = Subscription::batch(vec![auto_save, style_reload]);
-                combined
+                Subscription::batch(vec![auto_save, style_reload])
             }
         }
     }
 
     // View logic - a way to display the state of the application as widgets that can produce messages
-    fn view<'a>(&'a mut self) -> Element<Message> {
+    fn view(&mut self) -> Element<Message> {
         match self {
             TolStack::Loading => loading_message(),
             TolStack::Loaded(State {
@@ -456,17 +450,11 @@ impl Application for TolStack {
                 saving: _,
                 file_path: _,
             }) => {
-                let header = header
-                    .view(&iss)
-                    .map(move |message| Message::HeaderMessage(message));
+                let header = header.view(&iss).map(Message::Header);
 
-                let stack_editor = stack_editor
-                    .view(&iss)
-                    .map(move |message| Message::StackEditorMessage(message));
+                let stack_editor = stack_editor.view(&iss).map(Message::StackEditor);
 
-                let analysis_state = analysis_state
-                    .view(&iss)
-                    .map(move |message| Message::MonteCarloAnalysisMessage(message));
+                let analysis_state = analysis_state.view(&iss).map(Message::Analysis);
 
                 let content = Column::new().push(
                     Row::new()

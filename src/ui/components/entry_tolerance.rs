@@ -156,14 +156,14 @@ impl ToleranceEntry {
         ToleranceEntry {
             input: match tolerance {
                 Tolerance::Linear(_) => FormValues::Linear {
-                    description: description,
+                    description,
                     dimension: String::from(""),
                     tolerance_pos: String::from(""),
                     tolerance_neg: String::from(""),
                     sigma: String::from(""),
                 },
                 Tolerance::Float(_) => FormValues::Float {
-                    description: description,
+                    description,
                     diameter_hole: String::from(""),
                     diameter_pin: String::from(""),
                     tolerance_hole_pos: String::from(""),
@@ -863,12 +863,10 @@ impl NumericString {
                     //NumericString::Negative => numeric_input < 0.0,
                 } {
                     input.to_string()
+                } else if input == "" || input == "." {
+                    input.to_string()
                 } else {
-                    if input == "" || input == "." {
-                        input.to_string()
-                    } else {
-                        old.to_string()
-                    }
+                    old.to_string()
                 }
             }
             false => {

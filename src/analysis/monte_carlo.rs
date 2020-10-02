@@ -54,36 +54,33 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
     let result_tol_neg = result_stddev_neg * state.parameters.assy_sigma;
 
     let worst_case_dim = state.tolerance_loop.iter().fold(0.0, |acc, tol| {
-        return acc
-            + match tol {
-                Tolerance::Linear(linear) => linear.distance.dim,
-                Tolerance::Float(float) => f64::max(
-                    0.0,
-                    f64::abs(f64::abs(float.hole.dim) - f64::abs(float.pin.dim)),
-                ),
-            };
+        acc + match tol {
+            Tolerance::Linear(linear) => linear.distance.dim,
+            Tolerance::Float(float) => f64::max(
+                0.0,
+                f64::abs(f64::abs(float.hole.dim) - f64::abs(float.pin.dim)),
+            ),
+        }
     });
 
     let worst_case_pos = state.tolerance_loop.iter().fold(0.0, |acc, tol| {
-        return acc
-            + f64::abs(match tol {
-                Tolerance::Linear(linear) => linear.distance.tol_pos,
-                Tolerance::Float(float) => f64::max(
-                    0.0,
-                    f64::abs(f64::abs(float.hole.tol_pos) - f64::abs(float.pin.tol_neg)),
-                ),
-            });
+        acc + f64::abs(match tol {
+            Tolerance::Linear(linear) => linear.distance.tol_pos,
+            Tolerance::Float(float) => f64::max(
+                0.0,
+                f64::abs(f64::abs(float.hole.tol_pos) - f64::abs(float.pin.tol_neg)),
+            ),
+        })
     });
 
     let worst_case_neg = state.tolerance_loop.iter().fold(0.0, |acc, tol| {
-        return acc
-            + f64::abs(match tol {
-                Tolerance::Linear(linear) => linear.distance.tol_neg,
-                Tolerance::Float(float) => f64::max(
-                    0.0,
-                    f64::abs(f64::abs(float.hole.tol_pos) - f64::abs(float.pin.tol_neg)),
-                ),
-            });
+        acc + f64::abs(match tol {
+            Tolerance::Linear(linear) => linear.distance.tol_neg,
+            Tolerance::Float(float) => f64::max(
+                0.0,
+                f64::abs(f64::abs(float.hole.tol_pos) - f64::abs(float.pin.tol_neg)),
+            ),
+        })
     });
 
     let worst_case_upper = worst_case_dim + worst_case_pos;

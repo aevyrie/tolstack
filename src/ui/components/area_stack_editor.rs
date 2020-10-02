@@ -7,16 +7,15 @@ use iced::{
 };
 
 #[derive(Debug, Clone)]
-pub enum Message {
+pub enum StackEditorAreaMessage {
     EntryMessage(usize, entry_tolerance::Message),
     FilterMessage(filter_tolerance::Message),
-    NewEntryMessage(form_new_tolerance::Message),
+    NewEntryMessage((String, Tolerance)),
     LabelMessage(editable_label::Message),
 }
 
 #[derive(Debug, Default, Clone)]
 pub struct StackEditor {
-    entry_form: NewToleranceEntry,
     filter: ToleranceFilter,
     pub tolerances: Vec<ToleranceEntry>,
     scroll_state: scrollable::State,
@@ -33,32 +32,20 @@ impl StackEditor {
         self.title.text = title;
         self.clone()
     }
-    pub fn update(&mut self, message: Message) {
+    pub fn update(&mut self, message: StackEditorAreaMessage) {
         let StackEditor {
-            entry_form,
             filter,
             tolerances,
             scroll_state: _,
             title,
         } = self;
         match message {
-            Message::NewEntryMessage(message) => {
-                match &message {
-                    form_new_tolerance::Message::CreateTol(input_text, input_type) => {
-                        if !input_text.is_empty() {
-                            tolerances.push(
-                                ToleranceEntry::new(input_text.clone(), input_type.clone())
-                                    .with_editing(),
-                            );
-                        }
-                    }
-                    form_new_tolerance::Message::TolNameChanged(_) => {}
-                    form_new_tolerance::Message::TolTypeChanged(_) => {}
-                }
-                entry_form.update(message);
+            StackEditorAreaMessage::NewEntryMessage(tolerance) => {
+                let (name, tol) = tolerance;
+                tolerances.push(ToleranceEntry::new(name, tol).with_editing());
             }
 
-            Message::FilterMessage(message) => {
+            StackEditorAreaMessage::FilterMessage(message) => {
                 match &message {
                     filter_tolerance::Message::FilterChanged(_) => {}
                 };
@@ -67,7 +54,7 @@ impl StackEditor {
                 filter.update(message);
             }
 
-            Message::EntryMessage(i, message) => {
+            StackEditorAreaMessage::EntryMessage(i, message) => {
                 // Some message `tol_message`  from a tolerance entry at index `i`
                 match &message {
                     entry_tolerance::Message::EntryDelete => {
@@ -242,15 +229,14 @@ impl StackEditor {
                 }
             }
 
-            Message::LabelMessage(label_message) => {
+            StackEditorAreaMessage::LabelMessage(label_message) => {
                 // Pass the message into the title
                 title.update(label_message);
             }
         }
     }
-    pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
+    pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<StackEditorAreaMessage> {
         let StackEditor {
-            entry_form: _,
             filter,
             tolerances,
             scroll_state: _,
@@ -273,7 +259,7 @@ impl StackEditor {
                         column.push(tol.view(&iss).map(move |message| {
                             // Take the message from the tolerance .view() and map it
                             // to an `area_stack_editor` Message as an `EntryMessage`
-                            Message::EntryMessage(i, message)
+                            StackEditorAreaMessage::EntryMessage(i, message)
                         }))
                     },
                 )
@@ -300,7 +286,7 @@ impl StackEditor {
 
         let stack_title = title
             .view(&iss)
-            .map(move |message| Message::LabelMessage(message));
+            .map(move |message| StackEditorAreaMessage::LabelMessage(message));
 
         let scrollable_content = Container::new(
             Scrollable::new(&mut self.scroll_state)
@@ -316,7 +302,7 @@ impl StackEditor {
 
         let filter_controls = filter
             .view(&iss)
-            .map(move |message| Message::FilterMessage(message));
+            .map(move |message| StackEditorAreaMessage::FilterMessage(message));
 
         let tol_stack_area = Container::new(
             Column::new()
@@ -333,6 +319,7 @@ impl StackEditor {
         .width(Length::Fill)
         .center_x();
 
+        /*
         let new_tol_area = Container::new(
             Container::new(
                 self.entry_form
@@ -345,6 +332,7 @@ impl StackEditor {
         .padding(iss.padding(&iss.newtol_container_outer_padding))
         .width(Length::Fill)
         .center_x();
+        */
 
         tol_stack_area.into()
     }
@@ -354,7 +342,7 @@ impl StackEditor {
     }
 }
 
-fn empty_message(message: &str) -> Element<'static, Message> {
+fn empty_message(message: &str) -> Element<'static, StackEditorAreaMessage> {
     Container::new(
         Text::new(message)
             //.width(Length::Fill)

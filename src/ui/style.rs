@@ -144,7 +144,7 @@ pub trait Named {
     fn new(name: &str, list: &Self::List) -> Self::NamedItem {
         let unvalidated = Self::NamedItem::new_unvalidated(name);
         if list.is_valid_name(&unvalidated) {
-            return unvalidated;
+            unvalidated
         } else {
             panic!(
                 "{:?} '{}' failed validation",
@@ -1005,7 +1005,7 @@ impl Default for IcedStyleSheet {
             color,
             radius,
             width,
-            dimension: dimension,
+            dimension,
             text_size,
             padding,
             spacing,

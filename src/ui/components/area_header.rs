@@ -1,11 +1,11 @@
-use crate::ui::{components::*, icons, style};
+use crate::ui::{icons, style};
 use iced::{
-    button, Align, Button, Column, Container, Element, HorizontalAlignment, Length, Row, Text,
+    button, Button, Column, Container, Element, HorizontalAlignment, Length, Row, Text,
     VerticalAlignment,
 };
 
 #[derive(Debug, Clone)]
-pub enum Message {
+pub enum HeaderAreaMessage {
     NewFile,
     OpenFile,
     SaveFile,
@@ -40,6 +40,7 @@ impl Header {
             button_help: button::State::new(),
         }
     }
+    /*
     pub fn update(&mut self, message: Message) {
         let Header {
             button_new: _,
@@ -55,7 +56,8 @@ impl Header {
             _ => (), // This message is captured in main.rs
         }
     }
-    pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<Message> {
+    */
+    pub fn view(&mut self, iss: &style::IcedStyleSheet) -> Element<HeaderAreaMessage> {
         let Header {
             button_new,
             button_open,
@@ -66,37 +68,32 @@ impl Header {
             button_add_tol_float,
             button_help,
         } = self;
-        let project_label = Text::new("Project: ")
-            .width(Length::Shrink)
-            .size(iss.text_size(&iss.project_label_text_size))
-            .color(iss.color(&iss.project_label_color))
-            .horizontal_alignment(HorizontalAlignment::Left);
 
-        let button_new =
-            header_button(button_new, "New\n", icons::new(), iss).on_press(Message::NewFile);
+        let button_new = header_button(button_new, "New\n", icons::new(), iss)
+            .on_press(HeaderAreaMessage::NewFile);
 
-        let button_open =
-            header_button(button_open, "Open\n", icons::load(), iss).on_press(Message::OpenFile);
+        let button_open = header_button(button_open, "Open\n", icons::load(), iss)
+            .on_press(HeaderAreaMessage::OpenFile);
 
-        let button_save =
-            header_button(button_save, "Save\n", icons::save(), iss).on_press(Message::SaveFile);
+        let button_save = header_button(button_save, "Save\n", icons::save(), iss)
+            .on_press(HeaderAreaMessage::SaveFile);
 
         let button_save_as = header_button(button_save_as, "Save As\n", icons::duplicate(), iss)
-            .on_press(Message::SaveAsFile);
+            .on_press(HeaderAreaMessage::SaveAsFile);
 
         let button_export = header_button(button_export, "Export CSV", icons::export(), iss)
-            .on_press(Message::ExportCSV);
+            .on_press(HeaderAreaMessage::ExportCSV);
 
         let button_add_tol_linear =
             header_button(button_add_tol_linear, "Add Linear\n", icons::add(), iss)
-                .on_press(Message::AddTolLinear);
+                .on_press(HeaderAreaMessage::AddTolLinear);
 
         let button_add_tol_float =
             header_button(button_add_tol_float, "Add Float\n", icons::add(), iss)
-                .on_press(Message::AddTolFloat);
+                .on_press(HeaderAreaMessage::AddTolFloat);
 
-        let button_help =
-            header_button(button_help, "Help\n", icons::help(), iss).on_press(Message::Help);
+        let button_help = header_button(button_help, "Help\n", icons::help(), iss)
+            .on_press(HeaderAreaMessage::Help);
 
         let ribbon = Container::new(
             Row::new()
@@ -134,7 +131,7 @@ fn header_button<'a>(
     text: &str,
     icon: Text,
     iss: &style::IcedStyleSheet,
-) -> Button<'a, Message> {
+) -> Button<'a, HeaderAreaMessage> {
     Button::new(
         state,
         Column::new()
