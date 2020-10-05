@@ -610,6 +610,7 @@ pub struct IcedStyleSheet {
 
     // General Coontainers
     pub panel_container: StyledContainer,
+    pub visualization_contianer: StyledContainer,
 
     // General Buttons
     pub button_action: StyledButton,
@@ -910,6 +911,13 @@ impl Default for IcedStyleSheet {
             panel_container: StyledContainer {
                 text_color: NamedColor::new("text", &color),
                 background: NamedColor::new("panel", &color),
+                border_color: NamedColor::new("panel_border", &color),
+                border_radius: NamedRadius::new("none", &radius),
+                border_width: NamedWidth::new("none", &width),
+            },
+            visualization_contianer: StyledContainer {
+                text_color: NamedColor::new("text", &color),
+                background: NamedColor::new("text", &color),
                 border_color: NamedColor::new("panel_border", &color),
                 border_radius: NamedRadius::new("none", &radius),
                 border_width: NamedWidth::new("none", &width),

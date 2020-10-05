@@ -2,8 +2,8 @@ use crate::analysis::structures::*;
 use crate::ui::components::*;
 use crate::ui::{icons, style};
 use iced::{
-    scrollable, Align, Column, Container, Element, HorizontalAlignment, Length, Row, Scrollable,
-    Text,
+    scrollable, Align, Column, Container, Element, HorizontalAlignment, Image, Length, Row,
+    Scrollable, Text,
 };
 
 #[derive(Debug, Clone)]
@@ -257,6 +257,46 @@ impl StackEditor {
             .iter()
             .filter(|tol| filter.filter_value.matches(tol.analysis_model));
 
+        // for each tolerance
+        // add the dimension of each, and record the min and max across all iterations
+        // this will set the width of the visualization
+        // take the most negative value, and save the magnitude of this
+        // for each tolerance, add this magnitude to the dimension, to get the ending location
+        // save this for the next iteration, where this is the starting point of the next visuaal
+        // the start and end coordinates of each bar are now available
+        // push a spacer with a width = fillproportion(startpos)
+        // push the visual with a width = fill proposrtion(endpos-startpos)
+
+        let mut max = 0.0;
+        let mut min = 0.0;
+        let mut stack_total = 0.0;
+        for tol in tolerances.iter() {
+            stack_total += match tol.analysis_model {
+                Tolerance::Linear(linear) => linear.distance.dim as f32,
+                Tolerance::Float(_) => 0.0,
+            };
+            min = f32::min(min, stack_total);
+            max = f32::max(max, stack_total);
+        }
+
+        let visualization_width = max - min;
+        let mut start = min.abs();
+        let mut visualize_positions: Vec<(f32, f32)> = Vec::new();
+
+        for tol in tolerances.iter() {
+            // could apply a log scale to the length here.
+            let mut length = match tol.analysis_model {
+                Tolerance::Linear(linear) => linear.distance.dim as f32,
+                Tolerance::Float(_) => 0.0,
+            };
+            if length < 0.0 {
+                start += length;
+                length = length.abs();
+            }
+            visualize_positions.push((start, length));
+            start += length;
+        }
+
         // Iterate over all tols, calling their .view() function and adding them to a column
         let tolerances: Element<_> = if filtered_tols.count() > 0 {
             self.tolerances
@@ -266,6 +306,12 @@ impl StackEditor {
                 .fold(
                     Column::new().spacing(iss.spacing(&iss.editor_tol_spacing)),
                     |column, (i, tol)| {
+                        let spacer_1_len = visualize_positions[i].0.round() as u16 * 100;
+                        let dim_len = visualize_positions[i].1.round() as u16 * 100;
+                        let spacer_2_len = (visualization_width
+                            - visualize_positions[i].0
+                            - visualize_positions[i].1)
+                            .round() as u16 * 100;
                         column.push(
                             //TODO add visualization here by creating a row, pushing the tol, then pushing the visualization for that row
                             Row::new()
@@ -278,10 +324,30 @@ impl StackEditor {
                                     .width(Length::FillPortion(2)),
                                 )
                                 .push(
-                                    Container::new(Text::new("Stack visualization"))
-                                        .width(Length::FillPortion(1)),
+                                    Container::new(
+                                        Row::new()
+                                            .push(if spacer_1_len > 0 {
+                                                Container::new(Row::new())
+                                                    .width(Length::FillPortion(spacer_1_len))
+                                            } else {
+                                                Container::new(Row::new())
+                                            })
+                                            .push(
+                                                Container::new(Text::new("."))
+                                                    .width(Length::FillPortion(dim_len))
+                                                    .height(Length::Units(2))
+                                                    .style(iss.container(&iss.visualization_contianer)),
+                                            )
+                                            .push(if spacer_2_len > 0 {
+                                                Container::new(Row::new())
+                                                    .width(Length::FillPortion(spacer_2_len))
+                                            } else {
+                                                Container::new(Row::new())
+                                            }),
+                                    )
+                                    .width(Length::FillPortion(1)),
                                 )
-                                .spacing(iss.spacing(&iss.editor_tol_spacing))
+                                .spacing(iss.spacing(&iss.editor_content_spacing))
                                 .align_items(Align::Center),
                         )
                     },
