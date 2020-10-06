@@ -586,6 +586,7 @@ pub struct IcedStyleSheet {
     pub editor_scroll_area_padding_correction: NamedPadding,
     pub editor_scroll_container: StyledContainer,
     pub editor_header_padding: NamedPadding,
+    pub editor_arrow_color: NamedColor,
     pub editor_container_inner_padding: NamedPadding,
     pub editor_container_outer_padding: NamedPadding,
     pub newtol_container_inner_padding: NamedPadding,
@@ -599,6 +600,7 @@ pub struct IcedStyleSheet {
     pub tol_entry_button_spacing: NamedSpacing,
     pub tol_entry_button_padding: NamedPadding,
     pub tol_entry_container: StyledContainer,
+    pub tol_entry_viz_container: StyledContainer,
     pub tol_edit_button_text_size: NamedTextSize,
     pub tol_edit_field_padding: NamedPadding,
     pub tol_edit_field_text_size: NamedTextSize,
@@ -610,6 +612,7 @@ pub struct IcedStyleSheet {
 
     // General Coontainers
     pub panel_container: StyledContainer,
+    pub visualization_container: StyledContainer,
 
     // General Buttons
     pub button_action: StyledButton,
@@ -768,6 +771,24 @@ impl Default for IcedStyleSheet {
                     b: 230,
                     a: 1.0,
                 },
+            )
+            .add(
+                "viz_background",
+                SerializableColor {
+                    r: 254,
+                    g: 254,
+                    b: 254,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "viz_color",
+                SerializableColor {
+                    r: 130,
+                    g: 130,
+                    b: 130,
+                    a: 1.0,
+                },
             );
         let radius = RadiusList::new()
             .add("none", 0)
@@ -878,6 +899,7 @@ impl Default for IcedStyleSheet {
                 border_width: NamedWidth::new("thin", &width),
             },
             editor_header_padding: NamedPadding::new("narrow", &padding),
+            editor_arrow_color: NamedColor::new("viz_color", &color),
             editor_container_inner_padding: NamedPadding::new("panel_inner", &padding),
             editor_container_outer_padding: NamedPadding::new("panel_outer", &padding),
             newtol_container_inner_padding: NamedPadding::new("panel_inner", &padding),
@@ -897,6 +919,13 @@ impl Default for IcedStyleSheet {
                 border_radius: NamedRadius::new("small", &radius),
                 border_width: NamedWidth::new("thin", &width),
             },
+            tol_entry_viz_container: StyledContainer {
+                text_color: NamedColor::new("text", &color),
+                background: NamedColor::new("viz_background", &color),
+                border_color: NamedColor::new("entry_border", &color),
+                border_radius: NamedRadius::new("small", &radius),
+                border_width: NamedWidth::new("thin", &width),
+            },
             tol_edit_button_text_size: NamedTextSize::new("p", &text_size),
             tol_edit_field_padding: NamedPadding::new("narrow", &padding),
             tol_edit_field_text_size: NamedTextSize::new("p", &text_size),
@@ -910,6 +939,13 @@ impl Default for IcedStyleSheet {
             panel_container: StyledContainer {
                 text_color: NamedColor::new("text", &color),
                 background: NamedColor::new("panel", &color),
+                border_color: NamedColor::new("panel_border", &color),
+                border_radius: NamedRadius::new("none", &radius),
+                border_width: NamedWidth::new("none", &width),
+            },
+            visualization_container: StyledContainer {
+                text_color: NamedColor::new("text", &color),
+                background: NamedColor::new("text", &color),
                 border_color: NamedColor::new("panel_border", &color),
                 border_radius: NamedRadius::new("none", &radius),
                 border_width: NamedWidth::new("none", &width),

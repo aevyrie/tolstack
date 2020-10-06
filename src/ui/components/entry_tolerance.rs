@@ -390,10 +390,7 @@ impl ToleranceEntry {
                     Row::new()
                         //.push(Text::new("Edit")
                         //    .size(iss.text_size(&iss.tol_entry_button_text_size)))
-                        .push(
-                            icons::edit()
-                                .size(iss.text_size(&iss.tol_entry_button_text_size)),
-                        )
+                        .push(icons::edit().size(iss.text_size(&iss.tol_entry_button_text_size)))
                         .spacing(iss.spacing(&iss.tol_entry_button_spacing)),
                 )
                 .on_press(Message::EntryEdit)
@@ -406,8 +403,7 @@ impl ToleranceEntry {
                         //.push(Text::new("Edit")
                         //    .size(iss.text_size(&iss.tol_entry_button_text_size)))
                         .push(
-                            icons::up_arrow()
-                                .size(iss.text_size(&iss.tol_entry_button_text_size)),
+                            icons::up_arrow().size(iss.text_size(&iss.tol_entry_button_text_size)),
                         )
                         .spacing(iss.spacing(&iss.tol_entry_button_spacing)),
                 )
@@ -430,7 +426,6 @@ impl ToleranceEntry {
                 .padding(iss.padding(&iss.tol_entry_button_padding))
                 .style(iss.button(&iss.button_inactive));
 
-
                 let row_contents = Row::new()
                     .padding(iss.padding(&iss.tol_entry_padding))
                     .spacing(iss.spacing(&iss.tol_entry_spacing))
@@ -441,9 +436,11 @@ impl ToleranceEntry {
                     .push(up_button)
                     .push(down_button);
 
-                Container::new(row_contents)
-                    .style(iss.container(&iss.tol_entry_container))
-                    .into()
+                //Container::new(row_contents)
+                //    .style(iss.container(&iss.tol_entry_container))
+                //    .into()
+
+                row_contents.into()
             }
             State::Editing { form_tolentry } => match form_tolentry {
                 FormState::Linear {

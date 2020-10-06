@@ -164,7 +164,8 @@ impl AnalysisState {
                     )
                     .spacing(iss.spacing(&iss.mc_results_row_spacing)),
             )
-            .spacing(iss.spacing(&iss.mc_results_col_spacing));
+            .spacing(iss.spacing(&iss.mc_results_col_spacing))
+            .height(Length::Fill);
 
         let results_summary = Container::new(
             Column::new()
@@ -181,14 +182,11 @@ impl AnalysisState {
 
         let tol_chain_output = Column::new()
             .push(
-                Container::new(
-                    Container::new(results_summary)
-                        .style(iss.container(&iss.panel_container))
-                        .padding(iss.padding(&iss.mc_results_container_inner_padding))
-                        .height(Length::Fill),
-                )
-                .height(Length::Fill)
-                .center_x(),
+                Container::new(results_summary)
+                    .style(iss.container(&iss.panel_container))
+                    .padding(iss.padding(&iss.mc_results_container_inner_padding))
+                    .height(Length::Fill)
+                    .center_x(),
             )
             .height(Length::Fill)
             .width(Length::Fill);
