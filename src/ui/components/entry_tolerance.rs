@@ -436,9 +436,11 @@ impl ToleranceEntry {
                     .push(up_button)
                     .push(down_button);
 
-                Container::new(row_contents)
-                    .style(iss.container(&iss.tol_entry_container))
-                    .into()
+                //Container::new(row_contents)
+                //    .style(iss.container(&iss.tol_entry_container))
+                //    .into()
+
+                row_contents.into()
             }
             State::Editing { form_tolentry } => match form_tolentry {
                 FormState::Linear {

@@ -600,6 +600,7 @@ pub struct IcedStyleSheet {
     pub tol_entry_button_spacing: NamedSpacing,
     pub tol_entry_button_padding: NamedPadding,
     pub tol_entry_container: StyledContainer,
+    pub tol_entry_viz_container: StyledContainer,
     pub tol_edit_button_text_size: NamedTextSize,
     pub tol_edit_field_padding: NamedPadding,
     pub tol_edit_field_text_size: NamedTextSize,
@@ -770,6 +771,24 @@ impl Default for IcedStyleSheet {
                     b: 230,
                     a: 1.0,
                 },
+            )
+            .add(
+                "viz_background",
+                SerializableColor {
+                    r: 254,
+                    g: 254,
+                    b: 254,
+                    a: 1.0,
+                },
+            )
+            .add(
+                "viz_color",
+                SerializableColor {
+                    r: 130,
+                    g: 130,
+                    b: 130,
+                    a: 1.0,
+                },
             );
         let radius = RadiusList::new()
             .add("none", 0)
@@ -880,7 +899,7 @@ impl Default for IcedStyleSheet {
                 border_width: NamedWidth::new("thin", &width),
             },
             editor_header_padding: NamedPadding::new("narrow", &padding),
-            editor_arrow_color: NamedColor::new("panel_border", &color),
+            editor_arrow_color: NamedColor::new("viz_color", &color),
             editor_container_inner_padding: NamedPadding::new("panel_inner", &padding),
             editor_container_outer_padding: NamedPadding::new("panel_outer", &padding),
             newtol_container_inner_padding: NamedPadding::new("panel_inner", &padding),
@@ -896,6 +915,13 @@ impl Default for IcedStyleSheet {
             tol_entry_container: StyledContainer {
                 text_color: NamedColor::new("text", &color),
                 background: NamedColor::new("entry", &color),
+                border_color: NamedColor::new("entry_border", &color),
+                border_radius: NamedRadius::new("small", &radius),
+                border_width: NamedWidth::new("thin", &width),
+            },
+            tol_entry_viz_container: StyledContainer {
+                text_color: NamedColor::new("text", &color),
+                background: NamedColor::new("viz_background", &color),
                 border_color: NamedColor::new("entry_border", &color),
                 border_radius: NamedRadius::new("small", &radius),
                 border_width: NamedWidth::new("thin", &width),

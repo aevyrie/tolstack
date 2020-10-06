@@ -321,62 +321,79 @@ impl StackEditor {
                     |column, (i, tol)| {
                         column
                             .push(
-                                Row::new().push(
-                                    Container::new(tol.view(&iss).map(move |message| {
-                                        // Take the message from the tolerance .view() and map it
-                                        // to an `area_stack_editor` Message as an `EntryMessage`
-                                        StackEditorAreaMessage::EntryMessage(i, message)
-                                    }))
-                                    .width(Length::FillPortion(2)),
-                                ),
-                            )
-                            .push(match visualize_positions[i] {
-                                Some(visualize_position) => {
-                                    let spacer_1_len =
-                                        (visualize_position.0 * 100.0).round() as u16; // TODO check the largest negative exponent to determine multiplier **before** rounding
-                                    let dim_len = (visualize_position.1 * 100.0).round() as u16;
-                                    let spacer_2_len = ((visualization_width * 100.0).round()
-                                        as u16)
-                                        - spacer_1_len
-                                        - dim_len;
-                                    Container::new(
-                                        Row::new()
-                                            .push(if spacer_1_len > 0 {
-                                                Container::new(Row::new())
-                                                    .width(Length::FillPortion(spacer_1_len))
-                                            } else {
-                                                Container::new(Row::new())
-                                            })
-                                            .push(if dim_len > 0 {
+                                Container::new(
+                                    Column::new()
+                                        .push(
+                                            Container::new(tol.view(&iss).map(move |message| {
+                                                // Take the message from the tolerance .view() and map it
+                                                // to an `area_stack_editor` Message as an `EntryMessage`
+                                                StackEditorAreaMessage::EntryMessage(i, message)
+                                            }))
+                                            .width(Length::FillPortion(2)),
+                                        )
+                                        .push(Container::new(match visualize_positions[i] {
+                                            Some(visualize_position) => {
+                                                let spacer_1_len =
+                                                    (visualize_position.0 * 100.0).round() as u16; // TODO check the largest negative exponent to determine multiplier **before** rounding
+                                                let dim_len =
+                                                    (visualize_position.1 * 100.0).round() as u16;
+                                                let spacer_2_len =
+                                                    ((visualization_width * 100.0).round() as u16)
+                                                        - spacer_1_len
+                                                        - dim_len;
                                                 Container::new(
                                                     Row::new()
-                                                        .push(Arrow::new(10, 4, visualize_position.2, iss.color(&iss.editor_arrow_color)))
-                                                        .width(Length::Fill),
+                                                        .push(if spacer_1_len > 0 {
+                                                            Container::new(Row::new()).width(
+                                                                Length::FillPortion(spacer_1_len),
+                                                            )
+                                                        } else {
+                                                            Container::new(Row::new())
+                                                        })
+                                                        .push(if dim_len > 0 {
+                                                            Container::new(
+                                                                Row::new()
+                                                                    .push(Arrow::new(
+                                                                        8,
+                                                                        4,
+                                                                        visualize_position.2,
+                                                                        iss.color(
+                                                                            &iss.editor_arrow_color,
+                                                                        ),
+                                                                    ))
+                                                                    .width(Length::Fill),
+                                                            )
+                                                            .width(Length::FillPortion(dim_len))
+                                                            .height(Length::Units(10))
+                                                        //.style(
+                                                        //    iss.container(&iss.visualization_container),
+                                                        //)
+                                                        } else {
+                                                            Container::new(Row::new())
+                                                                .width(Length::Units(2))
+                                                                .height(Length::Units(10))
+                                                                .style(iss.container(
+                                                                    &iss.visualization_container,
+                                                                ))
+                                                        })
+                                                        .push(if spacer_2_len > 0 {
+                                                            Container::new(Row::new()).width(
+                                                                Length::FillPortion(spacer_2_len),
+                                                            )
+                                                        } else {
+                                                            Container::new(Row::new())
+                                                        }),
                                                 )
-                                                .width(Length::FillPortion(dim_len))
-                                                .height(Length::Units(10))
-                                            //.style(
-                                            //    iss.container(&iss.visualization_container),
-                                            //)
-                                            } else {
-                                                Container::new(Row::new())
-                                                    .width(Length::Units(2))
-                                                    .height(Length::Units(10))
-                                                    .style(
-                                                        iss.container(&iss.visualization_container),
-                                                    )
-                                            })
-                                            .push(if spacer_2_len > 0 {
-                                                Container::new(Row::new())
-                                                    .width(Length::FillPortion(spacer_2_len))
-                                            } else {
-                                                Container::new(Row::new())
-                                            }),
-                                    )
-                                    .width(Length::FillPortion(1))
-                                }
-                                None => Container::new(Row::new()).width(Length::FillPortion(1)),
-                            })
+                                                .width(Length::FillPortion(1))
+                                            }
+                                            None => Container::new(Row::new())
+                                                .width(Length::FillPortion(1)),
+                                        }).style(iss.container(&iss.tol_entry_viz_container)).padding(iss.padding(&iss.tol_entry_padding))
+                                    ),
+                                )
+                                .style(iss.container(&iss.tol_entry_container))
+                                .padding(3),
+                            )
                             .spacing(iss.spacing(&iss.editor_content_spacing))
                             .align_items(Align::Center)
                     },
@@ -494,11 +511,11 @@ mod arrow {
     // Of course, you can choose to make the implementation renderer-agnostic,
     // if you wish to, by creating your own `Renderer` trait, which could be
     // implemented by `iced_wgpu` and other renderers.
+    use super::ArrowDirection;
     use iced_graphics::{triangle::*, Backend, Defaults, Primitive, Renderer};
     use iced_native::{
         layout, mouse, Element, Hasher, Layout, Length, Point, Size, Vector, Widget,
     };
-    use super::ArrowDirection;
 
     pub struct Arrow {
         height: u16,
@@ -508,7 +525,12 @@ mod arrow {
     }
 
     impl Arrow {
-        pub fn new(height: u16, line_width: u16, direction: ArrowDirection, color: iced::Color) -> Self {
+        pub fn new(
+            height: u16,
+            line_width: u16,
+            direction: ArrowDirection,
+            color: iced::Color,
+        ) -> Self {
             let color = color.into_linear();
             Self {
                 height,
@@ -556,7 +578,7 @@ mod arrow {
                 Primitive::Group {
                     primitives: vec![
                         match self.direction {
-                            ArrowDirection::Right => { Primitive::Translate {
+                            ArrowDirection::Right => Primitive::Translate {
                                 translation: Vector::new(layout.bounds().x, layout.bounds().y),
                                 content: Box::new(Primitive::Mesh2D {
                                     buffers: Mesh2D {
@@ -564,32 +586,28 @@ mod arrow {
                                             Vertex2D {
                                                 position: [
                                                     0.0,
-                                                    -(line_width / 2.0)
-                                                        + (height / 2.0),
+                                                    -(line_width / 2.0) + (height / 2.0),
                                                 ],
                                                 color,
                                             },
                                             Vertex2D {
                                                 position: [
                                                     layout.bounds().width - height,
-                                                    -(line_width / 2.0)
-                                                        + (height / 2.0),
+                                                    -(line_width / 2.0) + (height / 2.0),
                                                 ],
                                                 color,
                                             },
                                             Vertex2D {
                                                 position: [
                                                     0.0,
-                                                    (line_width / 2.0)
-                                                        + (height / 2.0),
+                                                    (line_width / 2.0) + (height / 2.0),
                                                 ],
                                                 color,
                                             },
                                             Vertex2D {
                                                 position: [
                                                     layout.bounds().width - height,
-                                                    (line_width / 2.0)
-                                                        + (height / 2.0),
+                                                    (line_width / 2.0) + (height / 2.0),
                                                 ],
                                                 color,
                                             },
@@ -601,8 +619,8 @@ mod arrow {
                                         f32::from(height * 2.0),
                                     ),
                                 }),
-                            }},
-                            ArrowDirection::Left => {Primitive::Translate {
+                            },
+                            ArrowDirection::Left => Primitive::Translate {
                                 translation: Vector::new(layout.bounds().x, layout.bounds().y),
                                 content: Box::new(Primitive::Mesh2D {
                                     buffers: Mesh2D {
@@ -610,32 +628,28 @@ mod arrow {
                                             Vertex2D {
                                                 position: [
                                                     height,
-                                                    -(line_width / 2.0)
-                                                        + (height / 2.0),
+                                                    -(line_width / 2.0) + (height / 2.0),
                                                 ],
                                                 color,
                                             },
                                             Vertex2D {
                                                 position: [
                                                     layout.bounds().width,
-                                                    -(line_width / 2.0)
-                                                        + (height / 2.0),
+                                                    -(line_width / 2.0) + (height / 2.0),
                                                 ],
                                                 color,
                                             },
                                             Vertex2D {
                                                 position: [
                                                     height,
-                                                    (line_width / 2.0)
-                                                        + (height / 2.0),
+                                                    (line_width / 2.0) + (height / 2.0),
                                                 ],
                                                 color,
                                             },
                                             Vertex2D {
                                                 position: [
                                                     layout.bounds().width,
-                                                    (line_width / 2.0)
-                                                        + (height / 2.0),
+                                                    (line_width / 2.0) + (height / 2.0),
                                                 ],
                                                 color,
                                             },
@@ -647,19 +661,16 @@ mod arrow {
                                         f32::from(height * 2.0),
                                     ),
                                 }),
-                            }},
+                            },
                         },
                         match self.direction {
-                            ArrowDirection::Right => {Primitive::Translate {
+                            ArrowDirection::Right => Primitive::Translate {
                                 translation: Vector::new(layout.bounds().x, layout.bounds().y),
                                 content: Box::new(Primitive::Mesh2D {
                                     buffers: Mesh2D {
                                         vertices: vec![
                                             Vertex2D {
-                                                position: [
-                                                    layout.bounds().width,
-                                                    height / 2.0,
-                                                ],
+                                                position: [layout.bounds().width, height / 2.0],
                                                 color,
                                             },
                                             Vertex2D {
@@ -684,31 +695,22 @@ mod arrow {
                                         f32::from(height * 2.0),
                                     ),
                                 }),
-                            }},
-                            ArrowDirection::Left => {Primitive::Translate {
+                            },
+                            ArrowDirection::Left => Primitive::Translate {
                                 translation: Vector::new(layout.bounds().x, layout.bounds().y),
                                 content: Box::new(Primitive::Mesh2D {
                                     buffers: Mesh2D {
                                         vertices: vec![
                                             Vertex2D {
-                                                position: [
-                                                    0.0,
-                                                    height / 2.0,
-                                                ],
+                                                position: [0.0, height / 2.0],
                                                 color,
                                             },
                                             Vertex2D {
-                                                position: [
-                                                    height,
-                                                    height,
-                                                ],
+                                                position: [height, height],
                                                 color,
                                             },
                                             Vertex2D {
-                                                position: [
-                                                    height,
-                                                    0.0,
-                                                ],
+                                                position: [height, 0.0],
                                                 color,
                                             },
                                         ],
@@ -719,9 +721,8 @@ mod arrow {
                                         f32::from(height * 2.0),
                                     ),
                                 }),
-                            }},
-                        }
-
+                            },
+                        },
                     ],
                 },
                 mouse::Interaction::default(),
