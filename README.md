@@ -37,3 +37,9 @@ TolStack is an open source tolerance analysis application for building and analy
 * Linux/Windows: You will need a modern graphics card that supports Vulkan
   * Integrated graphics (Intel HDxxx) requires vulkan support, check [here](https://www.intel.com/content/www/us/en/support/articles/000005524/graphics.html)
 * MacOS: the backend uses Metal, check [here](https://en.wikipedia.org/wiki/Metal_(API)#Supported_GPUs) for requirements
+
+## License
+This project is licensed under the [MIT license](https://github.com/aevyrie/tolstack/blob/master/LICENSE).
+
+### Contribution
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in tolstack by you, shall be licensed as MIT, without any additional terms or conditions.
