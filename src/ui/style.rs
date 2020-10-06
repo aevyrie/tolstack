@@ -586,6 +586,7 @@ pub struct IcedStyleSheet {
     pub editor_scroll_area_padding_correction: NamedPadding,
     pub editor_scroll_container: StyledContainer,
     pub editor_header_padding: NamedPadding,
+    pub editor_arrow_color: NamedColor,
     pub editor_container_inner_padding: NamedPadding,
     pub editor_container_outer_padding: NamedPadding,
     pub newtol_container_inner_padding: NamedPadding,
@@ -610,7 +611,7 @@ pub struct IcedStyleSheet {
 
     // General Coontainers
     pub panel_container: StyledContainer,
-    pub visualization_contianer: StyledContainer,
+    pub visualization_container: StyledContainer,
 
     // General Buttons
     pub button_action: StyledButton,
@@ -879,6 +880,7 @@ impl Default for IcedStyleSheet {
                 border_width: NamedWidth::new("thin", &width),
             },
             editor_header_padding: NamedPadding::new("narrow", &padding),
+            editor_arrow_color: NamedColor::new("panel_border", &color),
             editor_container_inner_padding: NamedPadding::new("panel_inner", &padding),
             editor_container_outer_padding: NamedPadding::new("panel_outer", &padding),
             newtol_container_inner_padding: NamedPadding::new("panel_inner", &padding),
@@ -915,7 +917,7 @@ impl Default for IcedStyleSheet {
                 border_radius: NamedRadius::new("none", &radius),
                 border_width: NamedWidth::new("none", &width),
             },
-            visualization_contianer: StyledContainer {
+            visualization_container: StyledContainer {
                 text_color: NamedColor::new("text", &color),
                 background: NamedColor::new("text", &color),
                 border_color: NamedColor::new("panel_border", &color),

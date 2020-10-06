@@ -470,13 +470,11 @@ impl Application for TolStack {
                         .push(Container::new(analysis_state).width(Length::Units(400))),
                 );
 
-                let gui = Container::new(Column::new().push(header).push(content))
-                    .style(iss.container(&iss.home_container));
+                let gui: Element<_> = Container::new(Column::new().push(header).push(content))
+                    .style(iss.container(&iss.home_container))
+                    .into();
 
-                //debug:
-                //let gui = gui.explain(Color::BLACK);
-
-                gui.into()
+                gui.explain(iced::Color::BLACK)
             }
         }
     }
