@@ -56,10 +56,7 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
     let worst_case_dim = state.tolerance_loop.iter().fold(0.0, |acc, tol| {
         acc + match tol {
             Tolerance::Linear(linear) => linear.distance.dim,
-            Tolerance::Float(float) => f64::max(
-                0.0,
-                f64::abs(f64::abs(float.hole.dim) - f64::abs(float.pin.dim)),
-            ),
+            Tolerance::Float(_) => 0.0,
         }
     });
 
@@ -68,7 +65,7 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
             Tolerance::Linear(linear) => linear.distance.tol_pos,
             Tolerance::Float(float) => f64::max(
                 0.0,
-                f64::abs(f64::abs(float.hole.tol_pos) - f64::abs(float.pin.tol_neg)),
+                ((float.hole.dim+float.hole.tol_pos)-(float.pin.dim-float.pin.tol_neg))/2.0,
             ),
         })
     });
@@ -78,10 +75,12 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
             Tolerance::Linear(linear) => linear.distance.tol_neg,
             Tolerance::Float(float) => f64::max(
                 0.0,
-                f64::abs(f64::abs(float.hole.tol_pos) - f64::abs(float.pin.tol_neg)),
+                ((float.hole.dim+float.hole.tol_pos)-(float.pin.dim-float.pin.tol_neg))/2.0,
             ),
         })
     });
+
+    dbg!(worst_case_dim, worst_case_neg, worst_case_pos);
 
     let worst_case_upper = worst_case_dim + worst_case_pos;
     let worst_case_lower = worst_case_dim - worst_case_neg;
