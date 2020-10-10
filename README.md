@@ -2,7 +2,7 @@
   <img src="docs/logo.png" width="350">
   <br/><br/>
   <b>🚧 This application is in development, untested, unstable, and not ready for general use. 🚧</b>
-  <br/><br/>
+  <br/>
 </p>
 <br/>
 
