@@ -1,16 +1,20 @@
 <p align="center">
-  <img src="docs/logo.png" width="498">
+  <img src="docs/logo.png" width="350">
   <br/><br/>
-  <b>🚨 This application is in development, untested, unstable, and not ready for general use. 🚨</b>
+  <b>🚧 This application is in development, untested, unstable, and not ready for general use. 🚧</b>
   <br/><br/>
 </p>
 <br/>
 
 ## Overview
 
-TolStack is an open source tolerance analysis application for building and analyzing 1D geometric tolerance models. The goal of this tool is to make tolerance stackup analysis fast, easy, and error free. Built as a learning project with Rust using [`iced`](https://github.com/hecrj/iced).
+TolStack is an open source tolerance analysis application for building and analyzing 1D geometric tolerance models. The goal of this tool is to help make tolerance analysis fast, easy, and error free. Built as a learning project with Rust using [`iced`](https://github.com/hecrj/iced).
 
 [Read the TolStack user guide](https://aevyrie.github.io/tolstack/book/)
+
+### Disclaimer
+
+This software should only be used by engineers who are able to independently verify the correctness of its output. The software is provided as is, without warranty of any kind, inluding but not limited to the correctness of its output. The intent of this software is to aid you in the exploration tolerance analysis, not to replace existing methods of analysis or verification.
 
 ### Features
 
@@ -18,7 +22,6 @@ TolStack is an open source tolerance analysis application for building and analy
 * Evaluate and tune your tolerances with:
   * Monte Carlo analysis
   * RSS analysis
-  * Worst case tolerance analysis
 * Export results to CSV
 
 ### Screenshot
@@ -31,9 +34,9 @@ TolStack is an open source tolerance analysis application for building and analy
 2. Clone the repository with `git clone https://github.com/aevyrie/tolstack.git`
 3. From the `tolstack` directory, run `cargo run --release` to build and launch the application with compiler optimizations.
 
-### Hardware Requirements and Software Dependencies
+### Hardware and Software Requirements
 
-* Make sure your graphics drivers are up to date!
+* Note: make sure your graphics drivers are up to date!
 * Linux/Windows: You will need a modern graphics card that supports Vulkan
   * Integrated graphics (Intel HDxxx) requires vulkan support, check [here](https://www.intel.com/content/www/us/en/support/articles/000005524/graphics.html)
 * MacOS: the backend uses Metal, check [here](https://en.wikipedia.org/wiki/Metal_(API)#Supported_GPUs) for requirements
