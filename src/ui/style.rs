@@ -916,7 +916,7 @@ impl Default for IcedStyleSheet {
                 text_color: NamedColor::new("text", &color),
                 background: NamedColor::new("entry", &color),
                 border_color: NamedColor::new("entry_border", &color),
-                border_radius: NamedRadius::new("small", &radius),
+                border_radius: NamedRadius::new("large", &radius),
                 border_width: NamedWidth::new("thin", &width),
             },
             tol_entry_viz_container: StyledContainer {

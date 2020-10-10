@@ -392,7 +392,7 @@ impl StackEditor {
                                     ),
                                 )
                                 .style(iss.container(&iss.tol_entry_container))
-                                .padding(3),
+                                .padding(5),
                             )
                             .spacing(iss.spacing(&iss.editor_content_spacing))
                             .align_items(Align::Center)
