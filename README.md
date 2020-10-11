@@ -8,9 +8,7 @@
 
 ## Overview
 
-TolStack is an open source tolerance analysis application for building and analyzing 1D geometric tolerance models. The goal of this tool is to help make tolerance analysis fast, intuitive, and explorable.
-
-Built with Rust using [`iced`](https://github.com/hecrj/iced).
+TolStack is an open source tolerance analysis application for building and analyzing 1D geometric tolerance models. The goal of this tool is to help make tolerance analysis fast, intuitive, and explorable. Built with Rust using [`iced`](https://github.com/hecrj/iced).
 
 [Read the TolStack user guide](https://aevyrie.github.io/tolstack/book/)
 
