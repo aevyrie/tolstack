@@ -12,6 +12,8 @@ TolStack is an open source tolerance analysis application for building and analy
 
 [Read the TolStack user guide](https://aevyrie.github.io/tolstack/book/)
 
+[Roadmap](https://github.com/aevyrie/tolstack/projects/1)
+
 ## Disclaimer
 
 This software should only be used by engineers who are able to independently verify the correctness of its output. The software is provided as is, without warranty of any kind. The intent of this software is to aid in the exploration of tolerance analyses, not to replace existing methods of analysis or verification.
