@@ -331,27 +331,33 @@ impl StackEditor {
                                             }))
                                             .width(Length::FillPortion(2)),
                                         )
-                                        .push(Container::new(match visualize_positions[i] {
-                                            Some(visualize_position) => {
-                                                let spacer_1_len =
-                                                    (visualize_position.0 * 100.0).round() as u16; // TODO check the largest negative exponent to determine multiplier **before** rounding
-                                                let dim_len =
-                                                    (visualize_position.1 * 100.0).round() as u16;
-                                                let spacer_2_len =
-                                                    ((visualization_width * 100.0).round() as u16)
-                                                        - spacer_1_len
-                                                        - dim_len;
-                                                Container::new(
-                                                    Row::new()
-                                                        .push(if spacer_1_len > 0 {
-                                                            Container::new(Row::new()).width(
-                                                                Length::FillPortion(spacer_1_len),
-                                                            )
-                                                        } else {
-                                                            Container::new(Row::new())
-                                                        })
-                                                        .push(if dim_len > 0 {
-                                                            Container::new(
+                                        .push(
+                                            Container::new(match visualize_positions[i] {
+                                                Some(visualize_position) => {
+                                                    let spacer_1_len =
+                                                        (visualize_position.0 * 100.0).round()
+                                                            as u16; // TODO check the largest negative exponent to determine multiplier **before** rounding
+                                                    let dim_len = (visualize_position.1 * 100.0)
+                                                        .round()
+                                                        as u16;
+                                                    let spacer_2_len =
+                                                        ((visualization_width * 100.0).round()
+                                                            as u16)
+                                                            - spacer_1_len
+                                                            - dim_len;
+                                                    Container::new(
+                                                        Row::new()
+                                                            .push(if spacer_1_len > 0 {
+                                                                Container::new(Row::new()).width(
+                                                                    Length::FillPortion(
+                                                                        spacer_1_len,
+                                                                    ),
+                                                                )
+                                                            } else {
+                                                                Container::new(Row::new())
+                                                            })
+                                                            .push(if dim_len > 0 {
+                                                                Container::new(
                                                                 Row::new()
                                                                     .push(Arrow::new(
                                                                         8,
@@ -365,31 +371,35 @@ impl StackEditor {
                                                             )
                                                             .width(Length::FillPortion(dim_len))
                                                             .height(Length::Units(10))
-                                                        //.style(
-                                                        //    iss.container(&iss.visualization_container),
-                                                        //)
-                                                        } else {
-                                                            Container::new(Row::new())
+                                                            //.style(
+                                                            //    iss.container(&iss.visualization_container),
+                                                            //)
+                                                            } else {
+                                                                Container::new(Row::new())
                                                                 .width(Length::Units(2))
                                                                 .height(Length::Units(10))
                                                                 .style(iss.container(
                                                                     &iss.visualization_container,
                                                                 ))
-                                                        })
-                                                        .push(if spacer_2_len > 0 {
-                                                            Container::new(Row::new()).width(
-                                                                Length::FillPortion(spacer_2_len),
-                                                            )
-                                                        } else {
-                                                            Container::new(Row::new())
-                                                        }),
-                                                )
-                                                .width(Length::FillPortion(1))
-                                            }
-                                            None => Container::new(Row::new())
-                                                .width(Length::FillPortion(1)),
-                                        }).style(iss.container(&iss.tol_entry_viz_container)).padding(iss.padding(&iss.tol_entry_padding))
-                                    ),
+                                                            })
+                                                            .push(if spacer_2_len > 0 {
+                                                                Container::new(Row::new()).width(
+                                                                    Length::FillPortion(
+                                                                        spacer_2_len,
+                                                                    ),
+                                                                )
+                                                            } else {
+                                                                Container::new(Row::new())
+                                                            }),
+                                                    )
+                                                    .width(Length::FillPortion(1))
+                                                }
+                                                None => Container::new(Row::new())
+                                                    .width(Length::FillPortion(1)),
+                                            })
+                                            .style(iss.container(&iss.tol_entry_viz_container))
+                                            .padding(iss.padding(&iss.tol_entry_padding)),
+                                        ),
                                 )
                                 .style(iss.container(&iss.tol_entry_container))
                                 .padding(5),

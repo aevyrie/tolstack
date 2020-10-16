@@ -79,6 +79,21 @@ impl Default for State {
         }
     }
 }
+impl State {
+    /// Marks the state as having unsaved changes
+    fn mark_unsaved_changes(&mut self) {
+        self.dirty = true;
+    }
+    fn stack_is_not_empty(&self) -> bool {
+        self.stack_editor
+            .tolerances
+            .iter()
+            .filter(|x| x.active)
+            .count()
+            > 0
+    }
+}
+
 // Messages - events for users to change the application state
 #[derive(Debug, Clone)]
 enum Message {
@@ -203,7 +218,6 @@ impl Application for TolStack {
                 match message {
                     Message::AutoSave => {
                         if let Some(path) = &state.file_path {
-                            state.dirty = false;
                             state.saving = true;
                             let save_data = SavedState {
                                 name: state.stack_editor.title.text.clone(),
@@ -271,7 +285,7 @@ impl Application for TolStack {
                     }
 
                     Message::Header(area_header::HeaderAreaMessage::AddTolLinear) => {
-                        state.dirty = true;
+                        state.mark_unsaved_changes();
                         state.stack_editor.update(
                             area_stack_editor::StackEditorAreaMessage::NewEntryMessage((
                                 String::from("New Linear Tolerance"),
@@ -281,7 +295,7 @@ impl Application for TolStack {
                     }
 
                     Message::Header(area_header::HeaderAreaMessage::AddTolFloat) => {
-                        state.dirty = true;
+                        state.mark_unsaved_changes();
                         state.stack_editor.update(
                             area_stack_editor::StackEditorAreaMessage::NewEntryMessage((
                                 String::from("New Float Tolerance"),
@@ -299,16 +313,24 @@ impl Application for TolStack {
                     Message::ExportComplete(_) => {}
 
                     Message::StackEditor(message) => {
-                        match message {
+                        let recompute = match message {
                             area_stack_editor::StackEditorAreaMessage::LabelMessage(
                                 editable_label::Message::FinishEditing,
-                            ) => state.dirty = true,
-                            area_stack_editor::StackEditorAreaMessage::EntryMessage(_, _) => {
-                                state.dirty = true
-                            }
-                            _ => {}
+                            ) => true,
+                            area_stack_editor::StackEditorAreaMessage::EntryMessage(_, _) => true,
+                            _ => false,
+                        };
+                        state.stack_editor.update(message);
+                        if recompute {
+                            state.mark_unsaved_changes();
+                            return Command::perform(do_nothing(), |_| {
+                                Message::Analysis(
+                                    area_mc_analysis::AnalysisAreaMessage::NewMcAnalysisMessage(
+                                        form_new_mc_analysis::Message::Calculate,
+                                    ),
+                                )
+                            });
                         }
-                        state.stack_editor.update(message)
                     }
 
                     Message::Analysis(
@@ -316,14 +338,7 @@ impl Application for TolStack {
                             form_new_mc_analysis::Message::Calculate,
                         ),
                     ) => {
-                        if state
-                            .stack_editor
-                            .tolerances
-                            .iter()
-                            .filter(|x| x.active)
-                            .count()
-                            > 0
-                        {
+                        if state.stack_is_not_empty() {
                             // Clone the contents of the stack editor tolerance list into the monte
                             // carlo simulation's input tolerance list.
                             state.analysis_state.input_stack =
@@ -372,11 +387,18 @@ impl Application for TolStack {
                     Message::StyleSaved(_) => {}
 
                     Message::Saved(save_result) => {
-                        if let Ok(path_result) = save_result {
-                            state.saving = false;
-                            if let Some(path) = path_result {
-                                state.file_path = Some(path);
-                                state.last_save = std::time::Instant::now();
+                        state.saving = false;
+                        match save_result {
+                            Ok(path_result) => {
+                                if let Some(path) = path_result {
+                                    state.file_path = Some(path);
+                                    state.last_save = std::time::Instant::now();
+                                }
+                                state.dirty = false;
+                            }
+                            Err(e) => {
+                                state.dirty = true;
+                                println!("Save failed with {:?}", e);
                             }
                         }
                     }
@@ -496,3 +518,5 @@ fn loading_message() -> Element<'static, Message> {
 async fn help() {
     webbrowser::open("https://aevyrie.github.io/tolstack/book/getting-started").unwrap();
 }
+
+async fn do_nothing() {}

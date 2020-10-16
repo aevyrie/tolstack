@@ -65,7 +65,7 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
             Tolerance::Linear(linear) => linear.distance.tol_pos,
             Tolerance::Float(float) => f64::max(
                 0.0,
-                ((float.hole.dim+float.hole.tol_pos)-(float.pin.dim-float.pin.tol_neg))/2.0,
+                ((float.hole.dim + float.hole.tol_pos) - (float.pin.dim - float.pin.tol_neg)) / 2.0,
             ),
         })
     });
@@ -75,7 +75,7 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
             Tolerance::Linear(linear) => linear.distance.tol_neg,
             Tolerance::Float(float) => f64::max(
                 0.0,
-                ((float.hole.dim+float.hole.tol_pos)-(float.pin.dim-float.pin.tol_neg))/2.0,
+                ((float.hole.dim + float.hole.tol_pos) - (float.pin.dim - float.pin.tol_neg)) / 2.0,
             ),
         })
     });

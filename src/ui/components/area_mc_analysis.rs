@@ -6,6 +6,10 @@ use iced::{Column, Command, Container, Element, Length, Row, Text};
 pub enum AnalysisAreaMessage {
     NewMcAnalysisMessage(form_new_mc_analysis::Message),
     CalculateComplete(Option<structures::AnalysisResults>),
+    //RunRssCalcs(form_new_mc_analysis::Message),
+    //RunMonteCarloCalcs(form_new_mc_analysis::Message),
+    //RssCalcComplete(Option<structures::RssResults>),
+    //MonteCarloCalcComplete(Option<structures::McResults>),
 }
 
 #[derive(Debug, Default, Clone)]
