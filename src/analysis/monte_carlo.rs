@@ -19,7 +19,7 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
     let mut result_stddev_pos = 0f64;
     let mut result_stddev_neg = 0f64;
 
-    for n in 0..chunks {
+    for _n in 0..chunks {
         // TODO: validate n_iterations is nicely divisible by chunk_size and n_threads.
         // Gather samples into a stack that is `chunk_size` long for each Tolerance
         let stack = compute_stackup(state.tolerance_loop.clone(), chunk_size);
@@ -42,14 +42,15 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
             Some(stack_mean),
         );
 
-        // Weighted average
-        result_mean =
-            result_mean * (n as f64 / (n as f64 + 1.0)) + stack_mean * (1.0 / (n as f64 + 1.0));
-        result_stddev_pos = result_stddev_pos * (n as f64 / (n as f64 + 1.0))
-            + stack_stddev_pos * (1.0 / (n as f64 + 1.0));
-        result_stddev_neg = result_stddev_neg * (n as f64 / (n as f64 + 1.0))
-            + stack_stddev_neg * (1.0 / (n as f64 + 1.0));
+        result_mean += stack_mean;
+        result_stddev_neg += stack_stddev_neg;
+        result_stddev_pos += stack_stddev_pos;
     }
+
+    result_mean = result_mean / chunks as f64;
+    result_stddev_neg = result_stddev_neg / chunks as f64;
+    result_stddev_pos = result_stddev_pos / chunks as f64;
+
     let result_tol_pos = result_stddev_pos * state.parameters.assy_sigma;
     let result_tol_neg = result_stddev_neg * state.parameters.assy_sigma;
 
