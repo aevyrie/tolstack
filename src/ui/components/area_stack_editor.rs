@@ -121,7 +121,7 @@ impl StackEditor {
                                 }
                                 if entry.valid {
                                     entry.active = true;
-                                    let linear = DimTol::new(
+                                    let linear = DimTol::new_normal(
                                         sanitized_dimension,
                                         sanitized_tolerance_pos,
                                         sanitized_tolerance_neg,
@@ -210,13 +210,13 @@ impl StackEditor {
                                 }
                                 if entry.valid {
                                     entry.active = true;
-                                    let hole = DimTol::new(
+                                    let hole = DimTol::new_normal(
                                         sanitized_diameter_hole,
                                         sanitized_tolerance_hole_pos,
                                         sanitized_tolerance_hole_neg,
                                         sanitized_sigma,
                                     );
-                                    let pin = DimTol::new(
+                                    let pin = DimTol::new_normal(
                                         sanitized_diameter_pin,
                                         sanitized_tolerance_pin_pos,
                                         sanitized_tolerance_pin_neg,

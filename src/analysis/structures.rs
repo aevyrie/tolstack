@@ -8,17 +8,39 @@ pub struct DimTol {
     pub tol_neg: f64,
     pub tol_multiplier: f64,
     pub sigma: f64,
+    dist: TolDistribution,
 }
 impl DimTol {
-    pub fn new(dim: f64, tol_pos: f64, tol_neg: f64, sigma: f64) -> Self {
+    pub fn new_normal(dim: f64, tol_pos: f64, tol_neg: f64, sigma: f64) -> Self {
+        if tol_neg <= 0.0 || tol_pos <= 0.0 {
+            panic!("Number supplied to new_normal was negative");
+        }
         let tol_multiplier: f64 = (tol_pos + tol_neg) / 2.0 / sigma;
+        // If the tolerances are not equal for a normally distributed tolerance, the tolerance must be normalized.
+        let (dim_norm, tol_pos_norm, tol_neg_norm) = if (tol_pos - tol_neg) > f64::EPSILON {
+            let new_dim = (tol_pos + tol_neg) / 2.0;
+            (dim + (tol_pos + tol_neg) / 2.0, new_dim, new_dim)
+        } else {
+            (dim, tol_pos, tol_neg)
+        };
         DimTol {
-            dim,
-            tol_pos,
-            tol_neg,
+            dim: dim_norm,
+            tol_pos: tol_pos_norm,
+            tol_neg: tol_neg_norm,
             tol_multiplier,
             sigma,
+            dist: TolDistribution::Normal,
         }
+    }
+}
+
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub enum TolDistribution {
+    Normal,
+}
+impl Default for TolDistribution {
+    fn default() -> Self {
+        TolDistribution::Normal
     }
 }
 

@@ -191,7 +191,7 @@ impl MonteCarlo for FloatTL {
         if hole_pin_slop <= 0.0 {
             0.0
         } else {
-            DimTol::new(0.0, hole_pin_slop, hole_pin_slop, self.sigma)
+            DimTol::new_normal(0.0, hole_pin_slop, hole_pin_slop, self.sigma)
                 .sample_mc(DistributionParam::Uniform, BoundingParam::KeepAll)
         }
     }
@@ -278,19 +278,19 @@ pub fn test_data() -> State {
 
     let mut model = State::new(parameters);
 
-    model.add(Tolerance::Linear(LinearTL::new(DimTol::new(
+    model.add(Tolerance::Linear(LinearTL::new(DimTol::new_normal(
         65.88, 0.17, 0.17, 3.0,
     ))));
 
     model.add(Tolerance::Float(FloatTL::new(
-        DimTol::new(2.50, 0.1, 0.0, 3.0),
-        DimTol::new(3.0, 0.08, 0.22, 3.0),
+        DimTol::new_normal(2.50, 0.1, 0.0, 3.0),
+        DimTol::new_normal(3.0, 0.08, 0.22, 3.0),
         3.0,
     )));
 
     model.add(Tolerance::Float(FloatTL::new(
-        DimTol::new(2.50, 0.1, 0.0, 3.0),
-        DimTol::new(3.0, 0.08, 0.22, 3.0),
+        DimTol::new_normal(2.50, 0.1, 0.0, 3.0),
+        DimTol::new_normal(3.0, 0.08, 0.22, 3.0),
         3.0,
     )));
 
