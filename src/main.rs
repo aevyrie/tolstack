@@ -446,7 +446,7 @@ impl Application for TolStack {
                 let auto_save = if *dirty
                     && !saving
                     && file_path.is_some()
-                    && last_save.elapsed().as_secs() > 5
+                    //&& last_save.elapsed().as_secs() > 5
                 {
                     time::every(std::time::Duration::from_secs(5)).map(|_| Message::AutoSave)
                 } else {
