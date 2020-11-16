@@ -159,7 +159,7 @@ pub struct ToleranceEntry {
     pub valid: bool,
 
     #[serde(skip)]
-    state: State,
+    pub state: State,
 }
 impl ToleranceEntry {
     pub fn new(description: String, tolerance: Tolerance) -> Self {

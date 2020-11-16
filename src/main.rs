@@ -25,7 +25,7 @@ use ui::{components::*, style};
 use colored::*;
 use iced::{
     time, window, Application, Column, Command, Container, Element, HorizontalAlignment, Length,
-    Row, Settings, Subscription, Text,
+    Row, Settings, Subscription, Text, keyboard, text_input,
 };
 use image::GenericImageView;
 
@@ -106,6 +106,7 @@ enum Message {
     Loaded(Result<(Option<PathBuf>, SavedState), io::saved_state::LoadError>),
     Saved(Result<Option<PathBuf>, io::saved_state::SaveError>),
     ExportComplete(Result<(), io::export_csv::SaveError>),
+    EventOccurred(iced_native::Event),
     //
     StyleUpdateAvailable(bool),
     LoadedStyle(Result<style::IcedStyleSheet, style::LoadError>),
@@ -169,7 +170,12 @@ impl Application for TolStack {
 
     // Update logic - how to react to messages sent through the application
     fn update(&mut self, message: Message) -> Command<Message> {
-        if cfg!(debug_assertions) {
+        let is_event = if let Message::EventOccurred(_) = message {
+            true
+        } else {
+            false
+        };
+        if cfg!(debug_assertions) && !is_event {
             println!(
                 "\n\n{}{}\n{:#?}",
                 chrono::offset::Local::now(),
@@ -216,6 +222,98 @@ impl Application for TolStack {
 
             TolStack::Loaded(state) => {
                 match message {
+                    Message::EventOccurred(iced_native::Event::Keyboard(event)) => {
+                        match event {
+                            keyboard::Event::KeyPressed{
+                                key_code,
+                                modifiers: _,
+                            } => {
+                                if key_code == keyboard::KeyCode::Tab {
+                                    for entry in &mut state.stack_editor.tolerances {
+                                        match &mut entry.state {
+                                            entry_tolerance::State::Idle{
+                                                button_edit: _,
+                                                button_move_up: _,
+                                                button_move_down: _,
+                                            } => {}
+                                            entry_tolerance::State::Editing{
+                                                form_tolentry
+                                            } => {
+                                                match form_tolentry {
+                                                    FormState::Linear{
+                                                        button_save: _,
+                                                        button_delete: _,
+                                                        description,
+                                                        dimension,
+                                                        tolerance_pos,
+                                                        tolerance_neg,
+                                                        sigma,
+                                                    } => {
+                                                        if description.is_focused() {
+                                                            *description = text_input::State::default();
+                                                            *dimension = text_input::State::focused();
+                                                        } else if dimension.is_focused() {
+                                                            *dimension = text_input::State::default();
+                                                            *tolerance_pos = text_input::State::focused();
+                                                        } else if tolerance_pos.is_focused() {
+                                                            *tolerance_pos = text_input::State::default();
+                                                            *tolerance_neg = text_input::State::focused();
+                                                        } else if tolerance_neg.is_focused() {
+                                                            *tolerance_neg = text_input::State::default();
+                                                            *sigma = text_input::State::focused();
+                                                        } else if sigma.is_focused() {
+                                                            *sigma = text_input::State::default();
+                                                            *description = text_input::State::focused();
+                                                        }
+                                                    }
+                                                    FormState::Float{
+                                                        button_save: _,
+                                                        button_delete: _,
+                                                        description,
+                                                        diameter_hole,
+                                                        diameter_pin,
+                                                        tolerance_hole_pos,
+                                                        tolerance_hole_neg,
+                                                        tolerance_pin_pos,
+                                                        tolerance_pin_neg,
+                                                        sigma,
+                                                    } => {
+                                                        if description.is_focused() {
+                                                            *description = text_input::State::default();
+                                                            *diameter_hole = text_input::State::focused();
+                                                        } else if diameter_hole.is_focused() {
+                                                            *diameter_hole = text_input::State::default();
+                                                            *tolerance_hole_pos = text_input::State::focused();
+                                                        } else if tolerance_hole_pos.is_focused() {
+                                                            *tolerance_hole_pos = text_input::State::default();
+                                                            *tolerance_hole_neg = text_input::State::focused();
+                                                        } else if tolerance_hole_neg.is_focused() {
+                                                            *tolerance_hole_neg = text_input::State::default();
+                                                            *diameter_pin = text_input::State::focused();
+                                                        } else if diameter_pin.is_focused() {
+                                                            *diameter_pin = text_input::State::default();
+                                                            *tolerance_pin_pos = text_input::State::focused();
+                                                        } else if tolerance_pin_pos.is_focused() {
+                                                            *tolerance_pin_pos = text_input::State::default();
+                                                            *tolerance_pin_neg = text_input::State::focused();
+                                                        } else if tolerance_pin_neg.is_focused() {
+                                                            *tolerance_pin_neg = text_input::State::default();
+                                                            *sigma = text_input::State::focused();
+                                                        } else if sigma.is_focused() {
+                                                            *sigma = text_input::State::default();
+                                                            *description = text_input::State::focused();
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {}
+                            }
+                            _ => {}
+                        }
+                    }
+                    Message::EventOccurred(_) => {}
                     Message::AutoSave => {
                         if let Some(path) = &state.file_path {
                             state.saving = true;
@@ -434,7 +532,7 @@ impl Application for TolStack {
         match self {
             TolStack::Loading => Subscription::none(),
             TolStack::Loaded(State {
-                last_save,
+                last_save: _,
                 iss,
                 header: _,
                 stack_editor: _,
@@ -457,7 +555,9 @@ impl Application for TolStack {
                 } else {
                     Subscription::none()
                 };
-                Subscription::batch(vec![auto_save, style_reload])
+                let tab_field = iced_native::subscription::events().map(Message::EventOccurred);
+
+                Subscription::batch(vec![auto_save, style_reload, tab_field])
             }
         }
     }
