@@ -201,12 +201,12 @@ impl NamedList for ColorList {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RadiusList {
-    map: HashMap<String, u16>,
+    map: HashMap<String, f32>,
 }
 impl NamedList for RadiusList {
     type NamedItem = NamedRadius;
-    type Value = u16;
-    type Stored = u16;
+    type Value = f32;
+    type Stored = f32;
 
     fn new() -> Self {
         RadiusList {
@@ -217,7 +217,7 @@ impl NamedList for RadiusList {
     fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
         match self.map.get(&lookup.0) {
             Some(radius) => *radius,
-            None => 0,
+            None => 0.0,
         }
     }
 
@@ -233,12 +233,12 @@ impl NamedList for RadiusList {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WidthList {
-    map: HashMap<String, u16>,
+    map: HashMap<String, f32>,
 }
 impl NamedList for WidthList {
     type NamedItem = NamedWidth;
-    type Value = u16;
-    type Stored = u16;
+    type Value = f32;
+    type Stored = f32;
 
     fn new() -> Self {
         WidthList {
@@ -249,7 +249,7 @@ impl NamedList for WidthList {
     fn resolve(&self, lookup: &Self::NamedItem) -> Self::Value {
         match self.map.get(&lookup.0) {
             Some(width) => *width,
-            None => 0,
+            None => 0.0,
         }
     }
 
@@ -436,8 +436,8 @@ pub struct IcedContainerStyle {
     text_color: Option<Color>,
     background: Option<Background>,
     border_color: Color,
-    border_radius: u16,
-    border_width: u16,
+    border_radius: f32,
+    border_width: f32,
 }
 impl container::StyleSheet for IcedContainerStyle {
     fn style(&self) -> container::Style {
@@ -481,14 +481,14 @@ pub struct StyledButton {
 pub struct IcedButtonStyle {
     active_shadow_offset: Vector,
     active_background: Option<Background>,
-    active_border_radius: u16,
-    active_border_width: u16,
+    active_border_radius: f32,
+    active_border_width: f32,
     active_border_color: Color,
     active_text_color: Color,
     hover_shadow_offset: Vector,
     hover_background: Option<Background>,
-    hover_border_radius: u16,
-    hover_border_width: u16,
+    hover_border_radius: f32,
+    hover_border_width: f32,
     hover_border_color: Color,
     hover_text_color: Color,
 }
@@ -791,14 +791,14 @@ impl Default for IcedStyleSheet {
                 },
             );
         let radius = RadiusList::new()
-            .add("none", 0)
-            .add("small", 4)
-            .add("large", 6)
-            .add("extra_large", 12);
+            .add("none", 0.0)
+            .add("small", 4.0)
+            .add("large", 6.0)
+            .add("extra_large", 12.0);
         let width = WidthList::new()
-            .add("none", 0)
-            .add("thin", 1)
-            .add("bold", 3);
+            .add("none", 0.0)
+            .add("thin", 1.0)
+            .add("bold", 3.0);
         let dimension = DimensionList::new()
             .add("height_ribbon_tall", 70)
             .add("height_ribbon_short", 40)
@@ -1056,11 +1056,11 @@ impl IcedStyleSheet {
         self.color.resolve(name)
     }
 
-    pub fn radius(&self, name: &NamedRadius) -> u16 {
+    pub fn radius(&self, name: &NamedRadius) -> f32 {
         self.radius.resolve(name)
     }
 
-    pub fn width(&self, name: &NamedWidth) -> u16 {
+    pub fn width(&self, name: &NamedWidth) -> f32 {
         self.width.resolve(name)
     }
 
@@ -1262,7 +1262,7 @@ impl button::StyleSheet for Button {
                 if *selected {
                     button::Style {
                         background: Some(Background::Color(Color::from_rgb(0.95, 0.95, 0.95))),
-                        border_radius: 5,
+                        border_radius: 5.0,
                         text_color: Color::BLACK,
                         ..button::Style::default()
                     }
@@ -1274,7 +1274,7 @@ impl button::StyleSheet for Button {
                 if *selected {
                     button::Style {
                         background: Some(Background::Color(Color::from_rgb(0.2, 0.4, 0.7))),
-                        border_radius: 5,
+                        border_radius: 5.0,
                         text_color: Color::WHITE,
                         ..button::Style::default()
                     }
@@ -1288,21 +1288,21 @@ impl button::StyleSheet for Button {
             },
             Button::Destructive => button::Style {
                 background: Some(Background::Color(Color::from_rgb(0.8, 0.2, 0.2))),
-                border_radius: 5,
+                border_radius: 5.0,
                 text_color: Color::WHITE,
                 shadow_offset: Vector::new(1.0, 1.0),
                 ..button::Style::default()
             },
             Button::Constructive => button::Style {
                 background: Some(Background::Color(Color::from_rgb(0.2, 0.8, 0.2))),
-                border_radius: 5,
+                border_radius: 5.0,
                 text_color: Color::WHITE,
                 shadow_offset: Vector::new(1.0, 1.0),
                 ..button::Style::default()
             },
             Button::Neutral => button::Style {
                 background: Some(Background::Color(Color::from_rgb(0.8, 0.8, 0.8))),
-                border_radius: 5,
+                border_radius: 5.0,
                 text_color: Color::WHITE,
                 shadow_offset: Vector::new(1.0, 1.0),
                 ..button::Style::default()
@@ -1337,15 +1337,15 @@ impl container::StyleSheet for Container {
             Container::Entry => container::Style {
                 text_color: Some(Color::from_rgb(0.5, 0.5, 0.5)),
                 background: Some(Background::Color(Color::from_rgb(0.95, 0.95, 0.95))),
-                border_radius: 5,
-                border_width: 1,
+                border_radius: 5.0,
+                border_width: 1.0,
                 border_color: Color::from_rgb(0.9, 0.9, 0.9),
             },
             Container::Background => container::Style {
                 text_color: Some(Color::from_rgb(0.5, 0.5, 0.5)),
                 background: Some(Background::Color(Color::from_rgb(0.98, 0.98, 0.98))),
-                border_radius: 5,
-                border_width: 1,
+                border_radius: 5.0,
+                border_width: 1.0,
                 border_color: Color::from_rgb(0.9, 0.9, 0.9),
             },
         }

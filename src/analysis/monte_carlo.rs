@@ -15,6 +15,7 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
     let chunk_size = 100000;
     let chunks = state.parameters.n_iterations / chunk_size;
     let real_iters = chunks * chunk_size;
+    let mut result = Vec::new();
     let mut result_mean = 0f64;
     let mut result_stddev_pos = 0f64;
     let mut result_stddev_neg = 0f64;
@@ -22,7 +23,7 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
     for _n in 0..chunks {
         // TODO: validate n_iterations is nicely divisible by chunk_size and n_threads.
         // Gather samples into a stack that is `chunk_size` long for each Tolerance
-        let stack = compute_stackup(state.tolerance_loop.clone(), chunk_size);
+        let mut stack = compute_stackup(state.tolerance_loop.clone(), chunk_size);
         // Sum each
         let stack_mean: f64 = mean(&stack);
         let stack_stddev_pos = standard_deviation(
@@ -42,14 +43,17 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
             Some(stack_mean),
         );
 
+        result.append(&mut stack);
         result_mean += stack_mean;
         result_stddev_neg += stack_stddev_neg;
         result_stddev_pos += stack_stddev_pos;
     }
 
-    result_mean = result_mean / chunks as f64;
+    //result_mean = result_mean / chunks as f64;
     result_stddev_neg = result_stddev_neg / chunks as f64;
     result_stddev_pos = result_stddev_pos / chunks as f64;
+
+    result_mean = mean(&result);
 
     let result_tol_pos = result_stddev_pos * state.parameters.assy_sigma;
     let result_tol_neg = result_stddev_neg * state.parameters.assy_sigma;
@@ -81,7 +85,7 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
         })
     });
 
-    dbg!(worst_case_dim, worst_case_neg, worst_case_pos);
+    dbg!(worst_case_dim, worst_case_neg, worst_case_pos, result_stddev_neg, result_stddev_pos);
 
     let worst_case_upper = worst_case_dim + worst_case_pos;
     let worst_case_lower = worst_case_dim - worst_case_neg;
@@ -120,7 +124,7 @@ pub fn compute_stackup(tol_collection: Vec<Tolerance>, n_iterations: usize) -> V
     let (tx, rx) = mpsc::channel();
     // For each tolerance object generate n samples, dividing the work between multiple threads.
     for tol_struct in tc_local {
-        let n_threads = 5;
+        let n_threads = 4;
         for _i in 0..n_threads {
             // Create a thread local copy of the thread communication sender for ownership reasons.
             let tx_local = mpsc::Sender::clone(&tx);

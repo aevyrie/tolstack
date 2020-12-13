@@ -580,6 +580,7 @@ mod arrow {
             _defaults: &Defaults,
             layout: Layout<'_>,
             _cursor_position: Point,
+            _viewport: &iced::Rectangle,
         ) -> (Primitive, mouse::Interaction) {
             let color = self.color;
             let height = self.height as f32;

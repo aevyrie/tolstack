@@ -35,7 +35,7 @@ fn main() {
     let bytes = include_bytes!("ui/icon.png");
     let img = image::load_from_memory(bytes).unwrap();
     let img_dims = img.dimensions();
-    let img_raw = img.into_rgba().into_raw();
+    let img_raw = img.into_rgba8().into_raw();
     let icon = window::Icon::from_rgba(img_raw, img_dims.0, img_dims.1).unwrap();
 
     let mut settings = Settings::default();
