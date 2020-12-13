@@ -4,13 +4,18 @@
 
 ## Overview
 
+[![dependency status](https://deps.rs/repo/github/aevyrie/tolstack/status.svg)](https://deps.rs/repo/github/aevyrie/tolstack)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
+
+
 TolStack is an open source tolerance analysis application for building and analyzing 1D geometric tolerance models. The goal of this tool is to help make tolerance analysis fast, intuitive, and explorable. Built with Rust using [`iced`](https://github.com/hecrj/iced).
 
 [Read the TolStack user guide](https://aevyrie.github.io/tolstack/book/)
 
 [Roadmap](https://github.com/aevyrie/tolstack/projects/1)
 
-## Disclaimer
+### Disclaimer
 
 🚧 This application is in development, untested, unstable, and not ready for general use. 🚧
 
