@@ -26,7 +26,7 @@ iced_native = "0.3.0"
 iced_graphics = "0.1.0"
 #iced_graphics = { git = "https://github.com/hecrj/iced", rev = "c393e450a1e314873667edb32e9ea3775d595c94" }
 async-std = "1.0"
-directories = "3.0.1"
+directories-next = "2.0.0"
 open = "1.4.0"
 nfd = "0.0.4"
 notify = "5.0.0-pre.2"

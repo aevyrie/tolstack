@@ -1107,7 +1107,7 @@ impl IcedStyleSheet {
 
     fn path() -> std::path::PathBuf {
         let mut path =
-            if let Some(project_dirs) = directories::ProjectDirs::from("rs", "", "TolStack") {
+            if let Some(project_dirs) = directories_next::ProjectDirs::from("rs", "", "TolStack") {
                 project_dirs.data_dir().into()
             } else {
                 std::env::current_dir().unwrap_or(std::path::PathBuf::new())
