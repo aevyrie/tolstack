@@ -5,7 +5,7 @@
 ## Overview
 
 [![dependency status](https://deps.rs/repo/github/aevyrie/tolstack/status.svg)](https://deps.rs/repo/github/aevyrie/tolstack)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/aevyrie/tolstack/blob/master/LICENSE)
 
 
 
