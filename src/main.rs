@@ -1,7 +1,5 @@
 //#![windows_subsystem = "windows"] // Tells windows compiler not to show console window
-#![warn(
-    clippy::all,
-)]
+#![warn(clippy::all)]
 
 mod ui {
     pub mod components;
