@@ -71,165 +71,166 @@ impl StackEditor {
                             tolerances.swap(i, i + 1)
                         }
                     }
-                    entry_tolerance::Message::EntryFinishEditing => match tolerances.get_mut(i) {
-                        Some(entry) => match &entry.input {
-                            FormValues::Linear {
-                                description: _,
-                                dimension,
-                                tolerance_pos,
-                                tolerance_neg,
-                                sigma,
-                            } => {
-                                let mut sanitized_dimension = 0.0;
-                                let mut sanitized_tolerance_pos = 0.0;
-                                let mut sanitized_tolerance_neg = 0.0;
-                                let mut sanitized_sigma = 0.0;
+                    entry_tolerance::Message::EntryFinishEditing => {
+                        if let Some(entry) = tolerances.get_mut(i) {
+                            match &entry.input {
+                                FormValues::Linear {
+                                    description: _,
+                                    dimension,
+                                    tolerance_pos,
+                                    tolerance_neg,
+                                    sigma,
+                                } => {
+                                    let mut sanitized_dimension = 0.0;
+                                    let mut sanitized_tolerance_pos = 0.0;
+                                    let mut sanitized_tolerance_neg = 0.0;
+                                    let mut sanitized_sigma = 0.0;
 
-                                entry.valid = true;
+                                    entry.valid = true;
 
-                                match dimension.parse::<f64>() {
-                                    Ok(value) => {
-                                        sanitized_dimension = value;
+                                    match dimension.parse::<f64>() {
+                                        Ok(value) => {
+                                            sanitized_dimension = value;
+                                        }
+                                        Err(_) => {
+                                            entry.valid = false;
+                                        }
                                     }
-                                    Err(_) => {
-                                        entry.valid = false;
+                                    match tolerance_pos.parse::<f64>() {
+                                        Ok(value) => {
+                                            sanitized_tolerance_pos = value;
+                                        }
+                                        Err(_) => {
+                                            entry.valid = false;
+                                        }
+                                    }
+                                    match tolerance_neg.parse::<f64>() {
+                                        Ok(value) => {
+                                            sanitized_tolerance_neg = value;
+                                        }
+                                        Err(_) => {
+                                            entry.valid = false;
+                                        }
+                                    }
+                                    match sigma.parse::<f64>() {
+                                        Ok(value) => {
+                                            sanitized_sigma = value;
+                                        }
+                                        Err(_) => {
+                                            entry.valid = false;
+                                        }
+                                    }
+                                    if entry.valid {
+                                        entry.active = true;
+                                        let linear = DimTol::new_normal(
+                                            sanitized_dimension,
+                                            sanitized_tolerance_pos,
+                                            sanitized_tolerance_neg,
+                                            sanitized_sigma,
+                                        );
+                                        let linear = Tolerance::Linear(LinearTL::new(linear));
+                                        entry.analysis_model = linear;
+                                    } else {
+                                        entry.active = false;
                                     }
                                 }
-                                match tolerance_pos.parse::<f64>() {
-                                    Ok(value) => {
-                                        sanitized_tolerance_pos = value;
+                                FormValues::Float {
+                                    description: _,
+                                    diameter_hole,
+                                    diameter_pin,
+                                    tolerance_hole_pos,
+                                    tolerance_hole_neg,
+                                    tolerance_pin_pos,
+                                    tolerance_pin_neg,
+                                    sigma,
+                                } => {
+                                    let mut sanitized_diameter_hole = 0.0;
+                                    let mut sanitized_diameter_pin = 0.0;
+                                    let mut sanitized_tolerance_hole_pos = 0.0;
+                                    let mut sanitized_tolerance_hole_neg = 0.0;
+                                    let mut sanitized_tolerance_pin_pos = 0.0;
+                                    let mut sanitized_tolerance_pin_neg = 0.0;
+                                    let mut sanitized_sigma = 0.0;
+
+                                    entry.valid = true;
+                                    match diameter_hole.parse::<f64>() {
+                                        Ok(value) => {
+                                            sanitized_diameter_hole = value;
+                                        }
+                                        Err(_) => {
+                                            entry.valid = false;
+                                        }
                                     }
-                                    Err(_) => {
-                                        entry.valid = false;
+                                    match diameter_pin.parse::<f64>() {
+                                        Ok(value) => {
+                                            sanitized_diameter_pin = value;
+                                        }
+                                        Err(_) => {
+                                            entry.valid = false;
+                                        }
                                     }
-                                }
-                                match tolerance_neg.parse::<f64>() {
-                                    Ok(value) => {
-                                        sanitized_tolerance_neg = value;
+                                    match tolerance_hole_pos.parse::<f64>() {
+                                        Ok(value) => {
+                                            sanitized_tolerance_hole_pos = value;
+                                        }
+                                        Err(_) => {
+                                            entry.valid = false;
+                                        }
                                     }
-                                    Err(_) => {
-                                        entry.valid = false;
+                                    match tolerance_hole_neg.parse::<f64>() {
+                                        Ok(value) => {
+                                            sanitized_tolerance_hole_neg = value;
+                                        }
+                                        Err(_) => {
+                                            entry.valid = false;
+                                        }
                                     }
-                                }
-                                match sigma.parse::<f64>() {
-                                    Ok(value) => {
-                                        sanitized_sigma = value;
+                                    match tolerance_pin_pos.parse::<f64>() {
+                                        Ok(value) => {
+                                            sanitized_tolerance_pin_pos = value;
+                                        }
+                                        Err(_) => {
+                                            entry.valid = false;
+                                        }
                                     }
-                                    Err(_) => {
-                                        entry.valid = false;
+                                    match tolerance_pin_neg.parse::<f64>() {
+                                        Ok(value) => {
+                                            sanitized_tolerance_pin_neg = value;
+                                        }
+                                        Err(_) => {
+                                            entry.valid = false;
+                                        }
                                     }
-                                }
-                                if entry.valid {
-                                    entry.active = true;
-                                    let linear = DimTol::new_normal(
-                                        sanitized_dimension,
-                                        sanitized_tolerance_pos,
-                                        sanitized_tolerance_neg,
-                                        sanitized_sigma,
-                                    );
-                                    let linear = Tolerance::Linear(LinearTL::new(linear));
-                                    entry.analysis_model = linear;
-                                } else {
-                                    entry.active = false;
+                                    match sigma.parse::<f64>() {
+                                        Ok(value) => {
+                                            sanitized_sigma = value;
+                                        }
+                                        Err(_) => {
+                                            entry.valid = false;
+                                        }
+                                    }
+                                    if entry.valid {
+                                        entry.active = true;
+                                        let hole = DimTol::new_normal(
+                                            sanitized_diameter_hole,
+                                            sanitized_tolerance_hole_pos,
+                                            sanitized_tolerance_hole_neg,
+                                            sanitized_sigma,
+                                        );
+                                        let pin = DimTol::new_normal(
+                                            sanitized_diameter_pin,
+                                            sanitized_tolerance_pin_pos,
+                                            sanitized_tolerance_pin_neg,
+                                            sanitized_sigma,
+                                        );
+                                        let data = Tolerance::Float(FloatTL::new(hole, pin, 3.0));
+                                        //println!("{:#?}",data);
+                                        entry.analysis_model = data;
+                                    }
                                 }
                             }
-                            FormValues::Float {
-                                description: _,
-                                diameter_hole,
-                                diameter_pin,
-                                tolerance_hole_pos,
-                                tolerance_hole_neg,
-                                tolerance_pin_pos,
-                                tolerance_pin_neg,
-                                sigma,
-                            } => {
-                                let mut sanitized_diameter_hole = 0.0;
-                                let mut sanitized_diameter_pin = 0.0;
-                                let mut sanitized_tolerance_hole_pos = 0.0;
-                                let mut sanitized_tolerance_hole_neg = 0.0;
-                                let mut sanitized_tolerance_pin_pos = 0.0;
-                                let mut sanitized_tolerance_pin_neg = 0.0;
-                                let mut sanitized_sigma = 0.0;
-
-                                entry.valid = true;
-                                match diameter_hole.parse::<f64>() {
-                                    Ok(value) => {
-                                        sanitized_diameter_hole = value;
-                                    }
-                                    Err(_) => {
-                                        entry.valid = false;
-                                    }
-                                }
-                                match diameter_pin.parse::<f64>() {
-                                    Ok(value) => {
-                                        sanitized_diameter_pin = value;
-                                    }
-                                    Err(_) => {
-                                        entry.valid = false;
-                                    }
-                                }
-                                match tolerance_hole_pos.parse::<f64>() {
-                                    Ok(value) => {
-                                        sanitized_tolerance_hole_pos = value;
-                                    }
-                                    Err(_) => {
-                                        entry.valid = false;
-                                    }
-                                }
-                                match tolerance_hole_neg.parse::<f64>() {
-                                    Ok(value) => {
-                                        sanitized_tolerance_hole_neg = value;
-                                    }
-                                    Err(_) => {
-                                        entry.valid = false;
-                                    }
-                                }
-                                match tolerance_pin_pos.parse::<f64>() {
-                                    Ok(value) => {
-                                        sanitized_tolerance_pin_pos = value;
-                                    }
-                                    Err(_) => {
-                                        entry.valid = false;
-                                    }
-                                }
-                                match tolerance_pin_neg.parse::<f64>() {
-                                    Ok(value) => {
-                                        sanitized_tolerance_pin_neg = value;
-                                    }
-                                    Err(_) => {
-                                        entry.valid = false;
-                                    }
-                                }
-                                match sigma.parse::<f64>() {
-                                    Ok(value) => {
-                                        sanitized_sigma = value;
-                                    }
-                                    Err(_) => {
-                                        entry.valid = false;
-                                    }
-                                }
-                                if entry.valid {
-                                    entry.active = true;
-                                    let hole = DimTol::new_normal(
-                                        sanitized_diameter_hole,
-                                        sanitized_tolerance_hole_pos,
-                                        sanitized_tolerance_hole_neg,
-                                        sanitized_sigma,
-                                    );
-                                    let pin = DimTol::new_normal(
-                                        sanitized_diameter_pin,
-                                        sanitized_tolerance_pin_pos,
-                                        sanitized_tolerance_pin_neg,
-                                        sanitized_sigma,
-                                    );
-                                    let data = Tolerance::Float(FloatTL::new(hole, pin, 3.0));
-                                    //println!("{:#?}",data);
-                                    entry.analysis_model = data;
-                                }
-                            }
-                        },
-                        None => {}
-                    },
+                        }
+                    }
                     _ => {}
                 };
                 if let Some(tol) = tolerances.get_mut(i) {
@@ -300,7 +301,7 @@ impl StackEditor {
                 if length < 0.0 {
                     // Because its direction is flipped, we need to subtract the length so that
                     // when it's plotted, it will display correctly.
-                    viz_start = viz_start - viz_length;
+                    viz_start -= viz_length;
                     viz_direction = ArrowDirection::Left;
                 }
                 visualize_positions.push(Some((viz_start, viz_length, viz_direction)));
@@ -433,9 +434,7 @@ impl StackEditor {
             .horizontal_alignment(HorizontalAlignment::Left);
         */
 
-        let stack_title = title
-            .view(&iss)
-            .map(move |message| StackEditorAreaMessage::LabelMessage(message));
+        let stack_title = title.view(&iss).map(StackEditorAreaMessage::LabelMessage);
 
         let scrollable_content = Container::new(
             Scrollable::new(&mut self.scroll_state)
@@ -449,9 +448,7 @@ impl StackEditor {
         .style(iss.container(&iss.editor_scroll_container))
         .height(Length::Fill);
 
-        let filter_controls = filter
-            .view(&iss)
-            .map(move |message| StackEditorAreaMessage::FilterMessage(message));
+        let filter_controls = filter.view(&iss).map(StackEditorAreaMessage::FilterMessage);
 
         let tol_stack_area = Container::new(
             Column::new()
@@ -625,10 +622,7 @@ mod arrow {
                                         ],
                                         indices: vec![0, 1, 2, 2, 1, 3],
                                     },
-                                    size: Size::new(
-                                        f32::from(layout.bounds().width),
-                                        f32::from(height * 2.0),
-                                    ),
+                                    size: Size::new(layout.bounds().width, height * 2.0),
                                 }),
                             },
                             ArrowDirection::Left => Primitive::Translate {
@@ -667,10 +661,7 @@ mod arrow {
                                         ],
                                         indices: vec![0, 1, 2, 2, 1, 3],
                                     },
-                                    size: Size::new(
-                                        f32::from(layout.bounds().width),
-                                        f32::from(height * 2.0),
-                                    ),
+                                    size: Size::new(layout.bounds().width, height * 2.0),
                                 }),
                             },
                         },
@@ -701,10 +692,7 @@ mod arrow {
                                         ],
                                         indices: vec![1, 2, 0],
                                     },
-                                    size: Size::new(
-                                        f32::from(layout.bounds().width),
-                                        f32::from(height * 2.0),
-                                    ),
+                                    size: Size::new(layout.bounds().width, height * 2.0),
                                 }),
                             },
                             ArrowDirection::Left => Primitive::Translate {
@@ -727,10 +715,7 @@ mod arrow {
                                         ],
                                         indices: vec![1, 2, 0],
                                     },
-                                    size: Size::new(
-                                        f32::from(layout.bounds().width),
-                                        f32::from(height * 2.0),
-                                    ),
+                                    size: Size::new(layout.bounds().width, height * 2.0),
                                 }),
                             },
                         },

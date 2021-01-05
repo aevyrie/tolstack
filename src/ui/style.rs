@@ -1110,7 +1110,7 @@ impl IcedStyleSheet {
             if let Some(project_dirs) = directories_next::ProjectDirs::from("rs", "", "TolStack") {
                 project_dirs.data_dir().into()
             } else {
-                std::env::current_dir().unwrap_or(std::path::PathBuf::new())
+                std::env::current_dir().unwrap_or_default()
             };
 
         path.push("style.json");
@@ -1204,8 +1204,8 @@ fn watch(path: PathBuf) -> Result<notify::event::Event, Box<dyn std::error::Erro
 
     match rx.iter().next() {
         Some(result) => match result {
-            Ok(result) => return Ok(result),
-            Err(e) => return Err(Box::from(e)),
+            Ok(result) => Ok(result),
+            Err(e) => Err(Box::from(e)),
         },
         None => Err(Box::from(std::io::Error::new(
             std::io::ErrorKind::Other,
@@ -1233,9 +1233,8 @@ where
         use futures::stream::StreamExt;
 
         async_std::stream::repeat_with(move || loop {
-            match watch(IcedStyleSheet::path()) {
-                Ok(_) => return true,
-                Err(_) => {}
+            if watch(IcedStyleSheet::path()).is_ok() {
+                return true;
             }
         })
         .boxed()

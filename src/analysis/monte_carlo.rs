@@ -30,7 +30,7 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
             &stack
                 .iter()
                 .cloned()
-                .filter(|x| x > &&stack_mean)
+                .filter(|x| x > &stack_mean)
                 .collect::<Vec<f64>>(),
             Some(stack_mean),
         );
@@ -38,7 +38,7 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
             &stack
                 .iter()
                 .cloned()
-                .filter(|x| x < &&stack_mean)
+                .filter(|x| x < &stack_mean)
                 .collect::<Vec<f64>>(),
             Some(stack_mean),
         );
@@ -50,8 +50,8 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
     }
 
     //result_mean = result_mean / chunks as f64;
-    result_stddev_neg = result_stddev_neg / chunks as f64;
-    result_stddev_pos = result_stddev_pos / chunks as f64;
+    result_stddev_neg /= chunks as f64;
+    result_stddev_pos /= chunks as f64;
 
     result_mean = mean(&result);
 
@@ -123,7 +123,7 @@ impl Tolerance {
 pub fn compute_stackup(tol_collection: Vec<Tolerance>, n_iterations: usize) -> Vec<f64> {
     // Make a local clone of the tolerance collection so the borrow is not returned while the
     //  threads are using the collection.
-    let tc_local = tol_collection.clone();
+    let tc_local = tol_collection;
     // Store output in `samples` vector, appending each tol_collection's output
     let n_tols = tc_local.len();
     let mut samples: Vec<f64> = Vec::with_capacity(n_tols * n_iterations);

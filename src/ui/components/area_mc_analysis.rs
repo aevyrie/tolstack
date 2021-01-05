@@ -176,7 +176,7 @@ impl AnalysisState {
                 .push(
                     entry_form
                         .view(&iss)
-                        .map(move |message| AnalysisAreaMessage::NewMcAnalysisMessage(message)),
+                        .map(AnalysisAreaMessage::NewMcAnalysisMessage),
                 )
                 .push(results_body)
                 .height(Length::Fill)
@@ -215,7 +215,7 @@ impl AnalysisState {
         if valid {
             for entry in &self.input_stack {
                 if entry.active {
-                    self.model_state.add(entry.analysis_model.clone())
+                    self.model_state.add(entry.analysis_model)
                 }
             }
             Some(self.model_state.clone())

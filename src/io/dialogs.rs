@@ -3,16 +3,15 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 pub async fn open() -> Result<PathBuf, io::Error> {
-    let result: nfd::Response =
-        match async { return nfd::open_file_dialog(Some("json"), None) }.await {
-            Ok(result) => result,
-            Err(_) => {
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    "Unable to unwrap data from new file dialog",
-                ))
-            }
-        };
+    let result: nfd::Response = match async { nfd::open_file_dialog(Some("json"), None) }.await {
+        Ok(result) => result,
+        Err(_) => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Unable to unwrap data from new file dialog",
+            ))
+        }
+    };
 
     let file_string: String = match result {
         Response::Okay(file_path) => file_path,
@@ -44,16 +43,15 @@ pub async fn open() -> Result<PathBuf, io::Error> {
 }
 
 pub async fn save_as() -> Result<PathBuf, io::Error> {
-    let result: nfd::Response =
-        match async { return nfd::open_save_dialog(Some("json"), None) }.await {
-            Ok(result) => result,
-            Err(_) => {
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    "Unable to unwrap data from new file dialog",
-                ))
-            }
-        };
+    let result: nfd::Response = match async { nfd::open_save_dialog(Some("json"), None) }.await {
+        Ok(result) => result,
+        Err(_) => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Unable to unwrap data from new file dialog",
+            ))
+        }
+    };
 
     let file_string: String = match result {
         Response::Okay(file_path) => file_path,

@@ -119,7 +119,7 @@ enum Message {
 #[derive(Debug)]
 enum TolStack {
     Loading,
-    Loaded(State),
+    Loaded(Box<State>),
 }
 impl Application for TolStack {
     type Executor = iced::executor::Default;
@@ -170,11 +170,7 @@ impl Application for TolStack {
 
     // Update logic - how to react to messages sent through the application
     fn update(&mut self, message: Message) -> Command<Message> {
-        let is_event = if let Message::EventOccurred(_) = message {
-            true
-        } else {
-            false
-        };
+        let is_event = matches!(message, Message::EventOccurred(_));
         if cfg!(debug_assertions) && !is_event {
             println!(
                 "\n\n{}{}\n{:#?}",
@@ -188,7 +184,7 @@ impl Application for TolStack {
                 match message {
                     // Take the loaded state and assign to the working state
                     Message::Loaded(Ok((path, state))) => {
-                        *self = TolStack::Loaded(State {
+                        *self = TolStack::Loaded(Box::new(State {
                             stack_editor: StackEditor::new()
                                 .tolerances(state.tolerances)
                                 .title(state.name),
@@ -199,7 +195,7 @@ impl Application for TolStack {
                             dirty: false,
                             saving: false,
                             ..State::default()
-                        });
+                        }));
 
                         if cfg!(debug_assertions) {
                             return Command::perform(
@@ -212,7 +208,7 @@ impl Application for TolStack {
                     }
 
                     Message::Loaded(Err(_)) => {
-                        *self = TolStack::Loaded(State { ..State::default() });
+                        *self = TolStack::Loaded(Box::new(State { ..State::default() }));
                     }
                     _ => {}
                 }
@@ -222,11 +218,12 @@ impl Application for TolStack {
 
             TolStack::Loaded(state) => {
                 match message {
-                    Message::EventOccurred(iced_native::Event::Keyboard(event)) => match event {
-                        keyboard::Event::KeyPressed {
+                    Message::EventOccurred(iced_native::Event::Keyboard(event)) => {
+                        if let keyboard::Event::KeyPressed {
                             key_code,
                             modifiers: _,
-                        } => {
+                        } = event
+                        {
                             if key_code == keyboard::KeyCode::Tab {
                                 for entry in &mut state.stack_editor.tolerances {
                                     match &mut entry.state {
@@ -236,7 +233,7 @@ impl Application for TolStack {
                                             button_move_down: _,
                                         } => {}
                                         entry_tolerance::State::Editing { form_tolentry } => {
-                                            match form_tolentry {
+                                            match &mut **form_tolentry {
                                                 FormState::Linear {
                                                     button_save: _,
                                                     button_delete: _,
@@ -324,8 +321,7 @@ impl Application for TolStack {
                             } else {
                             }
                         }
-                        _ => {}
-                    },
+                    }
                     Message::EventOccurred(_) => {}
                     Message::AutoSave => {
                         if let Some(path) = &state.file_path {
@@ -507,6 +503,7 @@ impl Application for TolStack {
                                 }
                                 state.dirty = false;
                             }
+
                             Err(e) => {
                                 state.dirty = true;
                                 println!("Save failed with {:?}", e);
@@ -515,7 +512,7 @@ impl Application for TolStack {
                     }
 
                     Message::Loaded(Ok((path, save_state))) => {
-                        *state = State {
+                        *state = Box::new(State {
                             stack_editor: StackEditor::new()
                                 .tolerances(save_state.tolerances)
                                 .title(save_state.name),
@@ -526,7 +523,7 @@ impl Application for TolStack {
                             dirty: false,
                             saving: false,
                             ..State::default()
-                        };
+                        });
                     }
 
                     Message::Loaded(Err(_)) => println!(
@@ -544,16 +541,17 @@ impl Application for TolStack {
     fn subscription(&self) -> Subscription<Self::Message> {
         match self {
             TolStack::Loading => Subscription::none(),
-            TolStack::Loaded(State {
-                last_save: _,
-                iss,
-                header: _,
-                stack_editor: _,
-                analysis_state: _,
-                dirty,
-                saving,
-                file_path,
-            }) => {
+            TolStack::Loaded(state) => {
+                let State {
+                    last_save: _,
+                    iss,
+                    header: _,
+                    stack_editor: _,
+                    analysis_state: _,
+                    dirty,
+                    saving,
+                    file_path,
+                } = &**state;
                 let auto_save = if *dirty && !saving && file_path.is_some()
                 //&& last_save.elapsed().as_secs() > 5
                 {
@@ -577,16 +575,17 @@ impl Application for TolStack {
     fn view(&mut self) -> Element<Message> {
         match self {
             TolStack::Loading => loading_message(),
-            TolStack::Loaded(State {
-                last_save: _,
-                iss,
-                header,
-                stack_editor,
-                analysis_state,
-                dirty: _,
-                saving: _,
-                file_path: _,
-            }) => {
+            TolStack::Loaded(state) => {
+                let State {
+                    last_save: _,
+                    iss,
+                    header,
+                    stack_editor,
+                    analysis_state,
+                    dirty: _,
+                    saving: _,
+                    file_path: _,
+                } = &mut **state;
                 let header = header.view(&iss).map(Message::Header);
 
                 let stack_editor = stack_editor.view(&iss).map(Message::StackEditor);

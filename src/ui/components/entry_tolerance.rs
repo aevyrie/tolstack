@@ -14,7 +14,7 @@ pub enum State {
         button_move_down: button::State,
     },
     Editing {
-        form_tolentry: FormState,
+        form_tolentry: Box<FormState>,
     },
 }
 impl Default for State {
@@ -192,7 +192,7 @@ impl ToleranceEntry {
 
     pub fn with_editing(mut self) -> Self {
         self.state = State::Editing {
-            form_tolentry: FormState::new(self.analysis_model),
+            form_tolentry: Box::new(FormState::new(self.analysis_model)),
         };
         self
     }
@@ -208,7 +208,7 @@ impl ToleranceEntry {
             }
             Message::EntryEdit => {
                 self.state = State::Editing {
-                    form_tolentry: FormState::new_focused(self.analysis_model),
+                    form_tolentry: Box::new(FormState::new_focused(self.analysis_model)),
                 };
             }
             Message::EntryFinishEditing => {
@@ -229,88 +229,64 @@ impl ToleranceEntry {
                 };
             }
             Message::EditedLinearDimension(input) => {
-                match &mut self.input {
-                    FormValues::Linear { dimension, .. } => {
-                        *dimension = NumericString::eval(dimension, &input, NumericString::Number)
-                    }
-                    _ => {}
+                if let FormValues::Linear { dimension, .. } = &mut self.input {
+                    *dimension = NumericString::eval(dimension, &input, NumericString::Number)
                 };
             }
             Message::EditedLinearTolerancePos(input) => {
-                match &mut self.input {
-                    FormValues::Linear { tolerance_pos, .. } => {
-                        *tolerance_pos =
-                            NumericString::eval(tolerance_pos, &input, NumericString::Positive)
-                    }
-                    _ => {}
+                if let FormValues::Linear { tolerance_pos, .. } = &mut self.input {
+                    *tolerance_pos =
+                        NumericString::eval(tolerance_pos, &input, NumericString::Positive)
                 };
             }
             Message::EditedLinearToleranceNeg(input) => {
-                match &mut self.input {
-                    FormValues::Linear { tolerance_neg, .. } => {
-                        *tolerance_neg =
-                            NumericString::eval(tolerance_neg, &input, NumericString::Positive)
-                    }
-                    _ => {}
+                if let FormValues::Linear { tolerance_neg, .. } = &mut self.input {
+                    *tolerance_neg =
+                        NumericString::eval(tolerance_neg, &input, NumericString::Positive)
                 };
             }
             Message::EditedLinearSigma(input) => {
-                match &mut self.input {
-                    FormValues::Linear { sigma, .. } => {
-                        *sigma = NumericString::eval(sigma, &input, NumericString::Positive)
-                    }
-                    _ => {}
+                if let FormValues::Linear { sigma, .. } = &mut self.input {
+                    *sigma = NumericString::eval(sigma, &input, NumericString::Positive)
                 };
             }
             Message::EditedFloatDiameterHole(input) => {
-                match &mut self.input {
-                    FormValues::Float { diameter_hole, .. } => {
-                        *diameter_hole =
-                            NumericString::eval(diameter_hole, &input, NumericString::Positive)
-                    }
-                    _ => {}
+                if let FormValues::Float { diameter_hole, .. } = &mut self.input {
+                    *diameter_hole =
+                        NumericString::eval(diameter_hole, &input, NumericString::Positive)
                 };
             }
             Message::EditedFloatDiameterPin(input) => {
-                match &mut self.input {
-                    FormValues::Float { diameter_pin, .. } => {
-                        *diameter_pin =
-                            NumericString::eval(diameter_pin, &input, NumericString::Positive)
-                    }
-                    _ => {}
+                if let FormValues::Float { diameter_pin, .. } = &mut self.input {
+                    *diameter_pin =
+                        NumericString::eval(diameter_pin, &input, NumericString::Positive)
                 };
             }
             Message::EditedFloatTolHolePos(input) => {
-                match &mut self.input {
-                    FormValues::Float {
-                        tolerance_hole_pos, ..
-                    } => {
-                        *tolerance_hole_pos =
-                            NumericString::eval(tolerance_hole_pos, &input, NumericString::Positive)
-                    }
-                    _ => {}
+                if let FormValues::Float {
+                    tolerance_hole_pos, ..
+                } = &mut self.input
+                {
+                    *tolerance_hole_pos =
+                        NumericString::eval(tolerance_hole_pos, &input, NumericString::Positive)
                 };
             }
             Message::EditedFloatTolHoleNeg(input) => {
-                match &mut self.input {
-                    FormValues::Float {
-                        tolerance_hole_neg, ..
-                    } => {
-                        *tolerance_hole_neg =
-                            NumericString::eval(tolerance_hole_neg, &input, NumericString::Positive)
-                    }
-                    _ => {}
+                if let FormValues::Float {
+                    tolerance_hole_neg, ..
+                } = &mut self.input
+                {
+                    *tolerance_hole_neg =
+                        NumericString::eval(tolerance_hole_neg, &input, NumericString::Positive)
                 };
             }
             Message::EditedFloatTolPinPos(input) => {
-                match &mut self.input {
-                    FormValues::Float {
-                        tolerance_pin_pos, ..
-                    } => {
-                        *tolerance_pin_pos =
-                            NumericString::eval(tolerance_pin_pos, &input, NumericString::Positive)
-                    }
-                    _ => {}
+                if let FormValues::Float {
+                    tolerance_pin_pos, ..
+                } = &mut self.input
+                {
+                    *tolerance_pin_pos =
+                        NumericString::eval(tolerance_pin_pos, &input, NumericString::Positive)
                 };
             }
             Message::EditedFloatTolPinNeg(input) => {
@@ -323,11 +299,8 @@ impl ToleranceEntry {
                 };
             }
             Message::EditedFloatSigma(input) => {
-                match &mut self.input {
-                    FormValues::Float { sigma, .. } => {
-                        *sigma = NumericString::eval(sigma, &input, NumericString::Positive)
-                    }
-                    _ => {}
+                if let FormValues::Float { sigma, .. } = &mut self.input {
+                    *sigma = NumericString::eval(sigma, &input, NumericString::Positive)
                 };
             }
         }
@@ -380,7 +353,7 @@ impl ToleranceEntry {
                             format!("Hole: {}\nPin: {}", hole, pin)
                         }
                     },
-                    false => format!("Incomplete entry"),
+                    false => "Incomplete entry".to_string(),
                 })
                 .size(iss.text_size(&iss.tol_entry_summary_text_size));
 
@@ -441,7 +414,7 @@ impl ToleranceEntry {
 
                 row_contents.into()
             }
-            State::Editing { form_tolentry } => match form_tolentry {
+            State::Editing { form_tolentry } => match &mut **form_tolentry {
                 FormState::Linear {
                     button_save,
                     button_delete,
