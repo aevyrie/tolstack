@@ -420,13 +420,9 @@ impl Application for TolStack {
                     Message::ExportComplete(_) => {}
 
                     Message::StackEditor(message) => {
-                        let recompute = match message {
-                            area_stack_editor::StackEditorAreaMessage::LabelMessage(
-                                editable_label::Message::FinishEditing,
-                            ) => true,
-                            area_stack_editor::StackEditorAreaMessage::EntryMessage(_, _) => true,
-                            _ => false,
-                        };
+                        let recompute = matches!(message, area_stack_editor::StackEditorAreaMessage::LabelMessage(
+                            editable_label::Message::FinishEditing,
+                            ) | area_stack_editor::StackEditorAreaMessage::EntryMessage(_, _));
                         state.stack_editor.update(message);
                         if recompute {
                             state.mark_unsaved_changes();
