@@ -109,7 +109,7 @@ enum Message {
     EventOccurred(iced_native::Event),
     //
     StyleUpdateAvailable(bool),
-    LoadedStyle(Result<style::IcedStyleSheet, style::LoadError>),
+    LoadedStyle(Result<Box<style::IcedStyleSheet>, style::LoadError>),
     StyleSaved(Result<(), style::SaveError>),
     //
     HelpOpened,
@@ -475,7 +475,7 @@ impl Application for TolStack {
                     }
 
                     Message::LoadedStyle(Ok(iss)) => {
-                        state.iss = iss;
+                        state.iss = *iss;
                     }
 
                     Message::LoadedStyle(Err(style::LoadError::FormatError)) => println!(

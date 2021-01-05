@@ -1134,7 +1134,7 @@ impl IcedStyleSheet {
         toml::from_str(&contents).map_err(|_| LoadError::FormatError)
     }*/
 
-    pub async fn load() -> Result<IcedStyleSheet, LoadError> {
+    pub async fn load() -> Result<Box<IcedStyleSheet>, LoadError> {
         use async_std::prelude::*;
 
         let mut contents = String::new();
@@ -1147,7 +1147,7 @@ impl IcedStyleSheet {
             .await
             .map_err(|_| LoadError::FileError)?;
 
-        serde_json::from_str(&contents).map_err(|_| LoadError::FormatError)
+        serde_json::from_str(&contents).map(|result| Box::new(result)).map_err(|_| LoadError::FormatError)
     }
 
     /*

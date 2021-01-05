@@ -27,6 +27,7 @@ impl Default for State {
     }
 }
 
+#[allow(clippy::clippy::large_enum_variant)]
 #[derive(Debug, Clone)]
 pub enum FormState {
     Linear {
