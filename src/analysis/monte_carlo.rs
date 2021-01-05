@@ -85,7 +85,13 @@ pub async fn run(state: &State) -> Result<McResults, Box<dyn Error>> {
         })
     });
 
-    dbg!(worst_case_dim, worst_case_neg, worst_case_pos, result_stddev_neg, result_stddev_pos);
+    dbg!(
+        worst_case_dim,
+        worst_case_neg,
+        worst_case_pos,
+        result_stddev_neg,
+        result_stddev_pos
+    );
 
     let worst_case_upper = worst_case_dim + worst_case_pos;
     let worst_case_lower = worst_case_dim - worst_case_neg;
