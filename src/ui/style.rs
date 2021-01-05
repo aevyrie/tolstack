@@ -1147,7 +1147,9 @@ impl IcedStyleSheet {
             .await
             .map_err(|_| LoadError::FileError)?;
 
-        serde_json::from_str(&contents).map(|result| Box::new(result)).map_err(|_| LoadError::FormatError)
+        serde_json::from_str(&contents)
+            .map(|result| Box::new(result))
+            .map_err(|_| LoadError::FormatError)
     }
 
     /*
