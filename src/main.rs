@@ -1,10 +1,6 @@
 //#![windows_subsystem = "windows"] // Tells windows compiler not to show console window
 #![warn(
     clippy::all,
-    clippy::restriction,
-    clippy::pedantic,
-    clippy::nursery,
-    clippy::cargo
 )]
 
 mod ui {
@@ -45,7 +41,7 @@ fn main() {
     let img_raw = img.into_rgba8().into_raw();
     let icon = window::Icon::from_rgba(img_raw, img_dims.0, img_dims.1).unwrap();
 
-    let settings = iced::Settings {
+    let settings = Settings {
         window: window::Settings {
             size: (1024, 768),
             resizable: true,
