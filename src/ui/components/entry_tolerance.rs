@@ -314,14 +314,12 @@ impl ToleranceEntry {
                 };
             }
             Message::EditedFloatTolPinNeg(input) => {
-                match &mut self.input {
-                    FormValues::Float {
-                        tolerance_pin_neg, ..
-                    } => {
-                        *tolerance_pin_neg =
-                            NumericString::eval(tolerance_pin_neg, &input, NumericString::Positive)
-                    }
-                    _ => {}
+                if let FormValues::Float {
+                    tolerance_pin_neg, ..
+                } = &mut self.input
+                {
+                    *tolerance_pin_neg =
+                        NumericString::eval(tolerance_pin_neg, &input, NumericString::Positive)
                 };
             }
             Message::EditedFloatSigma(input) => {
@@ -355,7 +353,7 @@ impl ToleranceEntry {
                 let summary = Text::new(match self.valid {
                     true => match self.analysis_model {
                         Tolerance::Linear(dim) => {
-                            if dim.distance.tol_neg == dim.distance.tol_pos {
+                            if (dim.distance.tol_neg - dim.distance.tol_pos).abs() < f64::EPSILON {
                                 format!("{} +/- {}", dim.distance.dim, dim.distance.tol_pos)
                             } else {
                                 format!(
@@ -365,7 +363,8 @@ impl ToleranceEntry {
                             }
                         }
                         Tolerance::Float(dim) => {
-                            let hole = if dim.hole.tol_neg == dim.hole.tol_pos {
+                            let hole = if (dim.hole.tol_neg - dim.hole.tol_pos).abs() < f64::EPSILON
+                            {
                                 format!("{} +/- {}", dim.hole.dim, dim.hole.tol_pos)
                             } else {
                                 format!(
@@ -373,7 +372,7 @@ impl ToleranceEntry {
                                     dim.hole.dim, dim.hole.tol_pos, dim.hole.tol_neg
                                 )
                             };
-                            let pin = if dim.pin.tol_neg == dim.pin.tol_pos {
+                            let pin = if (dim.pin.tol_neg - dim.pin.tol_pos).abs() < f64::EPSILON {
                                 format!("{} +/- {}", dim.pin.dim, dim.pin.tol_pos)
                             } else {
                                 format!("{} +{}/-{}", dim.pin.dim, dim.pin.tol_pos, dim.pin.tol_neg)
@@ -903,9 +902,9 @@ impl NumericString {
                     NumericString::Number => true,
                     NumericString::Positive => numeric_input >= 0.0,
                     //NumericString::Negative => numeric_input < 0.0,
-                } {
-                    input.to_string()
-                } else if input == "" || input == "." {
+                } || input == ""
+                    || input == "."
+                {
                     input.to_string()
                 } else {
                     old.to_string()

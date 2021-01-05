@@ -1202,17 +1202,16 @@ fn watch(path: PathBuf) -> Result<notify::event::Event, Box<dyn std::error::Erro
     let mut watcher: RecommendedWatcher = Watcher::new_immediate(move |res| tx.send(res).unwrap())?;
     watcher.watch(path, RecursiveMode::NonRecursive)?;
 
-    for result in rx {
-        match result {
+    match rx.iter().next() {
+        Some(result) => match result {
             Ok(result) => return Ok(result),
             Err(e) => return Err(Box::from(e)),
-        }
+        },
+        None => Err(Box::from(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "No event returned from fn watch",
+        ))),
     }
-
-    Err(Box::from(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        "No event returned from fn watch",
-    )))
 }
 
 impl<H, I> iced_native::subscription::Recipe<H, I> for IcedStyleSheet
