@@ -4,6 +4,7 @@
 
 ## Overview
 
+[![CI](https://img.shields.io/github/workflow/status/aevyrie/tolstack/Continuous%20integration/master)](https://github.com/aevyrie/tolstack/actions?query=workflow%3A%22Continuous+integration%22+branch%3Amaster)
 [![dependency status](https://deps.rs/repo/github/aevyrie/tolstack/status.svg)](https://deps.rs/repo/github/aevyrie/tolstack)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/aevyrie/tolstack/blob/master/LICENSE)
 
