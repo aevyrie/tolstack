@@ -876,7 +876,7 @@ impl NumericString {
                     NumericString::Number => true,
                     NumericString::Positive => numeric_input >= 0.0,
                     //NumericString::Negative => numeric_input < 0.0,
-                } || input == ""
+                } || input.is_empty()
                     || input == "."
                 {
                     input.to_string()
@@ -886,9 +886,9 @@ impl NumericString {
             }
             false => {
                 if match criteria {
-                    NumericString::Number => input == "" || input == "-" || input == ".",
+                    NumericString::Number => input.is_empty() || input == "-" || input == ".",
                     //NumericString::Negative => input == "" || input == "-" || input == ".",
-                    NumericString::Positive => input == "" || input == ".",
+                    NumericString::Positive => input.is_empty() || input == ".",
                 } {
                     input.to_string()
                 } else {

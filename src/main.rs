@@ -1,4 +1,11 @@
 //#![windows_subsystem = "windows"] // Tells windows compiler not to show console window
+#![warn(
+    clippy::all,
+    clippy::restriction,
+    clippy::pedantic,
+    clippy::nursery,
+    clippy::cargo
+)]
 
 mod ui {
     pub mod components;
@@ -38,18 +45,20 @@ fn main() {
     let img_raw = img.into_rgba8().into_raw();
     let icon = window::Icon::from_rgba(img_raw, img_dims.0, img_dims.1).unwrap();
 
-    let mut settings = Settings::default();
-    settings.window = window::Settings {
-        size: (1024, 768),
-        resizable: true,
-        decorations: true,
-        min_size: Some((800, 600)),
-        max_size: None,
-        transparent: false,
-        always_on_top: false,
-        icon: Some(icon),
+    let settings = iced::Settings {
+        window: window::Settings {
+            size: (1024, 768),
+            resizable: true,
+            decorations: true,
+            min_size: Some((800, 600)),
+            max_size: None,
+            transparent: false,
+            always_on_top: false,
+            icon: Some(icon),
+        },
+        antialiasing: true,
+        ..Default::default()
     };
-    settings.antialiasing = true;
     TolStack::run(settings).unwrap();
 }
 
