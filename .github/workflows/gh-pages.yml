@@ -30,6 +30,9 @@ jobs:
     name: Check
     runs-on: ubuntu-latest
     steps:
+      - name: Install gtk3
+        run: apt-get install libgtk-3-dev
+        if: ${{ runner.os == 'Linux' }}
 
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -45,6 +48,9 @@ jobs:
     name: Test Suite
     runs-on: ubuntu-latest
     steps:
+      - name: Install gtk3
+        run: apt-get install libgtk-3-dev
+        if: ${{ runner.os == 'Linux' }}
 
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -60,6 +66,9 @@ jobs:
     name: Rustfmt
     runs-on: ubuntu-latest
     steps:
+      - name: Install gtk3
+        run: apt-get install libgtk-3-dev
+        if: ${{ runner.os == 'Linux' }}
 
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -77,6 +86,9 @@ jobs:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
+      - name: Install gtk3
+        run: apt-get install libgtk-3-dev
+        if: ${{ runner.os == 'Linux' }}
 
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
